@@ -40,7 +40,7 @@ class OurAdapter extends BaseAdapter {
 }
 
 const db = lowdb(new OurAdapter('dict.db'),     {defaultValue: {entries: {}, count: 0}}),
-    pass = lowdb(new OurAdapter('accounts.db'), {defaultValue: {hashes: {}, tokens: {}});
+    pass = lowdb(new OurAdapter('accounts.db'), {defaultValue: {hashes: {}, tokens: {}}});
 
 call.db = db;
 call.pass = pass;
