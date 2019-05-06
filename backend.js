@@ -20,17 +20,18 @@ const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[^0-9a-z
 const BaseAdapter = require('lowdb/adapters/Base');
 class OurAdapter extends BaseAdapter {
   read() {
-    let buf = fs.readFileSync(this.source);
+    let buf;
+    try {
+      buf = fs.readFileSync(this.source);
+    } catch(e) {
+      process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a file read failure\u001b[0m\n`);
+      return this.defaultValue;
+    }
     let o;
     try {
       o = JSON.parse(buf.toString());
     } catch(e) {
-      try {
-        o = msgpack.decode(buf);
-      } catch(e) {
-        process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a reading/parsing failure\u001b[0m\n`);
-        o = this.defaultValue;
-      }
+      o = msgpack.decode(buf);
     } 
     return o;
   }
