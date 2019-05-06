@@ -1,0 +1,90 @@
+<html>
+  <head>
+    <title>tỏadūa</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700|Roboto:400,400i,700&amp;subset=latin-ext,vietnamese" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <div id="main">
+      <nav id="menu">
+        <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="perform_search" autofocus>
+      </nav>
+      <div id="spacer"></div>
+      <div id="results">
+        <div class="card" v-if="done_searching && query && ! results.length">
+          <h2 class="name" style="color: #333">No results</h2>
+        </div>
+        <div class="card" v-for="result in results">
+          <div class="title">
+            <h2 class="name">{{result.head}}</span>
+            <span class="info">
+              <span :style="color_for(result.by)">{{result.by}}</span>
+              <a :href="'#' + result.id" @click="navigate(result.id)">#{{result.id}}</a>
+            </span>
+          </div>
+          <p class="body">{{result.body}}</p>
+          <div class="comments">
+            <p class="comment" v-for="cmt in result.comments">
+              <span :style="color_for(cmt.by)" class="commenter">{{cmt.by}}</span><span>{{cmt.content}}</span>
+            </p>
+            <p class="comment new_cmt" v-if="result.uncollapsed">
+              <span :style="color_for(username)" class="commenter">{{username}}</span><input type="text" v-model="result.input" placeholder="your comment?…" autofocus>
+            </p>
+          </div>
+          <ul class="controls" v-if="username">
+            <li v-if="! result.uncollapsed">
+              <input type="button" value="comment" @click="uncollapse($event, result)">
+            </li>
+            <li v-if="  result.uncollapsed">
+              <input type="button" value="submit"  @click="comment(result)">
+            </li>
+            <li v-if="username == result.by && !result.hesitating">
+              <input type="button" value="remove"  @click="hesitate(result)">
+            </li>
+            <li v-if="result.hesitating">
+              <input type="button" value="sure?"   @click="remove(result)">
+            </li>
+            <li>
+              <input type="button" value="fork"    @click="fork(result)">
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" id="welcome" v-if="! dismissed">
+        <h2>New Toadūa</h2>
+        <p>Welcome to the new, refreshed version of Toadūa. If you experience any problems on your way, be sure to let me know (Discord @uakci#4677).</p>
+        <ul class="controls">
+          <li><input type="button" value="dismiss forever" @click="dismiss"></li>
+        </ul>
+      </div>
+      <div class="card" id="create" v-if="username && ! results.length">
+        <div class="title">
+          <input type="text" id="create_name" class="name" placeholder="Create new entry" v-model="new_head">
+        </div>
+        <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
+        <ul class="controls">
+          <li><input type="button" value="submit" class="submit" @click="create"></li>
+        </ul>
+      </div>
+      <div class="card" id="logout" v-if="username && ! query">
+        <ul class="controls">
+          <li>Logged in as <span id="as_who" :style="color_for(username)">{{username}}</span></li>
+          <li><input type="button" value="logout" class="submit" @click="logout"></li>
+        </ul>
+      </div>
+      <div class="card" id="login" v-if="!(username || query)">
+        <h2>Access</h2>
+        <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name"></div>
+        <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass"></div>
+        <ul class="controls">
+          <li><input type="button" value="login"    @click="account('login')"></li>
+          <li><input type="button" value="register" @click="account('register')"></li>
+        </ul>
+      </div>
+    </div>
+    <script src="vue.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

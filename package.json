@@ -1,0 +1,32 @@
+{
+  "name": "toadua",
+  "version": "0.1.0",
+  "description": "A collaborative dictionary for the Toaq language.",
+  "main": "server.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "color-convert": "^2.0.0",
+    "js-levenshtein": "^1.1.6",
+    "lodash": "^4.17.11",
+    "lowdb": "^1.0.0",
+    "npm": "^6.9.0",
+    "object.fromentries": "^2.0.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "shortid": "^2.2.14",
+    "uuid": "^3.3.2",
+    "what-the-pack": "^2.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "true",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ciuak/toadua.git"
+  },
+  "author": "uakci",
+  "license": "MIT",
+  "private": true
+}

@@ -1,0 +1,9 @@
+accounts.db
+backup
+dict.db
+HOOK
+log.log
+node_modules
+URLS.json
+vue.js
+vue-production.js

@@ -1,0 +1,229 @@
+/* * {
+  border-top: 1px solid black !important;
+  border-bottom: 1px solid black !important;
+} */
+input, textarea {
+  background-color: inherit;
+  -webkit-appearance: none;
+  outline: none;
+}
+input[type=button],
+input[type=submit] {
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-weight: bold;
+  color: #ff007f;
+  cursor: pointer;
+}
+input[type=button]:active,
+input[type=button]:hover,
+input[type=button]:focus {
+  color: #000;
+}
+html {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 16px;
+  background-color: #eee;
+  overflow-y: scroll;
+}
+.card, .card-transparent {
+  box-sizing: border-box;
+  margin: 16px;
+  padding: 16px;
+}
+.card {
+  background: white;
+  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.5);
+}
+.card .title {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+.card .info {
+  font-size: 16px;
+}
+.card .body {
+  line-height: 24px;
+  margin: 0;
+}
+.comments {
+  padding-top: 16px;
+}
+#login input[type="text"],
+#login input[type="password"] {
+  width: 50%;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0 auto;
+  padding: 2px;
+  border-bottom: 1px solid #aaa !important; /* hotfix */
+}
+#login_username, #login_password {
+  padding: 3px 0;
+  /* 32 px = 26 px (bounding box) + 2 * _3px_ */
+}
+.new_cmt input,
+#login input[type="text"],
+#login input[type="password"],
+#create input[type="text"],
+#create textarea {
+  display: block;
+  border: none;
+  border-radius: 0;
+}
+#create input[type="text"],
+#create textarea {
+  padding: 0;
+  border: none;
+  resize: none;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+#create textarea {
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 0;
+  /* resize: none; */
+  overflow: hidden;
+  padding-bottom: 16px;
+}
+p.new_cmt.comment input[type="text"] {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+}
+ul.controls {
+  font-size: 12px;
+  line-height: 16px;
+  margin: 11px 0 0 auto;
+  display: block;
+  width: fit-content;
+}
+ul.controls > li {
+  display: inline-block;
+}
+ul.controls > li:not(:first-child)::before {
+  content: '• ';
+  font-size: calc(0.5 * 16pt);
+}
+h2, .name {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 150%;
+  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  display: inline-block;
+}
+.word_id {
+  color: #000;
+  text-decoration: underline;
+}
+.comment {
+  font-size: 12px;
+  line-height: 16px;
+  color: #333;
+  text-indent: -15px;
+  padding-left: 15px;
+  margin: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+.hl {
+  color: #ffffff;
+  background-color: #000;
+}
+.comment .hl {
+  /* color: #ff3397; */
+  color: #ffffff;
+  background-color: #333;
+}
+.commenter::after {
+  content: ": ";
+}
+#main {
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  padding-bottom: 10px;
+}
+#menu {
+  box-sizing: border-box;
+  width: 100%;
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0px 5px 25px 0px rgba(0, 0, 0, 0.5);
+}
+#search {
+  box-sizing: border-box;
+  display: block;
+  width: 600px;
+  height: 64px;
+  margin: 0 auto;
+  outline: none;
+  font-size: 24px;
+  padding: calc((64px - 24px) / 2);
+  border: none;
+  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  text-align: center;
+}
+h1, h2, h3 {
+  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  font-weight: 300;
+}
+h2 {
+  font-size: 24px;
+}
+#spacer {
+  width: 100%;
+  height: calc(64px + 16px);
+}
+#menu {
+  background-color: white;
+  padding-top: 0px;
+  padding-bottom: 0;
+  position: fixed;
+  top: 0;
+}
+a {
+  text-decoration: none;
+  color: #ff007f;
+}
+
+@media(min-width: 513px) {
+  .card, .card-transparent {
+    margin-left: auto;
+    margin-right: auto;
+    width: calc(512px - 2 * 16px);
+  }
+  .card {
+    margin-top: 0px;
+  }
+}
+
+@media(max-width: 512px) {
+  #search {
+    width: 100%;
+  }
+  .card, .card-transparent {
+    width: calc(100% - 2 * 16px);
+    position: relative;
+    margin-top: 0;
+  }
+}
