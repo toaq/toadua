@@ -25,6 +25,7 @@ class OurAdapter extends BaseAdapter {
       buf = fs.readFileSync(this.source);
     } catch(e) {
       process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a file read failure\u001b[0m\n`);
+      this.write(this.defaultValue);
       return this.defaultValue;
     }
     let o;
@@ -40,8 +41,8 @@ class OurAdapter extends BaseAdapter {
   }
 }
 
-const db = lowdb(new OurAdapter('dict.db'),     {defaultValue: {entries: {}, count: 0}}),
-    pass = lowdb(new OurAdapter('accounts.db'), {defaultValue: {hashes: {}, tokens: {}}});
+const db = lowdb(new OurAdapter('dict.db',     {defaultValue: {entries: {}, count: 0}})),
+    pass = lowdb(new OurAdapter('accounts.db', {defaultValue: {hashes: {}, tokens: {}}}));
 
 call.db = db;
 call.pass = pass;
