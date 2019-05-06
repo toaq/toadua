@@ -10,6 +10,12 @@ const http = require('http'),
 
 // Back the dictionary up (every midnight).
 function backup(api) {
+  // TODO: apply DRY
+  try {
+    fs.mkdirSync('backup');
+  } catch(e) {
+    if(e.code !== 'EEXIST') throw e; 
+  }
   try {
     fs.writeFileSync(`backup/${new Date().toISOString().split('T')[0]}.json`,
       JSON.stringify(api.db), {flags: 'wx'});
