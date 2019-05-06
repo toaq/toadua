@@ -30,9 +30,10 @@ class OurAdapter extends BaseAdapter {
       } catch(e) {
         process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a reading/parsing failure\u001b[0m\n`);
         o = this.defaultValue;
+      }
     } 
     return o;
-  },
+  }
   write(data) {
     fs.writeFileSync(this.source, msgpack.encode(data));
   }
