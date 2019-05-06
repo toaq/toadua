@@ -32,7 +32,7 @@ class OurAdapter extends BaseAdapter {
         o = this.defaultValue;
     }
     return o;
-  }
+  },
   write(data) {
     fs.writeFileSync(this.source, msgpack.encode(data));
   }
