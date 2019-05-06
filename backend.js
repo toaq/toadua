@@ -30,7 +30,7 @@ class OurAdapter extends BaseAdapter {
       } catch(e) {
         process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a reading/parsing failure\u001b[0m\n`);
         o = this.defaultValue;
-    } 
+    }
     return o;
   }
   write(data) {
@@ -108,22 +108,35 @@ function score(comments) {
   return p - m;
 }
 
-actions.search = guard(false, {query: checks.present}, (i) => {
-  let query = i.query.toString();
-  let curry = deburr(query).replace(/\ /g, '');
-  let relevant = Object.entries(db.get('entries').value())
-    .map(_ => ({ ..._[1], id: _[0], score: score(_[1].comments) }))
-    .filter(e => deburr(`${e.head.replace(/\ /g, '')}\n${e.body}\n${
-      e.comments.map(x => x.content).join('\n')}`)
-        .indexOf(curry) > -1 || e.id == query);
-  let sorted = lo(relevant).sortBy([
-    // +true = 1, +false = 0
-    // thus, + will make falses come first; - will make trues come first
-    e => -(e.id === query),
-    e => -(deburr(e.head) === curry),
+// not using a dictionary because it would mangle the RegExp objects
+const PATTERNS = [
+  [/^(?:#|id:)([0-9A-Za-z-_]{6,})$/, (_, id)   => e => e.id === id],
+  [/^(?:@|user:)([A-Za-z]{1,16})$/,  (_, user) => e => e.by === user]
+];
+
+actions.search = guard(false, {query: checks.present}, (i, uname) => {
+  let query = i.query.toString().split(' ').filter(_ => _);
+  // TODO: this is another performance bottleneck, since it loads the whole database
+  // …*on every search*. oh no
+  let entries = Object.entries(db.get('entries').value())
+    .map(_ => ({ ..._[1], id: _[0], score: score(_[1].comments) }));
+  // each term of the query gets mapped to a filtering function
+  let conds = query.map(term => {
+    for([pat, fun] of PATTERNS) {
+      let m = term.match(pat);
+      if(m) return fun(...m);
+    }
+    return e =>
+      // TODO: this might be a *huge* performance bottleneck
+      // if run for 6000-odd entries…
+      ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' ')
+        .indexOf(` ${term} `) !== -1; // naïve search; might fail
+          // on the other hand, live regex construction isn't great either
+          // maybe a state machine? TODO
+  });
+  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entries);
+  let sorted = lo(filtered).sortBy([
     e =>
-      // TODO: this is broken
-      // -(new RegExp('\\b' + curry + '\\b').test(e.body))
       + levenshtein(curry, deburr(e.head))
       - 6 * (e.by == 'official')
       - 2 * (e.score || 0)
