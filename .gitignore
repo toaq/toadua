@@ -4,6 +4,7 @@ dict.db
 HOOK
 log.log
 node_modules
+run.sh
 URLS.json
 vue.js
 vue-production.js
