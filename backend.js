@@ -145,7 +145,7 @@ function parse_term(term) {
     }
   }
   let deburred = deburr(term);
-  let deft = e => deburr(
+  let deft = e => deburr(e.head).indexOf(deburr(term)) !== -1 || deburr(
       ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' '))
     .replace(/[^a-z]+/gi, ' ').indexOf(` ${deburr(term)} `) !== -1;
   deft.heaviness = 255;
