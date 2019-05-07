@@ -67,17 +67,22 @@ var app = new Vue({
       });
       return e;
     },
+    add_to_history: function(q) {
+      if(window.history)
+        window.history.replaceState('', '', '#' + this.query);
+      else
+        window.location.hash = this.query;
+    },
     perform_search: function() {
       this.done_searching = false;
       if(queue.search) queue.search.abort();
-      if(! this.query) return this.results = [];
-      var us = this;
+      if(! this.query) {
+        this.add_to_history('');
+        return this.results = [];
+      }
       apisend({action: 'search', query: this.query}, function(data) {
-        us.results = data.data.map(app.process_entry);
-        if(window.history)
-          window.history.replaceState('', '', '#' + us.query);
-        else
-          window.location.hash = us.query;
+        app.results = data.data.map(app.process_entry);
+        app.add_to_history(app.query);
         app.done_searching = true;
       });
     },
