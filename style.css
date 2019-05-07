@@ -182,8 +182,9 @@ h2, .name {
   height: 64px;
   margin: 0 0 0 64px;
   outline: none;
-  font-size: 18px;
-  padding: calc((64px - 18px) / 2) 0;
+  font-size: 24px;
+  padding: calc((64px - 24px) / 2) 2px /* visual correction */
+           calc((64px - 24px) / 2) 0;
   border: none;
   font-family: 'Roboto Condensed', 'Arial', sans-serif;
   text-align: center;
