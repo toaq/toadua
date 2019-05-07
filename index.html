@@ -68,6 +68,7 @@
         </div>
         <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
         <ul class="controls">
+          <li><input type="button" id="cancel" value="×" v-if="new_head || new_body" @click="new_head = new_body = ''"></li>
           <li><input type="button" value="submit" class="submit" @click="create"></li>
         </ul>
       </div>
