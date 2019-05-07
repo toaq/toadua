@@ -21,7 +21,7 @@
             <h2 class="name">{{result.head}}</span>
             <span class="info">
               <span :style="color_for(result.by)">{{result.by}}</span>
-              <a :href="'#' + result.id" @click="navigate(result.id)">#{{result.id}}</a>
+              <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
             </span>
           </div>
           <p class="body">{{result.body}}</p>
