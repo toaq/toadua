@@ -111,7 +111,7 @@ var app = new Vue({
     },
     create: function() {
       apisend({action: 'create', token: this.token, head: this.new_head, body: this.new_body}, function(data) {
-        app.navigate(data.data);
+        app.navigate('#' + data.data);
       })
     },
     fork: function(whom) {
