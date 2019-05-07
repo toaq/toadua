@@ -9,7 +9,10 @@
   <body>
     <div id="main">
       <nav id="menu">
-        <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="perform_search" autofocus>
+        <div>
+          <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="perform_search" autofocus><!--
+          --><input type="button" id="cancel" value="×" @click="navigate('')">
+        </div>
       </nav>
       <div id="spacer"></div>
       <div id="results">
