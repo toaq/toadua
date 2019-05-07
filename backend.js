@@ -111,28 +111,73 @@ function score(comments) {
   return p - m;
 }
 
-actions.search = guard(false, {query: checks.present}, (i) => {
-  let query = i.query.toString();
-  let curry = deburr(query).replace(/\ /g, '');
-  let relevant = Object.entries(db.get('entries').value())
-    .map(_ => ({ ..._[1], id: _[0], score: score(_[1].comments) }))
-    .filter(e => deburr(`${e.head.replace(/\ /g, '')}\n${e.body}\n${
-      e.comments.map(x => x.content).join('\n')}`)
-        .indexOf(curry) > -1 || e.id == query);
-  let sorted = lo(relevant).sortBy([
-    // +true = 1, +false = 0
-    // thus, + will make falses come first; - will make trues come first
-    e => -(e.id === query),
-    e => -(deburr(e.head) === curry),
+// not using a dictionary because it would mangle the RegExp objects
+// the second returned element of each entry is the heaviness, i.e.,
+// how little time it takes to run the function on an entry multiplied by
+// how far the function narrows down the search
+const PATTERNS = [
+  [/\|/, (_, __, s) => {
+    let handlers = s.split('|').map(_ => parse_term(_));
+    let f = e => handlers.some(h => h(e));
+    f.heaviness = handlers.reduce((o, _) => _.heaviness + o, 1);
+    return f;
+  }],
+  [/^!(.*?)$/, (_, s) => {
+    let h = parse_term(s);
+    let f = e => ! h(e);
+    f.heaviness = h.heaviness + 1;
+    return f;
+  }],
+  [/^(?:#|id:)([0-9A-Za-z-_]{6,})$/, (_, id)   => [e => e.id === id,   0]],
+  [/^(?:@|user:)([A-Za-z]{1,16})$/,  (_, user) => [e => e.by === user, 0]]
+];
+
+function parse_term(term) {
+  for([pat, fun] of PATTERNS) {
+    let m = term.match(pat);
+    if(m) {
+      let f = fun(...m, m.index, m.input);
+      if(f instanceof Array) {
+        f[0].heaviness = f[1];
+        f = f[0];
+      }
+      return f;
+    }
+  }
+  let deburred = deburr(term);
+  let deft = e => deburr(
+      ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' '))
+    .replace(/[^a-z]+/gi, ' ').indexOf(` ${deburr(term)} `) !== -1;
+  deft.heaviness = 255;
+  deft.bare = deburred;
+  return deft;
+}
+
+let entry_cache;
+let entry_cache_clean = false;
+actions.search = guard(false, {query: checks.present}, (i, uname) => {
+  let start = +new Date;
+  let query = i.query.toString().split(' ').filter(_ => _);
+  if(! entry_cache_clean) {
+    entry_cache = Object.entries(db.get('entries').value())
+      .map(([id, e]) => ({ ...e, id, score: score(e.comments) }));
+    entry_cache_clean = true;
+  }
+  // each term of the query gets mapped to a filtering function
+  let conds = lo(query.map(parse_term)).sortBy('.heaviness').value();
+  let bare_terms = conds.map(_ => _.bare).filter(_ => _);
+  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
+  let sorted = lo(filtered).sortBy([
     e =>
-      // TODO: this is broken
-      // -(new RegExp('\\b' + curry + '\\b').test(e.body))
-      + levenshtein(curry, deburr(e.head))
-      - 6 * (e.by == 'official')
+      + bare_terms.reduce((_, term) => _ + levenshtein(term, deburr(e.head)), 0)
+      - 8 * (e.by == 'official') // the stigma is real
       - 2 * (e.score || 0)
       + Math.exp((new Date() - new Date(e.on)) / (-1000 * 3600 * 24 * 7))
   ]);
-  return good({data: sorted.value()});
+  let data = sorted.value();
+  process.stderr.write(`\u001b[37mapi.search:\u001b[0m query «\u001b[32m${
+    i.query}\u001b[0m» took \u001b[1m${new Date - start}\u001b[0m ms\n`);
+  return good({data});
 });
 
 actions.info = guard(false, {id: checks.shortid}, (i) => {
@@ -163,6 +208,7 @@ actions.comment = guard(true, {
   word.get('comments')
     .push(this_comment)
     .write();
+  entry_cache_clean = false;
   word = word.value();
   announce({
     color: author_color(uname),
@@ -192,6 +238,7 @@ actions.create = guard(true, {
     comments: []
   };
   db.get('entries').set(id, this_entry).write();
+  entry_cache_clean = false;
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
@@ -250,6 +297,7 @@ actions.remove = guard(true, {
   if(entry.score > 0)
     return flip('this entry has a positive amount of votes');
   db.get('entries').unset(i.id).write();
+  entry_cache_clean = false;
   announce({
     color: author_color(uname),
     title: `*${uname}* removed **${entry.head}**`,

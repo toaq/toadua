@@ -4,8 +4,8 @@ const request = require('request'),
 
 module.exports =
 function announce(what) {
-  if(false) {
-    console.log(what);
+  if(true) {
+    // console.log(what);
     return true;
   } else {
     try {
