@@ -73,13 +73,16 @@ function handler(r, s) {
 let server = http.createServer(handler);
 server.listen(59138);
 process.stderr.write('Server started!\n');
+let sync_int;
 hk.sync(api).then(() => {
-  setInterval(() => hk.sync(api), 3 * 60 * 1000);
+  sync_int = setInterval(() => hk.sync(api), 3 * 60 * 1000);
 });
-setInterval(() => hk.backup(api), 1 * 60 * 1000);
+let backup_int = setInterval(() => hk.backup(api), 1 * 60 * 1000);
 
 function bye() {
   process.stderr.write('Trying to exit gracefully\n')
+  clearInterval(sync_int);
+  clearInterval(backup_int);
   server.close();
   api.db.write();
   api.pass.write();
