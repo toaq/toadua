@@ -20,14 +20,14 @@
           <div class="title">
             <h2 class="name">{{result.head}}</span>
             <span class="info">
-              <span :style="color_for(result.by)">{{result.by}}</span>
+              <span :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</span>
               <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
             </span>
           </div>
           <p class="body">{{result.body}}</p>
           <div class="comments">
             <p class="comment" v-for="cmt in result.comments">
-              <span :style="color_for(cmt.by)" class="commenter">{{cmt.by}}</span><span>{{cmt.content}}</span>
+              <span :style="color_for(cmt.by)" class="commenter" @click="navigate('@' + cmt.by)">{{cmt.by}}</span><span>{{cmt.content}}</span>
             </p>
             <p class="comment new_cmt" v-if="result.uncollapsed">
               <span :style="color_for(username)" class="commenter">{{username}}</span><input type="text" v-model="result.input" placeholder="your comment?…" autofocus>
