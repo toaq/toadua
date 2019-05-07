@@ -4,7 +4,7 @@ const request = require('request'),
 
 module.exports =
 function announce(what) {
-  if(true) {
+  if(false) {
     // console.log(what);
     return true;
   } else {
