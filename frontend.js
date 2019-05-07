@@ -1,3 +1,5 @@
+var HOW_MANY_AT_A_TIME = 25;
+
 var queue = {};
 function apisend(what, or, and) {
   if(!and) {
@@ -36,12 +38,14 @@ function set_cookie(name, value) {
 var app = new Vue({
   el: '#main',
   data: {
-    token: undefined,
-    username: undefined,
+    token: null,
+    username: null,
     dismissed: false,
     query: decodeURIComponent(window.location.hash.replace(/^#/, '')),
     results: [],
+    result_cache: [],
     done_searching: false,
+    scroll_up: false,
     count_stat: null,
     login_name: '',
     login_pass: '',
@@ -52,6 +56,15 @@ var app = new Vue({
     search_pholder: function() {
       if(this.count_stat) return 'search ' + this.count_stat + ' words';
       else return 'search';
+    },
+    what_should_i_say: function() {
+      if(this.done_searching)
+        if(! this.results.length)
+          return 'No results';
+        else if(this.result_cache.length)
+          return 'Loading more…';
+        else return 'No more results';
+      else return 'Loading…';
     }
   },
   methods: {
@@ -76,12 +89,16 @@ var app = new Vue({
     perform_search: function() {
       this.done_searching = false;
       if(queue.search) queue.search.abort();
+      this.results = this.result_cache = [];
       if(! this.query) {
         this.add_to_history('');
-        return this.results = [];
+        this.scroll_up = true;
+        return;
       }
       apisend({action: 'search', query: this.query}, function(data) {
-        app.results = data.data.map(app.process_entry);
+        app.scroll_up = true;
+        app.result_cache = data.data.map(app.process_entry);
+        app.results = app.result_cache.splice(0, HOW_MANY_AT_A_TIME);
         app.add_to_history(app.query);
         app.done_searching = true;
       });
@@ -93,12 +110,6 @@ var app = new Vue({
       for(var i = 0, l = name.length; i < l; ++i)
         n = (((n << 5) - n) + name.charCodeAt(i)) % 360;
       return 'color: hsl(' + n + ', 100%, 30%);';
-    },
-    uncollapse: function(e, whom) {
-      whom.uncollapsed = true;
-    },
-    hesitate: function(whom) {
-      whom.hesitating = true;
     },
     remove: function(whom) {
       apisend({action: 'remove', token: this.token, id: whom.id}, function() {
@@ -117,6 +128,7 @@ var app = new Vue({
     create: function() {
       apisend({action: 'create', token: this.token, head: this.new_head, body: this.new_body}, function(data) {
         app.new_head = app.new_body = '';
+        document.querySelector('#create_body').style.height = 24;
         app.navigate('#' + data.data);
       })
     },
@@ -156,5 +168,28 @@ var app = new Vue({
     this.token = get_cookie('token') || get_cookie('id');
     this.dismissed = !! get_cookie('welcome');
     this.whoami();
+  },
+  updated: function() {
+    if(this.scroll_up) {
+      this.scroll_up = false;
+      document.querySelector('body').scrollTop = 0;
+    }
+    // This one has to be called dynamically because of Vue hiding it every now and then
+    var create = document.querySelector('#create_body');
+    if(! create) return;
+    if(! create.style.height)
+      create.style.height = 24;
+    if(create.scrollTop)
+      create.style.height = parseInt(create.style.height.replace(/pt$/, 0), 10) + create.scrollTop;
   }
 });
+
+var body = document.querySelector('body');
+window.onscroll = function() {
+  var screens = (body.scrollHeight - body.scrollTop) / window.innerHeight - 1;
+  if(screens < 10 && app.result_cache.length) {
+    app.result_cache.splice(0, HOW_MANY_AT_A_TIME).forEach(function(e) {
+      app.results.push(e);
+    });
+  }
+};

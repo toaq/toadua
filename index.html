@@ -11,21 +11,20 @@
       <nav id="menu">
         <div>
           <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="perform_search" autocomplete="off" autofocus><!--
-          --><input type="button" id="cancel" value="×" @click="navigate('')">
+          --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
         </div>
       </nav>
       <div id="spacer"></div>
       <div id="results">
-        <div class="card" v-if="done_searching && query && ! results.length">
-          <h2 class="name" style="color: #333">No results</h2>
-        </div>
         <div class="card" v-for="result in results">
           <div class="title">
-            <h2><a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a></h2>
-            <span class="info">
-              <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
-              <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
-            </span>
+            <h2>
+              <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
+              <span class="info">
+                <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
+                <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
+              </span>
+            </h2>
           </div>
           <p class="body">{{result.body}}</p>
           <div class="comments">
@@ -33,18 +32,18 @@
               <span :style="color_for(cmt.by)" class="commenter" @click="navigate('@' + cmt.by)">{{cmt.by}}</span><span>{{cmt.content}}</span>
             </p>
             <p class="comment new_cmt" v-if="result.uncollapsed">
-              <span :style="color_for(username)" class="commenter">{{username}}</span><input type="text" v-model="result.input" placeholder="your comment?…" autofocus>
+              <span :style="color_for(username)" class="commenter">{{username}}</span><input type="text" v-model="result.input" placeholder="your comment?…">
             </p>
           </div>
           <ul class="controls" v-if="username">
             <li v-if="! result.uncollapsed">
-              <input type="button" value="comment" @click="uncollapse($event, result)">
+              <input type="button" value="comment" @click="result.uncollapsed = true">
             </li>
             <li v-if="  result.uncollapsed">
               <input type="button" value="submit"  @click="comment(result)">
             </li>
             <li v-if="username == result.by && !result.hesitating">
-              <input type="button" value="remove"  @click="hesitate(result)">
+              <input type="button" value="remove"  @click="result.hesitating = true">
             </li>
             <li v-if="result.hesitating">
               <input type="button" value="sure?"   @click="remove(result)">
@@ -55,6 +54,9 @@
           </ul>
         </div>
       </div>
+      <div class="card" v-if="query || results.length">
+        <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
+      </div>
       <div class="card" id="welcome" v-if="! dismissed">
         <h2>New Toadūa</h2>
         <p>Welcome to the new, refreshed version of Toadūa. If you experience any problems on your way, be sure to let me know (Discord @uakci#4677).</p>
@@ -62,7 +64,7 @@
           <li><input type="button" value="dismiss forever" @click="dismiss"></li>
         </ul>
       </div>
-      <div class="card" id="create" v-if="username && ! results.length">
+      <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
         <div class="title">
           <input type="text" id="create_name" class="name" placeholder="Create new entry" v-model="new_head">
         </div>
@@ -80,8 +82,10 @@
       </div>
       <div class="card" id="login" v-if="!(username || query)">
         <h2>Access</h2>
-        <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name"></div>
-        <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass"></div>
+        <form>
+          <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name" autocomplete="username"></div>
+          <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
+        </form>
         <ul class="controls">
           <li><input type="button" value="login"    @click="account('login')"></li>
           <li><input type="button" value="register" @click="account('register')"></li>

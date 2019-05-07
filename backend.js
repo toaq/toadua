@@ -15,7 +15,7 @@ const   shortid = require('shortid'),
 require('object.fromentries').shim();
 
 const ROUND_NO = 8;
-const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[^0-9a-zA-Z.?! \n]/g, '').toLowerCase();
+const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[^0-9a-z\ ]/gi, '').toLowerCase();
 
 const BaseAdapter = require('lowdb/adapters/Base');
 class OurAdapter extends BaseAdapter {
@@ -218,7 +218,7 @@ actions.comment = guard(true, {
     }],
     title: `*${uname}* commented on **${word.head}**`,
     description: this_comment.content,
-    url: `http://uakci.pl/toadua/#${i.id}`
+    url: `http://uakci.pl/toadua/#%23${i.id}`
   });
   return good();
 });
@@ -243,7 +243,7 @@ actions.create = guard(true, {
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
     description: i.body.replace(/___/g, '\u25af'),
-    url: `http://uakci.pl/toadua/#${id}`
+    url: `http://uakci.pl/toadua/#%23${id}`
   });
   db.set('count', Object.entries(db.get('entries').value()).length).write();
   return good({data: id});

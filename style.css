@@ -98,6 +98,7 @@ body {
   font-family: 'Roboto', 'Arial', sans-serif;
   font-size: 16px;
   line-height: 24px;
+  height: 24px;
   padding: 0;
   /* resize: none; */
   overflow: hidden;
@@ -113,18 +114,27 @@ p.new_cmt.comment input[type="text"] {
 }
 ul.controls {
   font-size: 12px;
-  line-height: 16px;
-  margin: 11px 0 0 auto;
+  height: 18px;
+  margin: 6px 0 0 auto;
   display: block;
   width: fit-content;
   width: -moz-fit-content;
 }
 ul.controls > li {
   display: inline-block;
+  padding-top: 2px;
+  height: 16px;
 }
-ul.controls > li:not(:first-child)::before {
+ul.controls > li input[type="button"], 
+ul.controls > li input[type="submit"] {
+  font-size: 12px; /* !important it is */
+}
+ul.controls > li::before {
   content: '• ';
-  font-size: calc(0.5 * 16pt);
+  height: 14px;
+}
+ul.controls > li:first-child::before {
+  visibility: hidden;
 }
 h2, .name {
   margin-top: 0;
@@ -169,6 +179,7 @@ h2, .name {
 }
 #menu {
   box-sizing: border-box;
+  height: 64px;
   width: 100%;
   z-index: 1000;
   padding: 0;
@@ -176,6 +187,7 @@ h2, .name {
   box-shadow: 0px 5px 25px 0px rgba(0, 0, 0, 0.5);
 }
 #menu div {
+  height: 64px;
   width: 512px;
   padding: 0;
   margin: 0 auto;
