@@ -33,7 +33,7 @@ class OurAdapter extends BaseAdapter {
       o = JSON.parse(buf.toString());
     } catch(e) {
       o = msgpack.decode(buf);
-    } 
+    }
     return o;
   }
   write(data) {
