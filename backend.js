@@ -171,6 +171,7 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
       + bare_terms.reduce((_, term) => _ + levenshtein(term, deburr(e.head)), 0)
       - 8 * (e.by == 'official') // the stigma is real
       - 2 * (e.score || 0)
+      + 4 * (['oldofficial', 'oldexamples', 'oldcountries'].includes(e.by))
       + Math.exp((new Date() - new Date(e.on)) / (-1000 * 3600 * 24 * 7))
   ]);
   let data = sorted.value();
