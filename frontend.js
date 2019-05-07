@@ -50,7 +50,7 @@ var app = new Vue({
   },
   computed: {
     search_pholder: function() {
-      if(this.count_stat) return 'search in ' + this.count_stat + ' entries';
+      if(this.count_stat) return 'search ' + this.count_stat + ' words';
       else return 'search';
     }
   },
