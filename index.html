@@ -21,9 +21,9 @@
         </div>
         <div class="card" v-for="result in results">
           <div class="title">
-            <h2 class="name">{{result.head}}</span>
+            <h2><a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a></h2>
             <span class="info">
-              <span :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</span>
+              <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
               <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
             </span>
           </div>
@@ -68,8 +68,8 @@
         </div>
         <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
         <ul class="controls">
-          <li><input type="button" id="cancel" value="×" v-if="new_head || new_body" @click="new_head = new_body = ''"></li>
-          <li><input type="button" value="submit" class="submit" @click="create"></li>
+          <li><input type="submit" value="submit" class="submit" @click="create"></li>
+          <li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
         </ul>
       </div>
       <div class="card" id="logout" v-if="username && ! query">

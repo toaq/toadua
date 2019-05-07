@@ -2,6 +2,9 @@
   border-top: 1px solid black !important;
   border-bottom: 1px solid black !important;
 } */
+#as_who {
+  font-weight: bold;
+}
 input, textarea {
   background-color: inherit;
   -webkit-appearance: none;
@@ -114,6 +117,7 @@ ul.controls {
   margin: 11px 0 0 auto;
   display: block;
   width: fit-content;
+  width: -moz-fit-content;
 }
 ul.controls > li {
   display: inline-block;
@@ -125,8 +129,9 @@ ul.controls > li:not(:first-child)::before {
 h2, .name {
   margin-top: 0;
   margin-bottom: 0;
-  font-size: 150%;
+  font-size: 24px;
   font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  color: black;
   display: inline-block;
 }
 .word_id {
