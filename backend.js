@@ -15,7 +15,7 @@ const   shortid = require('shortid'),
 require('object.fromentries').shim();
 
 const ROUND_NO = 8;
-const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[^0-9a-z\ ]/gi, '').toLowerCase();
+const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[\u0300-\u030f]/g, '').replace(/[^0-9a-z]+/gi, ' ').toLowerCase();
 
 const BaseAdapter = require('lowdb/adapters/Base');
 class OurAdapter extends BaseAdapter {
@@ -145,8 +145,8 @@ function parse_term(term) {
     }
   }
   let deburred = deburr(term);
-  let deft = e => deburr(e.head).indexOf(deburred) !== -1 || deburr(
-      ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' ')).indexOf(` ${deburred} `) !== -1;
+  let deft = e => deburr(
+      ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' ')).indexOf(deburred) !== -1;
   deft.heaviness = 255;
   deft.bare = deburred;
   return deft;
