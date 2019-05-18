@@ -35,6 +35,25 @@ function set_cookie(name, value) {
   document.cookie = name + "=" + value;
 }
 
+function escape(s) {
+  var el = document.createElement('p');
+  el.innerText = s;
+  return el.innerHTML;
+}
+
+function replacements(content) {
+  return escape(content).replace(/▯/g, '◌')
+    .replace(/([#@][a-zA-Z0-9_-]+)|(?<=&lt;)(.*?)(?=&gt;)/g, function(_, m, m_) {
+      var match = m || m_;
+      return (m && m.match(/^[#@]/) ? m.charAt(0) : '')
+        + '<a href="#' + encodeURIComponent(match)
+        + '" onclick="javascript:void(app.navigate(\''
+        + match.replace(/'/g, '\\\'').replace(/"/g, '').replace(/\\/, '\\\\')
+        + '\'))">'
+        + escape(m && m.match(/^[#@]/) ? match.substring(1) : match) + '</a>';
+    });
+}
+
 var app = new Vue({
   el: '#main',
   data: {
@@ -74,9 +93,9 @@ var app = new Vue({
     },
     process_entry: function(e) {
       e.uncollapsed = e.hesitating = false;
-      e.body = e.body.replace(/▯/g, '◌');
+      e.fancy_body = replacements(e.body);
       e.comments.forEach(function(_) {
-        _.content = _.content.replace(/▯/g, '◌');
+        _.fancy_content = replacements(_.content);
       });
       return e;
     },

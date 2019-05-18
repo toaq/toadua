@@ -15,7 +15,7 @@ const   shortid = require('shortid'),
 require('object.fromentries').shim();
 
 const ROUND_NO = 8;
-const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[\u0300-\u030f]/g, '').replace(/[^0-9a-z]+/gi, ' ').toLowerCase();
+const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[\u0300-\u030f]/g, '').replace(/[^0-9A-Za-z_-]+/g, ' ').toLowerCase();
 
 const BaseAdapter = require('lowdb/adapters/Base');
 class OurAdapter extends BaseAdapter {
@@ -41,7 +41,7 @@ class OurAdapter extends BaseAdapter {
   }
 }
 
-const db = lowdb(new OurAdapter('dict.db',     {defaultValue: {entries: {}, count: 0}})),
+const db = lowdb(new OurAdapter(    'dict.db', {defaultValue: {entries: {}, count: 0}})),
     pass = lowdb(new OurAdapter('accounts.db', {defaultValue: {hashes: {}, tokens: {}}}));
 
 call.db = db;
@@ -112,14 +112,15 @@ function score(comments) {
 }
 
 // not using a dictionary because it would mangle the RegExp objects
-// the second returned element of each entry is the heaviness, i.e.,
-// how little time it takes to run the function on an entry multiplied by
-// how far the function narrows down the search
+// the second returned element of each entry – if it's an array – is
+// the heaviness, i.e., how little time it takes to run the function
+// on an entry multiplied by how far the function narrows down the
+// search
 const PATTERNS = [
   [/\|/, (_, __, s) => {
-    let handlers = s.split('|').map(_ => parse_term(_));
+    let handlers = s.split('|').map(parse_term);
     let f = e => handlers.some(h => h(e));
-    f.heaviness = handlers.reduce((o, _) => _.heaviness + o, 1);
+    f.heaviness = handlers.reduce((o, _) => Math.max(_.heaviness, o), -Infinity) + 1;
     return f;
   }],
   [/^!(.*?)$/, (_, s) => {
@@ -128,10 +129,29 @@ const PATTERNS = [
     f.heaviness = h.heaviness + 1;
     return f;
   }],
-  [/^(?:#|id:)([0-9A-Za-z-_]{6,})$/, (_, id)   => [e => e.id === id,   0]],
-  [/^(?:@|user:)([A-Za-z]{1,16})$/,  (_, user) => [e => e.by === user, 0]]
+  [/[#@\/]/, (_, __, s) => {
+    let handlers = s.split(/(?=[#@\/])/).map(part =>
+      part.replace(/^[#@\/]/, s => ({ '#': 'id:', '@': 'user:', '/': 'arity:' }[s])))
+      .map(parse_term);
+    let f = e => handlers.every(h => h(e));
+    f.heaviness = handlers.reduce((o, _) => _.heaviness + o, 1);
+    return f;
+  }],
+  [/^(?:id:)([0-9A-Za-z-_]{6,})$/, (_, id)   => [e => e.id === id, -Infinity]],
+  [/^(?:user:)([A-Za-z]{1,16})$/,  (_, user) => [e => e.by === user, 0]],
+  [/^(?:arity:)([0-9]+)$/, (_, nstr) => {
+    let n = parseInt(nstr, 10);
+    let f = e => e.body.split(/[;.]/).map(_ => {
+      let matches = _.match(/▯/g);
+      return matches ? matches.length : -1;
+    }).reduce(Math.max, -1) == n;
+    f.heaviness = 1;
+    return f;
+  }],
 ];
 
+const whatever = e => true;
+whatever.heaviness = Infinity;
 function parse_term(term) {
   for([pat, fun] of PATTERNS) {
     let m = term.match(pat);
@@ -145,6 +165,7 @@ function parse_term(term) {
     }
   }
   let deburred = deburr(term);
+  if(! deburred.length) return whatever;
   let deft = e => deburr(
       ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' ')).indexOf(deburred) !== -1;
   deft.heaviness = 255;
@@ -163,12 +184,14 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
     entry_cache_clean = true;
   }
   // each term of the query gets mapped to a filtering function
-  let conds = lo(query.map(parse_term)).sortBy('.heaviness').value();
+  let conds = lo(query.map(parse_term).filter(_ => _ != whatever))
+    .sortBy('.heaviness').value();
   let bare_terms = conds.map(_ => _.bare).filter(_ => _);
   let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
   let sorted = lo(filtered).sortBy([
     e =>
-      + bare_terms.reduce((_, term) => _ + levenshtein(term, deburr(e.head)), 0)
+      + bare_terms.some(_ => _.indexOf(deburr(e.head)) != -1)
+        * bare_terms.reduce((_, term) => _ + levenshtein(term, deburr(e.head)), 0)
       - 8 * (e.by == 'official') // the stigma is real
       - 2 * (e.score || 0)
       + 4 * (['oldofficial', 'oldexamples', 'oldcountries'].includes(e.by))

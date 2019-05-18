@@ -27,10 +27,10 @@
               </span>
             </h2>
           </div>
-          <p class="body">{{result.body}}</p>
+          <p class="body" v-html="result.fancy_body"></p>
           <div class="comments">
             <p class="comment" v-for="cmt in result.comments">
-              <span :style="color_for(cmt.by)" class="commenter" @click="navigate('@' + cmt.by)">{{cmt.by}}</span><span>{{cmt.content}}</span>
+              <span :style="color_for(cmt.by)" class="commenter" @click="navigate('@' + cmt.by)">{{cmt.by}}</span><span v-html="cmt.fancy_content"></span>
             </p>
             <p class="comment new_cmt" v-if="result.uncollapsed">
               <span :style="color_for(username)" class="commenter">{{username}}</span><input type="text" v-model="result.input" placeholder="your comment?…">
