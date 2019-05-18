@@ -144,8 +144,9 @@ const PATTERNS = [
     let f = e => e.body.split(/[;.]/).map(_ => {
       let matches = _.match(/▯/g);
       return matches ? matches.length : -1;
-    }).reduce(Math.max, -1) == n;
-    f.heaviness = 1;
+    }).reduce((a, b) => // this is confusing
+      Math.max(a, b), -1) == n;
+    f.heaviness = 5;
     return f;
   }],
 ];
