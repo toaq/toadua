@@ -1,4 +1,5 @@
 var HOW_MANY_AT_A_TIME = 25;
+var dismissal = 'ack';
 
 var queue = {};
 function apisend(what, or, and) {
@@ -178,14 +179,14 @@ var app = new Vue({
       });
     },
     dismiss: function() {
-      set_cookie('welcome', 'no');
+      set_cookie('welcome', dismissal);
       this.dismissed = true;
     }
   },
   created: function() {
     this.perform_search();
     this.token = get_cookie('token') || get_cookie('id');
-    this.dismissed = !! get_cookie('welcome');
+    this.dismissed = get_cookie('welcome') == dismissal;
     this.whoami();
   },
   updated: function() {
@@ -197,7 +198,7 @@ var app = new Vue({
     var create = document.querySelector('#create_body');
     if(! create) return;
     if(! create.style.height)
-      create.style.height = 24;
+      create.style.height = 48 + 'pt';
     if(create.scrollTop)
       create.style.height = parseInt(create.style.height.replace(/pt$/, 0), 10) + create.scrollTop;
   }
