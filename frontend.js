@@ -28,8 +28,8 @@ function apisend(what, or, and) {
 
 function get_cookie(name) {
   var finding = document.cookie.split(/;\ ?/)
-    .map(_ => _.split('='))
-    .filter(_ => _[0] == name)[0];
+    .map(function(_) { return _.split('='); })
+    .filter(function(_) { return _[0] == name })[0];
   return finding && finding[1];
 }
 function set_cookie(name, value) {
@@ -44,14 +44,24 @@ function escape(s) {
 
 function replacements(content) {
   return escape(content).replace(/▯/g, '◌')
-    .replace(/([#@][a-zA-Z0-9_-]+)|(?<=&lt;)(.*?)(?=&gt;)/g, function(_, m, m_) {
-      var match = m || m_;
-      return (m && m.match(/^[#@]/) ? m.charAt(0) : '')
-        + '<a href="#' + encodeURIComponent(match)
+    // can't use lookbehind due to compat :(
+    .replace(/[#@][^\ ]+|&lt;.*?&gt;/g, function(m) {
+      // hasty code, plsfix
+      var ante = '', post = '';
+      if(m.startsWith('&lt;')) {
+        ante = '&lt;';
+        post = '&gt;';
+        m = m.substring(4, m.length - 4);
+      }
+      // this is to support the older `#stuff` format for arbitrary queries
+      if(! m.match(/^[A-Za-z0-9#@_-]+$/) && m.startsWith('#'))
+        m = m.substring(1);
+      return ante + (m.match(/^[#@]/) ? m.charAt(0) : '')
+        + '<a href="#' + encodeURIComponent(m)
         + '" onclick="javascript:void(app.navigate(\''
-        + match.replace(/'/g, '\\\'').replace(/"/g, '').replace(/\\/, '\\\\')
+        + m.replace(/'/g, '\\\'').replace(/"/g, '').replace(/\\/, '\\\\')
         + '\'))">'
-        + escape(m && m.match(/^[#@]/) ? match.substring(1) : match) + '</a>';
+        + escape(m.match(/^[#@]/) ? m.substring(1) : m) + '</a>' + post;
     });
 }
 
