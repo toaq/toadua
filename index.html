@@ -38,7 +38,7 @@
           </div>
           <ul class="controls" v-if="username">
             <li v-if="! result.uncollapsed">
-              <input type="button" value="comment" @click="result.uncollapsed = true">
+              <input type="button" value="comment" @click="uncollapse(result)">
             </li>
             <li v-if="  result.uncollapsed">
               <input type="button" value="submit"  @click="comment(result)">
@@ -57,6 +57,11 @@
       </div>
       <div class="card" v-if="query || results.length">
         <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
+        <ul class="controls" v-if="done_searching && !results.length && username">
+          <li>
+            <input type="button" :value="'create ‘' + query + '’?'" @click="new_word">
+          </li>
+        </ul>
       </div>
       <div class="card" id="welcome" v-if="! dismissed">
         <h2>Feedback</h2>

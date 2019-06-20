@@ -1,5 +1,7 @@
 var HOW_MANY_AT_A_TIME = 25;
 var dismissal = 'ack';
+var store = window.localStorage || localStorage ||
+  alert("Your browser doesn't support local storage, which is required for the app to function properly. Please consider updating.");
 
 var queue = {};
 function apisend(what, or, and) {
@@ -24,16 +26,6 @@ function apisend(what, or, and) {
       }
     }
   };
-}
-
-function get_cookie(name) {
-  var finding = document.cookie.split(/;\ ?/)
-    .map(function(_) { return _.split('='); })
-    .filter(function(_) { return _[0] == name })[0];
-  return finding && finding[1];
-}
-function set_cookie(name, value) {
-  document.cookie = name + "=" + value;
 }
 
 function escape(s) {
@@ -146,6 +138,13 @@ var app = new Vue({
         app.results.splice(app.results.indexOf(whom), 1);
       });
     },
+    uncollapse: function(whom) {
+      whom.uncollapsed = true;
+      // this atrocious and unimaginative code is for focusing the comment field
+      setTimeout(function() {
+        document.getElementById('results').children[app.results.indexOf(whom)].children[2].lastChild.children[1].focus();
+      }, 0);
+    },
     comment: function(whom) {
       apisend({action: 'comment', token: this.token, id: whom.id, content: whom.input}, function() {
         whom.uncollapsed = false;
@@ -162,22 +161,33 @@ var app = new Vue({
         app.navigate('#' + data.data);
       })
     },
-    fork: function(whom) {
+    new_word: function() {
+      this.new_head = this.query;
+      this.new_body = '';
       this.navigate('');
+      setTimeout(function() {
+        document.getElementById('create_body').focus();
+      }, 0);
+    },
+    fork: function(whom) {
       this.new_head = whom.head;
-      this.new_body = whom.body.replace(/◌/g, '___');
+      this.new_body = whom.body; // .replace(/◌/g, '___');
+      this.navigate('');
+      setTimeout(function() {
+        document.getElementById('create_body').focus();
+      }, 0);
     },
     account: function(func) {
       apisend({action: func, name: this.login_name, pass: this.login_pass}, function(data) {
         app.token = data.token;
-        set_cookie('token', app.token);
+        store.setItem('token', app.token);
         app.whoami();
       });
     },
     logout: function() {
       var either_way = function() {
         app.token = app.username = undefined;
-        set_cookie('token', '');
+        store.removeItem('token');
       };
       apisend({action: 'logout', token: this.token}, either_way, either_way);
     },
@@ -189,14 +199,14 @@ var app = new Vue({
       });
     },
     dismiss: function() {
-      set_cookie('welcome', dismissal);
+      store.setItem('welcome', dismissal);
       this.dismissed = true;
     }
   },
   created: function() {
     this.perform_search();
-    this.token = get_cookie('token') || get_cookie('id');
-    this.dismissed = get_cookie('welcome') == dismissal;
+    this.token = store.getItem('token') || store.getItem('id');
+    this.dismissed = store.getItem('welcome') == dismissal;
     this.whoami();
   },
   updated: function() {
@@ -205,14 +215,25 @@ var app = new Vue({
       document.querySelector('body').scrollTop = 0;
     }
     // This one has to be called dynamically because of Vue hiding it every now and then
-    var create = document.querySelector('#create_body');
-    if(! create) return;
-    if(! create.style.height)
-      create.style.height = 48 + 'pt';
-    if(create.scrollTop)
-      create.style.height = parseInt(create.style.height.replace(/pt$/, 0), 10) + create.scrollTop;
+    resize();
   }
 });
+
+function resize() {
+  var create = document.getElementById('create_body');
+  if(! create) return;
+  var clone = create.cloneNode();
+  create.parentNode.insertBefore(clone, create);
+  clone.style.visibility = 'hidden';
+  // clone.style.position = 'absolute';
+  clone.style.height = 'auto';
+  // clone.style.width = create.scrollWidth + 'px';
+  clone.value = create.value;
+  var u = clone.scrollTop + clone.scrollHeight;
+  if(u > 40) u += 1;
+  create.style.height = u + 'px';
+  clone.parentNode.removeChild(clone);
+}
 
 var body = document.querySelector('body');
 window.onscroll = function() {

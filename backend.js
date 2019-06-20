@@ -191,8 +191,9 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
   let sorted = lo(filtered).sortBy([
     e =>
-      + bare_terms.some(_ => _.indexOf(deburr(e.head)) != -1)
-        * bare_terms.reduce((_, term) => _ + levenshtein(term, deburr(e.head)), 0)
+      - 6 * bare_terms.some(_ => deburr(e.head).indexOf(_) != -1)
+      + 1 * bare_terms.reduce((_, term) => _ + 
+        (deburr(e.head).indexOf(term) != -1) * levenshtein(term, deburr(e.head)), 0)
       - 8 * (e.by == 'official') // the stigma is real
       - 2 * (e.score || 0)
       + 4 * (['oldofficial', 'oldexamples', 'oldcountries'].includes(e.by))

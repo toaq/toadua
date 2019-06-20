@@ -84,6 +84,9 @@ body {
   border: none;
   border-radius: 0;
 }
+#create input[type="text"] {
+  line-height: 32px;
+}
 #create input[type="text"],
 #create textarea {
   padding: 0;
@@ -98,9 +101,8 @@ body {
   font-family: 'Roboto', 'Arial', sans-serif;
   font-size: 16px;
   line-height: 24px;
-  height: 24px;
   padding: 0;
-  /* resize: none; */
+  resize: none;
   overflow: hidden;
   padding-bottom: 16px;
 }
