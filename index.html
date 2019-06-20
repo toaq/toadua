@@ -57,7 +57,7 @@
       </div>
       <div class="card" v-if="query || results.length">
         <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
-        <ul class="controls" v-if="done_searching && !results.length && username">
+        <ul class="controls" v-if="done_searching && username">
           <li>
             <input type="button" :value="'create ‘' + query + '’?'" @click="new_word">
           </li>
