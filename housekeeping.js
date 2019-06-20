@@ -59,7 +59,6 @@ let word_lists = {};
 //   - spreadsheet example entries and country names
 // to the dictionary (every N minutes).
 function sync(api) {
-  return new Promise((resolve, reject) => resolve());
   return Promise.all(Object.entries(URLS).map(([resource, url]) => { 
     return try_times(3, () => request.get(url))
       .catch(err => console.log(`note: failed to get resource ${

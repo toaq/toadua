@@ -12,7 +12,7 @@ const fourohfour = static('404.html', 'text/html'),
   '/':          static('index.html',  'text/html'),
   '/style.css': static('style.css',   'text/css'),
   '/main.js':   static('frontend.js', 'application/javascript'),
-  '/vue.js':    static('vue.js',      'application/javascript'),
+  '/vue.js':    static('vue-production.js', 'application/javascript'),
   '/api':       api_handler
 };
 
