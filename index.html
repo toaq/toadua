@@ -63,7 +63,7 @@
           </li>
         </ul>
       </div>
-      <div class="card" id="welcome" v-if="! dismissed">
+      <div class="card" id="welcome" v-if="! (dismissed || query.length)">
         <h2>Feedback</h2>
         <p>If you have any bugs to report or features to request, please visit this page: <a href="https://etherpad.net/p/toadua_devel">https://etherpad.net/p/toadua_devel</a>. Your feedback is appreciated.</p>
         <ul class="controls">
