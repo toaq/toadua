@@ -1,3 +1,4 @@
+var app;
 var HOW_MANY_AT_A_TIME = 25;
 var dismissal = 'ack';
 var store = window.localStorage || localStorage ||
@@ -13,6 +14,7 @@ function apisend(what, or, and) {
   if(req) req.abort();
   queue[what.action] = req = new XMLHttpRequest();
   req.open('POST', 'api', true);
+  if(app) what.token = app.token;
   req.send(JSON.stringify(what));
   req.onreadystatechange = function() {
     if(this.readyState == 4 && this.status == 200) {
@@ -47,18 +49,19 @@ function replacements(content) {
         m = m.substring(4, m.length - 4);
       }
       // this is to support the older `#stuff` format for arbitrary queries
-      if(! m.match(/^[A-Za-z0-9#@_-]+$/) && m.startsWith('#'))
+      if(m.match(/^(#[A-Za-z0-9_-]+|@[A-Za-z]+)$/)) {
+        ante = m[0];
         m = m.substring(1);
-      return ante + (m.match(/^[#@]/) ? m.charAt(0) : '')
+      }
+      return ante
         + '<a href="#' + encodeURIComponent(m)
         + '" onclick="javascript:void(app.navigate(\''
         + m.replace(/'/g, '\\\'').replace(/"/g, '').replace(/\\/, '\\\\')
-        + '\'))">'
-        + escape(m.match(/^[#@]/) ? m.substring(1) : m) + '</a>' + post;
+        + '\'))">' + '</a>' + post;
     });
 }
 
-var app = new Vue({
+app = new Vue({
   el: '#main',
   data: {
     token: null,
@@ -143,7 +146,7 @@ var app = new Vue({
       return 'color: hsl(' + n + ', 100%, 30%);';
     },
     remove: function(whom) {
-      apisend({action: 'remove', token: this.token, id: whom.id}, function() {
+      apisend({action: 'remove', id: whom.id}, function() {
         app.results.splice(app.results.indexOf(whom), 1);
       });
     },
@@ -154,21 +157,40 @@ var app = new Vue({
         document.getElementById('results').children[app.results.indexOf(whom)].children[2].lastChild.children[1].focus();
       }, 0);
     },
+    vote: function(whom, no) {
+      apisend({action: 'vote', id: whom.id, vote: no}, function() {
+        app.update_entry(whom);
+      });
+    },
+    score_color: function(n) {
+      var positivity = Math.atan(n / 2) / Math.PI * 2;
+      return 'color: hsl(' + (60 + 60 * positivity) + ', 100%, 30%)';
+    },
+    score_number: function(n) {
+      if(n > 0) return '+' + n;
+      if(n < 0) return '−' + -n;
+      return '±';
+    },
     comment: function(whom) {
-      apisend({action: 'comment', token: this.token, id: whom.id, content: whom.input}, function() {
+      apisend({action: 'comment', id: whom.id, content: whom.input}, function() {
         whom.uncollapsed = false;
-        apisend({action: 'info', id: whom.id}, function(data) {
-          whom.comments = data.data.comments;
-          app.process_entry(whom);
-        });
+        app.update_entry(whom);
       });
     },
     create: function() {
-      apisend({action: 'create', token: this.token, head: this.new_head, body: this.new_body}, function(data) {
+      apisend({action: 'create', head: this.new_head, body: this.new_body}, function(data) {
         app.new_head = app.new_body = '';
         document.querySelector('#create_body').style.height = 24;
         app.navigate('#' + data.data);
       })
+    },
+    update_entry: function(whom) {
+      apisend({action: 'info', id: whom.id}, function(data) {
+        for(p in data.data)
+          if(Object.hasOwnProperty.call(data.data, p))
+            whom[p] = data.data[p];
+        app.process_entry(whom);
+      });
     },
     new_word: function() {
       this.new_head = this.query;
@@ -198,13 +220,14 @@ var app = new Vue({
         app.token = app.username = undefined;
         store.removeItem('token');
       };
-      apisend({action: 'logout', token: this.token}, either_way, either_way);
+      apisend({action: 'logout'}, either_way, either_way);
     },
     whoami: function() {
       apisend({action: 'whoami', token: this.token}, function(data) {
         app.count_stat = data.count;
         app.username = data.data;
         if(! app.username) app.token = null;
+        else app.perform_search();
       });
     },
     dismiss: function() {

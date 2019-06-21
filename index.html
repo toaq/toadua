@@ -24,6 +24,7 @@
               <span class="info">
                 <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
                 <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
+                <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
               </span>
             </h2>
           </div>
@@ -37,11 +38,20 @@
             </p>
           </div>
           <ul class="controls" v-if="username">
-            <li v-if="! result.uncollapsed">
-              <input type="button" value="comment" @click="uncollapse(result)">
-            </li>
             <li v-if="  result.uncollapsed">
               <input type="button" value="submit"  @click="comment(result)">
+            </li>
+            <li v-if="result.vote != +1">
+              <input type="button" value="+"       @click="vote(result, +1)">
+            </li>
+            <li v-if="result.vote !=  0">
+              <input type="button" value="∘"       @click="vote(result,  0)">
+            </li>
+            <li v-if="result.vote != -1">
+              <input type="button" value="−"       @click="vote(result, -1)">
+            </li>
+            <li v-if="! result.uncollapsed">
+              <input type="button" value="comment" @click="uncollapse(result)">
             </li>
             <li v-if="username == result.by && !result.hesitating">
               <input type="button" value="remove"  @click="result.hesitating = true">

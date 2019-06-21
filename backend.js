@@ -54,6 +54,13 @@ let actions = {};
 const flip = e => ({success: false, error: e});
 const good = d => ({...d, success: true});
 
+function present(entry, id, uname) {
+  let e = {...entry, id};
+  if(uname) e.vote = e.votes[uname] || 0;
+  delete e.votes; delete e._head; delete e._content;
+  return e;
+}
+
 function guard(logged_in, conds, f) {
   return (i, uname) => {
     if(logged_in && ! uname)
@@ -102,14 +109,6 @@ actions.whoami = guard(false, {}, (i, uname) => {
     count: db.get('count').value()
   });
 });
-
-const plus = /\+1/;
-const minus = /[-–—\u2212]1/;
-function score(comments) {
-  let p = comments.filter(c => c.content.match(plus)).length,
-      m = comments.filter(c => c.content.match(minus)).length;
-  return p - m;
-}
 
 // not using a dictionary because it would mangle the RegExp objects
 // the second returned element of each entry – if it's an array – is
@@ -167,23 +166,16 @@ function parse_term(term) {
   }
   let deburred = deburr(term);
   if(! deburred.length) return whatever;
-  let deft = e => deburr(
-      ['', e.head, e.body, ...e.comments.map(_ => _.content), ''].join(' ')).indexOf(deburred) !== -1;
+  let deft = e => e._content.indexOf(deburred) !== -1;
   deft.heaviness = 255;
   deft.bare = deburred;
   return deft;
 }
 
 let entry_cache;
-let entry_cache_clean = false;
 actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let start = +new Date;
   let query = i.query.toString().split(' ').filter(_ => _);
-  if(! entry_cache_clean) {
-    entry_cache = Object.entries(db.get('entries').value())
-      .map(([id, e]) => ({ ...e, id, score: score(e.comments) }));
-    entry_cache_clean = true;
-  }
   // each term of the query gets mapped to a filtering function
   let conds = lo(query.map(parse_term).filter(_ => _ != whatever))
     .sortBy('.heaviness').value();
@@ -191,36 +183,40 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
   let sorted = lo(filtered).sortBy([
     e =>
-      - 6 * bare_terms.some(_ => deburr(` ${e.head} ${e.body} ${e.comments.map(_ => _.content).join(' ')} `).indexOf(` ${_} `) != -1)
-      - 6 * bare_terms.some(_ => deburr(e.head).indexOf(_) != -1)
+      - 6 * bare_terms.some(_ => e._content.indexOf(` ${_} `) != -1)
+      - 6 * bare_terms.some(_ => e._head.indexOf(_) != -1)
       + 1 * bare_terms.reduce((_, term) => _ + 
-        (deburr(e.head).indexOf(term) != -1) * levenshtein(term, deburr(e.head)), 0)
+        (e._head.indexOf(term) != -1) * levenshtein(term, e._head), 0)
       - 8 * (e.by == 'official') // the stigma is real
-      - 2 * (e.score || 0)
+      - 2 * e.score
       + 4 * (['oldofficial', 'oldexamples', 'oldcountries'].includes(e.by))
       + Math.exp((new Date() - new Date(e.on)) / (-1000 * 3600 * 24 * 7))
   ]);
-  let data = sorted.value();
+  let data = sorted.value().map(_ => present(_, _.id, uname));
   process.stderr.write(`\u001b[37mapi.search:\u001b[0m query «\u001b[32m${
     i.query}\u001b[0m» took \u001b[1m${new Date - start}\u001b[0m ms\n`);
   return good({data});
 });
 
-actions.info = guard(false, {id: checks.shortid}, (i) => {
+actions.info = guard(false, {id: checks.shortid}, (i, uname) => {
   let res = db.get('entries').get(i.id).value();
-  if(res) return good({data: {...res, id: i.id}});
+  if(res) return good({data: present(res, i.id, uname)});
   else return flip('not found');
 });
 
-/* TODO?
-actions.vote = guard(true, {id: checks.shortid}, (i) => {
-  db.get('entries')
-    .find({ id: i.id })
-    .get('votes')
-    .push(uname)
-    .write();
+// TODO: messy code
+actions.vote = guard(true, {
+  id: checks.shortid, vote: _ => [-1, 0, 1].includes(_)
+}, (i, uname) => {
+  let e = db.get('entries').get(i.id);
+  if(!e) return flip('not found');
+  let ec = entry_cache.find(_ => _.id == i.id);
+  let old_vote = e.get('votes').get(uname).value() || 0;
+  e.get('votes').set(uname, i.vote).write();
+  ec.votes[uname] = i.vote;
+  e.set('score', e.get('score').value() + i.vote - old_vote).write();
+  ec.score += i.vote - old_vote;
 });
-*/
 
 actions.comment = guard(true, {
   id: checks.shortid, content: checks.nobomb
@@ -234,7 +230,7 @@ actions.comment = guard(true, {
   word.get('comments')
     .push(this_comment)
     .write();
-  entry_cache_clean = false;
+  entry_cache.find(_ => _.id == i.id).comments.push(this_comment);
   word = word.value();
   announce({
     color: author_color(uname),
@@ -261,10 +257,12 @@ actions.create = guard(true, {
     on: new Date().toISOString(),
     head: replacements(i.head), body: replacements(i.body),
     by: uname,
-    comments: []
+    comments: [],
+    votes: {},
+    score: 0
   };
   db.get('entries').set(id, this_entry).write();
-  entry_cache_clean = false;
+  entry_cache.push({...this_entry, id});
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
@@ -319,11 +317,10 @@ actions.remove = guard(true, {
   let entry = db.get('entries').get(i.id).value();
   if(entry.by != uname)
     return flip('you are not the owner of this entry');
-  entry.score = score(entry.comments);
   if(entry.score > 0)
     return flip('this entry has a positive amount of votes');
   db.get('entries').unset(i.id).write();
-  entry_cache_clean = false;
+  entry_cache.splice(entry_cache.findIndex(_ => _.id == i.id), 1);
   announce({
     color: author_color(uname),
     title: `*${uname}* removed **${entry.head}**`,
@@ -333,3 +330,8 @@ actions.remove = guard(true, {
 });
 
 Object.freeze(actions);
+
+entry_cache = Object.entries(db.get('entries').value())
+  .map(([id, e]) => ({...e, id, _head: deburr(e.head),
+      _content: deburr(` ${e.head} ${e.body} ${
+        e.comments.map(_ => _.content).join(' ')} `)}));
