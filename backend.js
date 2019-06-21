@@ -191,6 +191,7 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
   let sorted = lo(filtered).sortBy([
     e =>
+      - 6 * bare_terms.some(_ => deburr(` ${e.head} ${e.body} ${e.comments.map(_ => _.content).join(' ')} `).indexOf(` ${_} `) != -1)
       - 6 * bare_terms.some(_ => deburr(e.head).indexOf(_) != -1)
       + 1 * bare_terms.reduce((_, term) => _ + 
         (deburr(e.head).indexOf(term) != -1) * levenshtein(term, deburr(e.head)), 0)

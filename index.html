@@ -11,7 +11,7 @@
     <div id="main" v-show="true" style="display: none;">
       <nav id="menu">
         <div>
-          <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="perform_search" autocomplete="off" autofocus><!--
+          <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
           --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
         </div>
       </nav>

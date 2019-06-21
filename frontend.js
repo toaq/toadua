@@ -26,6 +26,7 @@ function apisend(what, or, and) {
       }
     }
   };
+  return req;
 }
 
 function escape(s) {
@@ -108,6 +109,12 @@ var app = new Vue({
       else
         window.location.hash = this.query;
     },
+    search: function() {
+      if(this.current_search_request)
+        this.current_search_request.abort();
+      this.current_search_request = undefined;
+      this.debounced_perform();
+    },
     perform_search: function() {
       this.done_searching = false;
       if(queue.search) queue.search.abort();
@@ -117,12 +124,14 @@ var app = new Vue({
         this.scroll_up = true;
         return;
       }
-      apisend({action: 'search', query: this.query}, function(data) {
+      this.current_search_request = apisend({action: 'search', query: this.query},
+        function(data) {
         app.scroll_up = true;
         app.result_cache = data.data.map(app.process_entry);
         app.results = app.result_cache.splice(0, HOW_MANY_AT_A_TIME);
         app.add_to_history(app.query);
         app.done_searching = true;
+        app.current_search_request = undefined;
       });
     },
     color_for: function(name) {
@@ -204,6 +213,9 @@ var app = new Vue({
     }
   },
   created: function() {
+    this.debounced_perform = debounce(function() {
+      app.perform_search();
+    }, 300);
     this.perform_search();
     this.token = store.getItem('token') || store.getItem('id');
     this.dismissed = store.getItem('welcome') == dismissal;
@@ -233,6 +245,19 @@ function resize() {
   if(u > 40) u += 1;
   create.style.height = u + 'px';
   clone.parentNode.removeChild(clone);
+}
+
+function debounce(f, ms) {
+  var timeout;
+  return function() {
+    if(timeout)
+      clearTimeout(timeout);
+    var args = arguments;
+    timeout = setTimeout(function() {
+      timeout = undefined;
+      f.apply(args);
+    }, ms);
+  }
 }
 
 var body = document.querySelector('body');
