@@ -40,16 +40,18 @@ function escape(s) {
 function replacements(content) {
   return escape(content).replace(/▯/g, '◌')
     // can't use lookbehind due to compat :(
-    .replace(/[#@][^\ ]+|&lt;.*?&gt;/g, function(m) {
+    .replace(/[#@][^\ ]+|&lt;.*?&gt;|\*\*.*?\*\*/g, function(m) {
       // hasty code, plsfix
       var ante = '', post = '';
-      if(m.startsWith('&lt;')) {
-        ante = '&lt;';
-        post = '&gt;';
-        m = m.substring(4, m.length - 4);
+      var which;
+      // note to self: messy patchwork code TODO
+      if((which = m.startsWith('&lt;')) || m.startsWith('**')) {
+        ante = which ? '&lt;' : '**';
+        post = which ? '&gt;' : '**';
+        m = m.substring(which ? 4 : 2, m.length - (which ? 4 : 2));
       }
       // this is to support the older `#stuff` format for arbitrary queries
-      if(m.match(/^(#[A-Za-z0-9_-]+|@[A-Za-z]+)$/)) {
+      if(m.match(/^[#@]/) && !m.match(/^(#[A-Za-z0-9_-]+|@[A-Za-z]+)$/)) {
         ante = m[0];
         m = m.substring(1);
       }
@@ -57,7 +59,8 @@ function replacements(content) {
         + '<a href="#' + encodeURIComponent(m)
         + '" onclick="javascript:void(app.navigate(\''
         + m.replace(/'/g, '\\\'').replace(/"/g, '').replace(/\\/, '\\\\')
-        + '\'))">' + '</a>' + post;
+        + '\'))">' + m
+        + '</a>' + post;
     });
 }
 
@@ -174,12 +177,13 @@ app = new Vue({
     comment: function(whom) {
       apisend({action: 'comment', id: whom.id, content: whom.input}, function() {
         whom.uncollapsed = false;
+        whom.input = '';
         app.update_entry(whom);
       });
     },
     create: function() {
       apisend({action: 'create', head: this.new_head, body: this.new_body}, function(data) {
-        app.new_head = app.new_body = '';
+        app.new_head = '';
         document.querySelector('#create_body').style.height = 24;
         app.navigate('#' + data.data);
       })
@@ -194,7 +198,6 @@ app = new Vue({
     },
     new_word: function() {
       this.new_head = this.query;
-      this.new_body = '';
       this.navigate('');
       setTimeout(function() {
         document.getElementById('create_body').focus();
@@ -202,7 +205,7 @@ app = new Vue({
     },
     fork: function(whom) {
       this.new_head = whom.head;
-      this.new_body = whom.body; // .replace(/◌/g, '___');
+      this.new_body = whom.body;
       this.navigate('');
       setTimeout(function() {
         document.getElementById('create_body').focus();

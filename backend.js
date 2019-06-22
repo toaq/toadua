@@ -222,6 +222,8 @@ actions.comment = guard(true, {
   id: checks.shortid, content: checks.nobomb
 }, (i, uname) => {
   let word = db.get('entries').get(i.id);
+  if(word.value() == undefined)
+    return flip('word doesn\'t exist');
   let this_comment = {
     on: new Date().toISOString(),
     content: replacements(i.content),
@@ -230,7 +232,8 @@ actions.comment = guard(true, {
   word.get('comments')
     .push(this_comment)
     .write();
-  entry_cache.find(_ => _.id == i.id).comments.push(this_comment);
+  // Don't do this! The objects are semi-shallow copies! (for some reason)
+  // entry_cache.find(_ => _.id == i.id).comments.push(this_comment);
   word = word.value();
   announce({
     color: author_color(uname),
