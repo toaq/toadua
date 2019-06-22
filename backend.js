@@ -265,7 +265,7 @@ actions.create = guard(true, {
     score: 0
   };
   db.get('entries').set(id, this_entry).write();
-  entry_cache.push({...this_entry, id});
+  entry_cache.push(cacheify(this_entry, id));
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
@@ -334,7 +334,11 @@ actions.remove = guard(true, {
 
 Object.freeze(actions);
 
-entry_cache = Object.entries(db.get('entries').value())
-  .map(([id, e]) => ({...e, id, _head: deburr(e.head),
+function cacheify(e, id) {
+  return {...e, id, _head: deburr(e.head),
       _content: deburr(` ${e.head} ${e.body} ${
-        e.comments.map(_ => _.content).join(' ')} `)}));
+        e.comments.map(_ => _.content).join(' ')} `)};
+}
+
+entry_cache = Object.entries(db.get('entries').value())
+  .map(([id, e]) => cacheify(e, id));
