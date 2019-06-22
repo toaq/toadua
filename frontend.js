@@ -102,7 +102,9 @@ app = new Vue({
       this.perform_search();
     },
     process_entry: function(e) {
-      e.uncollapsed = e.hesitating = false;
+      if(e.uncollapsed == undefined)
+        e.uncollapsed = false;
+      e.hesitating = false;
       e.fancy_body = replacements(e.body);
       e.comments.forEach(function(_) {
         _.fancy_content = replacements(_.content);

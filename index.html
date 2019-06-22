@@ -40,26 +40,26 @@
           <ul class="controls" v-if="username">
             <li v-if="result.uncollapsed">
               <input type="button" value="submit"  @click="comment(result)">
-            </li>
-            <li v-if="result.vote != +1">
+            </li><!--
+            --><li v-if="result.vote != +1">
               <input type="button" value="+"       @click="vote(result, +1)">
-            </li>
-            <li v-if="result.vote !=  0">
+            </li><!--
+            --><li v-if="result.vote !=  0">
               <input type="button" value="±"       @click="vote(result,  0)">
-            </li>
-            <li v-if="result.vote != -1">
+            </li><!--
+            --><li v-if="result.vote != -1">
               <input type="button" value="−"       @click="vote(result, -1)">
-            </li>
-            <li v-if="! result.uncollapsed">
+            </li><!--
+            --><li v-if="! result.uncollapsed">
               <input type="button" value="comment" @click="uncollapse(result)">
-            </li>
-            <li v-if="username == result.by && !result.hesitating">
+            </li><!--
+            --><li v-if="username == result.by && !result.hesitating">
               <input type="button" value="remove"  @click="result.hesitating = true">
-            </li>
-            <li v-if="result.hesitating">
+            </li><!--
+            --><li v-if="result.hesitating">
               <input type="button" value="sure?"   @click="remove(result)">
-            </li>
-            <li>
+            </li><!--
+            --><li>
               <input type="button" value="fork"    @click="fork(result)">
             </li>
           </ul>
@@ -86,14 +86,14 @@
         </div>
         <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
         <ul class="controls">
-          <li><input type="submit" value="submit" class="submit" @click="create"></li>
-          <li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
+          <li><input type="submit" value="submit" class="submit" @click="create"></li><!--
+          --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
         </ul>
       </div>
       <div class="card" id="logout" v-if="username && ! query">
         <ul class="controls">
-          <li>Logged in as <span id="as_who" :style="color_for(username)">{{username}}</span></li>
-          <li><input type="button" value="logout" class="submit" @click="logout"></li>
+          <li style="padding-right: 2px;">Logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+          --><li><input type="button" value="logout" class="submit" @click="logout"></li>
         </ul>
       </div>
       <div class="card" id="login" v-if="!(username || query)">
@@ -103,8 +103,8 @@
           <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
         </form>
         <ul class="controls">
-          <li><input type="button" value="login"    @click="account('login')"></li>
-          <li><input type="button" value="register" @click="account('register')"></li>
+          <li><input type="button" value="login"    @click="account('login')"></li><!--
+          --><li><input type="button" value="register" @click="account('register')"></li>
         </ul>
       </div>
     </div>

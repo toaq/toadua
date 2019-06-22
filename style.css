@@ -12,7 +12,7 @@ input, textarea {
 }
 input[type=button],
 input[type=submit] {
-  border: none;
+  border: 0;
   padding: 0;
   font-family: inherit;
   font-weight: bold;
@@ -21,7 +21,10 @@ input[type=submit] {
 }
 input[type=button]:active,
 input[type=button]:hover,
-input[type=button]:focus {
+input[type=button]:focus,
+input[type=submit]:active,
+input[type=submit]:hover,
+input[type=submit]:focus {
   color: #000;
 }
 html {
@@ -33,7 +36,7 @@ body {
   width: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Roboto', 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   background-color: #eee;
   overflow-y: scroll;
@@ -98,7 +101,7 @@ body {
   max-width: 100%;
 }
 #create textarea {
-  font-family: 'Roboto', 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   line-height: 24px;
   padding: 0;
@@ -132,8 +135,9 @@ ul.controls > li input[type="submit"] {
   font-size: 12px; /* !important it is */
 }
 ul.controls > li::before {
-  content: '• ';
+  content: '•';
   height: 14px;
+  padding: 0 2px;
 }
 ul.controls > li:first-child::before {
   visibility: hidden;
@@ -142,7 +146,7 @@ h2, .name {
   margin-top: 0;
   margin-bottom: 0;
   font-size: 24px;
-  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  font-family: 'Roboto Condensed', sans-serif;
   color: black;
   display: inline-block;
 }
@@ -204,7 +208,7 @@ h2, .name {
   font-size: 24px;
   padding: calc((64px - 24px) / 2) 0;
   border: none;
-  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  font-family: 'Roboto Condensed', sans-serif;
   text-align: center;
 }
 #cancel {
@@ -212,12 +216,12 @@ h2, .name {
   height: 64px;
   width: 64px;
   font-size: 24px;
-  font-family: 'Roboto', 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
 }
 h1, h2, h3 {
-  font-family: 'Roboto Condensed', 'Arial', sans-serif;
+  font-family: 'Roboto Condensed', sans-serif;
   font-weight: 300;
 }
 h2 {
