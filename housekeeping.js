@@ -54,7 +54,7 @@ function try_times(n, promise_maker) {
 function remove_obsoleted(api) {
   api.db.get('entries')
     .remove(_ => _.score < -3 &&
-      ['oldofficial', 'oldexamples', 'oldcountries'].includes(_.by))
+      ['oldofficial', 'oldexamples', 'oldcountries', 'spreadsheet'].includes(_.by))
     .write();
 }
 
