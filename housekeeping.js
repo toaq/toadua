@@ -1,5 +1,5 @@
 module.exports = {
-  backup, sync
+  backup, sync, remove_obsoleted
 };
 
 const http = require('http'),
@@ -49,6 +49,13 @@ function try_times(n, promise_maker) {
         else try_times(n - 1, promise_maker);
       });
   });
+}
+
+function remove_obsoleted(api) {
+  api.db.get('entries')
+    .remove(_ => _.score < -3 &&
+      ['oldofficial', 'oldexamples', 'oldcountries'].includes(_.by))
+    .write();
 }
 
 // Word list cache.

@@ -77,12 +77,12 @@ let sync_int;
 hk.sync(api).then(() => {
   sync_int = setInterval(() => hk.sync(api), 3 * 60 * 1000);
 });
-let backup_int = setInterval(() => hk.backup(api), 1 * 60 * 1000);
+let backup_int    = setInterval(() => hk.backup(api),            1 * 60 * 1000);
+let obsoleted_int = setInterval(() => hk.remove_obsoleted(api), 10 * 60 * 1000);
 
 function bye() {
   process.stderr.write('Trying to exit gracefully\n')
-  clearInterval(sync_int);
-  clearInterval(backup_int);
+  clearInterval(sync_int); clearInterval(backup_int); clearInterval(obsoleted_int);
   server.close();
   api.db.write();
   api.pass.write();
