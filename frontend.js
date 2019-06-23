@@ -1,6 +1,6 @@
 var app;
 var HOW_MANY_AT_A_TIME = 25;
-var dismissal = 'ack';
+var dismissal = 'aq';
 var store = window.localStorage || localStorage ||
   alert("Your browser doesn't support local storage, which is required for the app to function properly. Please consider updating.");
 
