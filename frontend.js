@@ -4,6 +4,13 @@ var dismissal = 'ack';
 var store = window.localStorage || localStorage ||
   alert("Your browser doesn't support local storage, which is required for the app to function properly. Please consider updating.");
 
+function focus_body() {
+  setTimeout(function() {
+    var body = document.getElementById('create_body'); 
+    body.focus();
+  }, 0);
+}
+
 var queue = {};
 function apisend(what, or, and) {
   if(!and) {
@@ -112,7 +119,7 @@ app = new Vue({
         e.uncollapsed = false;
       e.hesitating = false;
       e.fancy_body = replacements(e.body);
-      e.comments.forEach(function(_) {
+      e.notes.forEach(function(_) {
         _.fancy_content = replacements(_.content);
       });
       return e;
@@ -164,9 +171,10 @@ app = new Vue({
     },
     uncollapse: function(whom) {
       whom.uncollapsed = true;
-      // this atrocious and unimaginative code is for focusing the comment field
+      // this atrocious and unimaginative code is for focusing the note field
       setTimeout(function() {
-        document.getElementById('results').children[app.results.indexOf(whom)].children[2].lastChild.children[1].focus();
+        var el = document.getElementById('results').children[app.results.indexOf(whom)].children[2].lastChild.children[1];
+        el.focus();
       }, 0);
     },
     vote: function(whom, no) {
@@ -183,8 +191,8 @@ app = new Vue({
       if(n < 0) return '−' + -n;
       return '±';
     },
-    comment: function(whom) {
-      apisend({action: 'comment', id: whom.id, content: whom.input}, function() {
+    note: function(whom) {
+      apisend({action: 'note', id: whom.id, content: whom.input}, function() {
         whom.uncollapsed = false;
         whom.input = '';
         app.update_entry(whom);
@@ -216,17 +224,13 @@ app = new Vue({
     new_word: function() {
       this.new_head = this.query;
       this.navigate('');
-      setTimeout(function() {
-        document.getElementById('create_body').focus();
-      }, 0);
+      focus_body();
     },
     fork: function(whom) {
       this.new_head = whom.head;
       this.new_body = whom.body;
       this.navigate('');
-      setTimeout(function() {
-        document.getElementById('create_body').focus();
-      }, 0);
+      focus_body();
     },
     account: function(func) {
       apisend({action: func, name: this.login_name, pass: this.login_pass}, function(data) {

@@ -65,7 +65,7 @@ body {
   line-height: 24px;
   margin: 0;
 }
-.comments {
+.notes {
   padding-top: 16px;
 }
 #login input[type="text"],
@@ -81,7 +81,7 @@ body {
   padding: 3px 0;
   /* 32 px = 26 px (bounding box) + 2 * _3px_ */
 }
-.new_cmt input,
+.note input,
 #login input[type="text"],
 #login input[type="password"],
 #create input[type="text"],
@@ -112,7 +112,7 @@ body {
   overflow: hidden;
   padding-bottom: 16px;
 }
-p.new_cmt.comment input[type="text"] {
+p.new_note.note input[type="text"] {
   box-sizing: border-box;
   width: 100%;
   font-family: inherit;
@@ -157,7 +157,7 @@ h2, .name {
   color: #000;
   text-decoration: underline;
 }
-.comment {
+.note {
   font-size: 12px;
   line-height: 16px;
   color: #333;
@@ -171,12 +171,12 @@ h2, .name {
   color: #ffffff;
   background-color: #000;
 }
-.comment .hl {
+.note .hl {
   /* color: #ff3397; */
   color: #ffffff;
   background-color: #333;
 }
-.commenter::after {
+.note-author::after {
   content: ": ";
 }
 #main {

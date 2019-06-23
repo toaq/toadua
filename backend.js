@@ -226,23 +226,23 @@ actions.vote = guard(true, {
   ec.score += i.vote - old_vote;
 });
 
-actions.comment = guard(true, {
+actions.note = guard(true, {
   id: checks.shortid, content: checks.nobomb
 }, (i, uname) => {
   let word = db.get('entries').get(i.id);
   if(word.value() == undefined)
     return flip('word doesn\'t exist');
-  let this_comment = {
+  let this_note = {
     on: new Date().toISOString(),
     content: replacements(i.content),
     by: uname
   };
-  word.get('comments')
-    .push(this_comment)
+  word.get('notes')
+    .push(this_note)
     .write();
   // Don't do this! The objects are semi-shallow copies! (for some reason)
-  // cached(i.id).comments.push(this_comment);
-  cached(i.id)._content += `${this_comment.content} `;
+  // // cached(i.id).notes.push(this_note);
+  cached(i.id)._content += `${this_note.content} `;
   word = word.value();
   announce({
     color: author_color(uname),
@@ -250,12 +250,15 @@ actions.comment = guard(true, {
       name: `(definition by *${word.by}*)`,
       value: word.body
     }],
-    title: `*${uname}* commented on **${word.head}**`,
-    description: this_comment.content,
+    title: `*${uname}* noted on **${word.head}**`,
+    description: this_note.content,
     url: `http://uakci.pl/toadua/#%23${i.id}`
   });
   return good();
 });
+
+// compat purposes
+actions.comment = actions.note;
 
 function replacements(s) {
   return s.replace(/___/g, '▯').replace(/[\n\r]+/g, '').normalize('NFC');
@@ -270,7 +273,7 @@ actions.create = guard(true, {
     head: replacements(i.head), body: replacements(i.body),
     by: uname,
     scope: i.scope,
-    comments: [],
+    notes: [],
     votes: {}
   };
   db.get('entries').set(id, this_entry).write();
@@ -346,7 +349,7 @@ Object.freeze(actions);
 function cacheify(e, id) {
   return {...e, id, _head: deburr(e.head), score: score(e),
       _content: deburr(` ${e.head} ${e.body} ${
-        e.comments.map(_ => _.content).join(' ')} `)};
+        e.notes.map(_ => _.content).join(' ')} `)};
 }
 
 function cached(id) {
@@ -358,6 +361,10 @@ db.set('entries',
     .mapValues(_ => {
       if(! _.votes) _.votes = {};
       if(! _.scope) _.scope = 'en';
+      if(_.comments) {
+        _.notes = _.comments;
+        delete _.comments;
+      }
       if(_.score != undefined) delete _.score;
       return _;
     }).value())
