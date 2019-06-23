@@ -76,12 +76,18 @@ app = new Vue({
     done_searching: false,
     scroll_up: false,
     count_stat: null,
+    limit_search: false,
+    scope: 0,
+    scopes: ['en', 'toa'],
     login_name: '',
     login_pass: '',
     new_head: '',
     new_body: ''
   },
   computed: {
+    scope_name: function() {
+      return this.scopes[this.scope];
+    },
     search_pholder: function() {
       if(this.count_stat) return 'search ' + this.count_stat + ' words';
       else return 'search';
@@ -132,7 +138,8 @@ app = new Vue({
         this.scroll_up = true;
         return;
       }
-      this.current_search_request = apisend({action: 'search', query: this.query},
+      this.current_search_request = apisend({action: 'search',
+        query: this.query + (this.limit_search ? ' scope:' + this.scope_name : '')},
         function(data) {
         app.scroll_up = true;
         app.result_cache = data.data.map(app.process_entry);
@@ -184,11 +191,18 @@ app = new Vue({
       });
     },
     create: function() {
-      apisend({action: 'create', head: this.new_head, body: this.new_body}, function(data) {
+      apisend({action: 'create', head: this.new_head, body: this.new_body, scope: this.scope_name}, function(data) {
         app.new_head = app.new_body = '';
         document.querySelector('#create_body').style.height = 24;
         app.navigate('#' + data.data);
       })
+    },
+    update_limit_search: function() {
+      this.limit_search = !this.limit_search;
+      store.setItem('limit_search', this.limit_search);
+    },
+    update_scope: function() {
+      this.scope = (this.scope + 1) % this.scopes.length;
     },
     update_entry: function(whom) {
       apisend({action: 'info', id: whom.id}, function(data) {
@@ -247,6 +261,7 @@ app = new Vue({
     this.perform_search();
     this.token = store.getItem('token') || store.getItem('id');
     this.dismissed = store.getItem('welcome') == dismissal;
+    this.limit_search = store.getItem('limit_search');
     this.whoami();
   },
   updated: function() {

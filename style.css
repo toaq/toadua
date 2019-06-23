@@ -58,6 +58,9 @@ body {
 .card .info {
   font-size: 16px;
 }
+.card .scope {
+  color: #777;
+}
 .card .body {
   line-height: 24px;
   margin: 0;

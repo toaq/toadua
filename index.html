@@ -22,6 +22,7 @@
             <h2>
               <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
               <span class="info">
+                <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.by)">{{result.scope}}</a>
                 <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
                 <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
                 <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
@@ -90,10 +91,12 @@
           --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
         </ul>
       </div>
-      <div class="card" id="logout" v-if="username && ! query">
+      <div class="card" id="logout" v-if="! query">
         <ul class="controls">
-          <li>Logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-          --><li><input type="button" value="logout" class="submit" @click="logout"></li>
+          <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+          --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? '+' : '−'" class="submit" @click="update_limit_search"></li><!--
+          --><li>scope:&thinsp;<input type="button" :value="scope_name" class="submit" @click="update_scope"></li><!--
+          --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
         </ul>
       </div>
       <div class="card" id="login" v-if="!(username || query)">

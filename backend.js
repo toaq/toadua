@@ -54,6 +54,11 @@ let actions = {};
 const flip = e => ({success: false, error: e});
 const good = d => ({...d, success: true});
 
+function score(entry) {
+  return Object.entries(entry.votes)
+    .reduce((a, b) => a + b[1], 0);
+}
+
 function present(entry, id, uname) {
   let e = {...entry, id};
   if(uname) e.vote = e.votes[uname] || 0;
@@ -75,9 +80,11 @@ function guard(logged_in, conds, f) {
 }
 const checks = {
   present: i => !!i || 'absent',
-  shortid: i => i && shortid.isValid(i) || 'not a valid ID',
-    limit: lim => i => !i ? 'absent' :
-    (i.length <= lim || `too long (max. ${lim} characters)`),
+    scope: i => !(i && typeof i == 'string') ? 'scope is not string' :
+             !!i.match(/^[a-z-]{1,24}$/)) || 'scope must match [a-z-]{1,24}',
+  shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
+    limit: lim => i => (!i || !typeof i == 'string') ? 'absent' :
+             (i.length <= lim || `too long (max. ${lim} characters)`),
 };
 checks.nobomb = checks.limit(2048);
 
@@ -136,8 +143,9 @@ const PATTERNS = [
     f.heaviness = handlers.reduce((o, _) => _.heaviness + o, 1);
     return f;
   }],
-  [/^(?:id:)([0-9A-Za-z-_]{6,})$/, (_, id)   => [e => e.id === id, -Infinity]],
-  [/^(?:user:)([A-Za-z]{1,16})$/,  (_, user) => [e => e.by === user, 0]],
+  [/^(?:id:)([0-9A-Za-z-_]{6,})$/, (_, id)    => [e => e.id === id, -Infinity]],
+  [/^(?:user:)([A-Za-z]{1,16})$/,  (_, user)  => [e => e.by === user, 0]],
+  [/^(?:scope:)([a-z-]+)$/,        (_, scope) => [e => e.scope === scope, -Infinity]],
   [/^(?:arity:)([0-9]+)$/, (_, nstr) => {
     let n = parseInt(nstr, 10);
     let f = e => e.body.split(/[;.]/).map(_ => {
@@ -214,7 +222,6 @@ actions.vote = guard(true, {
   let old_vote = e.get('votes').get(uname).value() || 0;
   e.get('votes').set(uname, i.vote).write();
   ec.votes[uname] = i.vote;
-  e.set('score', e.get('score').value() + i.vote - old_vote).write();
   ec.score += i.vote - old_vote;
 });
 
@@ -254,16 +261,16 @@ function replacements(s) {
 }
 
 actions.create = guard(true, {
-  head: checks.nobomb, body: checks.nobomb,
+  head: checks.nobomb, body: checks.nobomb, scope: checks.scope
 }, (i, uname) => {
   let id = shortid.generate();
   let this_entry = {
     on: new Date().toISOString(),
     head: replacements(i.head), body: replacements(i.body),
     by: uname,
+    scope: i.scope,
     comments: [],
-    votes: {},
-    score: 0
+    votes: {}
   };
   db.get('entries').set(id, this_entry).write();
   entry_cache.push(cacheify(this_entry, id));
@@ -336,10 +343,20 @@ actions.remove = guard(true, {
 Object.freeze(actions);
 
 function cacheify(e, id) {
-  return {...e, id, _head: deburr(e.head),
+  return {...e, id, _head: deburr(e.head), score: score(e),
       _content: deburr(` ${e.head} ${e.body} ${
         e.comments.map(_ => _.content).join(' ')} `)};
 }
+
+db.set('entries',
+  db.get('entries')
+    .mapValues(_ => {
+      if(! _.votes) _.votes = {};
+      if(! _.scope) _.scope = 'en';
+      if(_.score != undefined) delete _.score;
+      return _;
+    }).value())
+  .write();
 
 entry_cache = Object.entries(db.get('entries').value())
   .map(([id, e]) => cacheify(e, id));
