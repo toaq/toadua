@@ -26,14 +26,16 @@ function backup(api) {
 
 const URLS = require('./URLS.json');
 const PATTERNS = {
-   regular_examples: e => [[e[1], `(${e[0]}) ${e[2]}`]],
+         a_examples: e => [[e[1], `(${e[0]}) ${e[2]}`]],
+         b_examples: e => [[e[1], `(${e[0]}) ${e[2]}`]],
   official_examples: e => [[e[1], `${ e[0] } ${e[2]}`]],
           countries: e => [[e[1], `___ pertains to the culture of ${e[0]}.`],
                            [e[2], `___ is the country ${e[0]}.`],
                            [e[3], `___ is (one of) the language(s) spoken in ${e[0]}.`]]
 }
 const USERNAMES = {
-   regular_examples: 'examples',
+         a_examples: 'examples',
+         b_examples: 'examples',
   official_examples: 'official',
           countries: 'countries',
          dictionary: 'official'
