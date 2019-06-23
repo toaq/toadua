@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs'),
     http = require('http'),
       lo = require('lodash'),

@@ -94,7 +94,7 @@
       <div class="card" id="logout" v-if="! query">
         <ul class="controls">
           <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-          --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? '+' : '−'" class="submit" @click="update_limit_search"></li><!--
+          --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
           --><li>scope:&thinsp;<input type="button" :value="scope_name" class="submit" @click="update_scope"></li><!--
           --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
         </ul>
@@ -106,7 +106,7 @@
           <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
         </form>
         <ul class="controls">
-          <li><input type="button" value="login"    @click="account('login')"></li><!--
+          <li><input    type="button" value="login"    @click="account('login')"></li><!--
           --><li><input type="button" value="register" @click="account('register')"></li>
         </ul>
       </div>

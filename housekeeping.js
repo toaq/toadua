@@ -54,10 +54,10 @@ function try_times(n, promise_maker) {
 }
 
 function remove_obsoleted(api) {
-  api.db.get('entries')
-    .remove(_ => api.score(_) < -3 &&
-      ['oldofficial', 'oldexamples', 'oldcountries', 'spreadsheet'].includes(_.by))
-    .write();
+  Object.entries(api.db.get('entries').value())
+    .filter(([id, e]) => api.score(e) < -3 &&
+      ['oldofficial', 'oldexamples', 'oldcountries', 'spreadsheet'].includes(e.by))
+    .forEach(([id, e]) => api({ action: 'remove', id }, e.by));
 }
 
 // Word list cache.
@@ -101,7 +101,7 @@ function sync(api) {
             b => api.replacements(a[0]) == b.head
               && api.replacements(a[1]) == b.body))
             .forEach(([head, body]) => {
-              let res = api({ action: 'create', head, body }, USERNAMES[resource]);
+              let res = api({ action: 'create', head, body, scope: 'en' }, USERNAMES[resource]);
               process.stderr.write(head);
               if(! res.success)
                 if(res.error == 'this entry already exists')

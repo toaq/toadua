@@ -199,10 +199,11 @@ app = new Vue({
     },
     update_limit_search: function() {
       this.limit_search = !this.limit_search;
-      store.setItem('limit_search', this.limit_search);
+      store.setItem('limit_search', JSON.stringify(this.limit_search));
     },
     update_scope: function() {
       this.scope = (this.scope + 1) % this.scopes.length;
+      store.setItem('scope', this.scopes[this.scope]);
     },
     update_entry: function(whom) {
       apisend({action: 'info', id: whom.id}, function(data) {
@@ -261,7 +262,9 @@ app = new Vue({
     this.perform_search();
     this.token = store.getItem('token') || store.getItem('id');
     this.dismissed = store.getItem('welcome') == dismissal;
-    this.limit_search = store.getItem('limit_search');
+    this.limit_search = store.getItem('limit_search') == 'true';
+    this.scope = this.scopes.indexOf(store.getItem('scope'));
+    if(this.scope == -1) this.scope = 0;
     this.whoami();
   },
   updated: function() {

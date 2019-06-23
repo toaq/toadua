@@ -54,6 +54,7 @@ let actions = {};
 const flip = e => ({success: false, error: e});
 const good = d => ({...d, success: true});
 
+call.score = score;
 function score(entry) {
   return Object.entries(entry.votes)
     .reduce((a, b) => a + b[1], 0);
@@ -81,7 +82,7 @@ function guard(logged_in, conds, f) {
 const checks = {
   present: i => !!i || 'absent',
     scope: i => !(i && typeof i == 'string') ? 'scope is not string' :
-             !!i.match(/^[a-z-]{1,24}$/)) || 'scope must match [a-z-]{1,24}',
+             !!i.match(/^[a-z-]{1,24}$/) || 'scope must match [a-z-]{1,24}',
   shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
     limit: lim => i => (!i || !typeof i == 'string') ? 'absent' :
              (i.length <= lim || `too long (max. ${lim} characters)`),
@@ -180,7 +181,7 @@ function parse_term(term) {
   return deft;
 }
 
-let entry_cache;
+let cache;
 actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let start = +new Date;
   let query = i.query.toString().split(' ').filter(_ => _);
@@ -188,7 +189,7 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let conds = lo(query.map(parse_term).filter(_ => _ != whatever))
     .sortBy('.heaviness').value();
   let bare_terms = conds.map(_ => _.bare).filter(_ => _);
-  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), entry_cache);
+  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), cache);
   let sorted = lo(filtered).sortBy([
     e =>
       - 6 * bare_terms.some(_ => e._content.indexOf(` ${_} `) != -1)
@@ -207,7 +208,7 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
 });
 
 actions.info = guard(false, {id: checks.shortid}, (i, uname) => {
-  let res = db.get('entries').get(i.id).value();
+  let res = cached(i.id);
   if(res) return good({data: present(res, i.id, uname)});
   else return flip('not found');
 });
@@ -218,10 +219,10 @@ actions.vote = guard(true, {
 }, (i, uname) => {
   let e = db.get('entries').get(i.id);
   if(!e) return flip('not found');
-  let ec = entry_cache.find(_ => _.id == i.id);
-  let old_vote = e.get('votes').get(uname).value() || 0;
+  let ec = cached(i.id);
+  let old_vote = ec.votes[uname] || 0;
   e.get('votes').set(uname, i.vote).write();
-  ec.votes[uname] = i.vote;
+  // ec.votes[uname] = i.vote;
   ec.score += i.vote - old_vote;
 });
 
@@ -240,8 +241,8 @@ actions.comment = guard(true, {
     .push(this_comment)
     .write();
   // Don't do this! The objects are semi-shallow copies! (for some reason)
-  // entry_cache.find(_ => _.id == i.id).comments.push(this_comment);
-  entry_cache.find(_ => _.id == i.id)._content += `${this_comment.content} `;
+  // cached(i.id).comments.push(this_comment);
+  cached(i.id)._content += `${this_comment.content} `;
   word = word.value();
   announce({
     color: author_color(uname),
@@ -273,7 +274,7 @@ actions.create = guard(true, {
     votes: {}
   };
   db.get('entries').set(id, this_entry).write();
-  entry_cache.push(cacheify(this_entry, id));
+  cache.push(cacheify(this_entry, id));
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
@@ -331,7 +332,7 @@ actions.remove = guard(true, {
   if(entry.score > 0)
     return flip('this entry has a positive amount of votes');
   db.get('entries').unset(i.id).write();
-  entry_cache.splice(entry_cache.findIndex(_ => _.id == i.id), 1);
+  cache.splice(cache.findIndex(_ => _.id == i.id), 1);
   announce({
     color: author_color(uname),
     title: `*${uname}* removed **${entry.head}**`,
@@ -348,6 +349,10 @@ function cacheify(e, id) {
         e.comments.map(_ => _.content).join(' ')} `)};
 }
 
+function cached(id) {
+  return cache.find(_ => _.id == id);
+}
+
 db.set('entries',
   db.get('entries')
     .mapValues(_ => {
@@ -358,5 +363,5 @@ db.set('entries',
     }).value())
   .write();
 
-entry_cache = Object.entries(db.get('entries').value())
+cache = Object.entries(db.get('entries').value())
   .map(([id, e]) => cacheify(e, id));
