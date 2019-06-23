@@ -234,6 +234,7 @@ actions.comment = guard(true, {
     .write();
   // Don't do this! The objects are semi-shallow copies! (for some reason)
   // entry_cache.find(_ => _.id == i.id).comments.push(this_comment);
+  entry_cache.find(_ => _.id == i.id)._content += `${this_comment.content} `;
   word = word.value();
   announce({
     color: author_color(uname),
