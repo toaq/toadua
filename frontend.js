@@ -185,7 +185,7 @@ app = new Vue({
     },
     create: function() {
       apisend({action: 'create', head: this.new_head, body: this.new_body}, function(data) {
-        app.new_head = '';
+        app.new_head = app.new_body = '';
         document.querySelector('#create_body').style.height = 24;
         app.navigate('#' + data.data);
       })
