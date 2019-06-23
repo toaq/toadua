@@ -92,7 +92,7 @@
       </div>
       <div class="card" id="logout" v-if="username && ! query">
         <ul class="controls">
-          <li style="padding-right: 2px;">Logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+          <li>Logged in as <b :style="color_for(username)">{{username}}</b></li><!--
           --><li><input type="button" value="logout" class="submit" @click="logout"></li>
         </ul>
       </div>
