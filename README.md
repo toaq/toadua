@@ -2,6 +2,8 @@
 
 *Tỏadūa* is the/an online collaborative dictionary for the [Toaq](http://toaq.org) constructed language. You can visit the current instance at <https://uakci.pl/toadua/>.
 
+You can also use the public API exposed at <https://uakci.pl/toadua/api> ([docs](apidocs.md)).
+
 ## Installing
 This repository uses `npm`’s magic setting up powers for installing dependencies. Simply clone this repository, run `npm install` to get the dependencies, and then `npm start` to start the service up. But before you do that, make sure you have all of the following:
 - a fairly modern version of Node (perhaps 11.x or higher);

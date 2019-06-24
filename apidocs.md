@@ -40,13 +40,13 @@ be present in the object.
 
 ### `search`
 
-Inputs:
-
-* `query` string
-
-Outputs:
-
-* `data` entry array
+> **Inputs:**
+> 
+> * `query` string
+> 
+> **Outputs:**
+> 
+> * `data` entry array
 
   Performs a search of the database. The `query` is split at spaces,
 each part evaluated separately, then ANDed together. Each sub-query
@@ -70,22 +70,22 @@ predicates authored by uakci which contain the word “property”’).
 
 ### `info`
 
-Inputs:
-
-* `id` string
-
-Outputs:
-
-* `data` entry
+> **Inputs:**
+> 
+> * `id` string
+> 
+> **Outputs:**
+> 
+> * `data` entry
 
   Returns the entry object for the entry with the given `id`.
 
 ### `note` (L)
 
-Inputs:
-
-* `id` string
-* `content` string
+> **Inputs:**
+> 
+> * `id` string
+> * `content` string
 
   Adds a note to the entry with the given ID. Note that `content` may
 not be over 2048 characters long.
@@ -96,15 +96,15 @@ Old name of `note`; for compat.
 
 ### `create` (L)
 
-Inputs:
-
-* `head` string
-* `body` string
-* `scope` string? – defaults to `"en"`
-
-Outputs:
-
-* `id` number – the ID of the freshly created entry
+> **Inputs:**
+> 
+> * `head` string
+> * `body` string
+> * `scope` string? – defaults to `"en"`
+> 
+> **Outputs:**
+> 
+> * `id` number – the ID of the freshly created entry
 
   Creates a new entry with the given Toaq word and definition in the
 given scope. Note that the head–body pair must be unique; note also
@@ -113,15 +113,15 @@ the body. Don't go crazy.
 
 ### `login`
 
-Inputs:
-
-* `name` string
-* `pass` string
-
-Outputs:
-
-* `name` string – the same as `name` from the input
-* `token` string – the UUID you will use for further authorising of
+> **Inputs:**
+> 
+> * `name` string
+> * `pass` string
+> 
+> **Outputs:**
+> 
+> * `name` string – the same as `name` from the input
+> * `token` string – the UUID you will use for further authorising of
   your API calls
 
   Attempts to log in with the given credentials.
@@ -132,15 +132,15 @@ Outputs:
 
 ### `register`
 
-Inputs:
-
-* `name` string
-* `pass` string
-
-Outputs:
-
-* `name` string – the same as `name` from the input
-* `token` string – see ‘login’ above
+> **Inputs:**
+> 
+> * `name` string
+> * `pass` string
+> 
+> **Outputs:**
+> 
+> * `name` string – the same as `name` from the input
+> * `token` string – see ‘login’ above
 
   Attempts to register with the given credentials. Note that `name`
 may only contain letters from the Latin alphabet; there is a
@@ -148,10 +148,10 @@ restriction on the length, too.
 
 ### `vote` (L)
 
-Inputs:
-
-* `id` string
-* `vote` number
+> **Inputs:**
+> 
+> * `id` string
+> * `vote` number
 
   Casts a vote on the entry with the given ID. Possible values of
 `vote` are `-1`, `0`, and `1`; `0` effectively cancels your previous
@@ -159,14 +159,14 @@ vote.
 
 ### `whoami`
 
-Inputs:
-
-* `token` string?
-
-Outputs:
-
-* `data` – read below
-* `count` – the number of entries in the database
+> **Inputs:**
+> 
+> * `token` string?
+> 
+> **Outputs:**
+> 
+> * `data` – read below
+> * `count` – the number of entries in the database
 
   Use `whoami` to check if your token is valid; `data` will contain
 the username the token authorises for, or empty if no token (no valid
