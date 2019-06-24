@@ -1,8 +1,0 @@
-  search   + query: -> data: []
-  info     + id: -> data: {...}
-L comment  + id: + content: 
-L create   + head: + body: + foot: -> id: int
-  login    + name: + pass: -> token: uuid
-L logout!
-  register + name: + pass:
-  whoami  (+ token)
