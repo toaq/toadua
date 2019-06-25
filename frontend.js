@@ -85,7 +85,7 @@ app = new Vue({
     count_stat: null,
     limit_search: false,
     scope: 0,
-    scopes: ['en', 'toa'],
+    scopes: ['en', 'toa', 'jbo', 'ja'],
     login_name: '',
     login_pass: '',
     new_head: '',
