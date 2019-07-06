@@ -9,6 +9,7 @@ input, textarea {
   background-color: inherit;
   -webkit-appearance: none;
   outline: none;
+  color: #333;
 }
 input[type=button],
 input[type=submit] {
@@ -25,7 +26,10 @@ input[type=button]:focus,
 input[type=submit]:active,
 input[type=submit]:hover,
 input[type=submit]:focus {
-  color: #000;
+  color: #333;
+}
+::placeholder {
+  color: #aaa;
 }
 html {
   width: 100%;
@@ -36,6 +40,7 @@ body {
   width: 100%;
   margin: 0;
   padding: 0;
+  color: #333;
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
   background-color: #eee;
@@ -48,7 +53,7 @@ body {
 }
 .card {
   background: white;
-  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.1);
 }
 .card .title {
   display: block;
@@ -150,11 +155,11 @@ h2, .name {
   margin-bottom: 0;
   font-size: 24px;
   font-family: 'Roboto Condensed', sans-serif;
-  color: black;
+  color: #333;
   display: inline-block;
 }
 .word_id {
-  color: #000;
+  color: #333;
   text-decoration: underline;
 }
 .note {
@@ -168,8 +173,8 @@ h2, .name {
   padding-top: 0;
 }
 .hl {
-  color: #ffffff;
-  background-color: #000;
+  color: #fff;
+  background-color: #333;
 }
 .note .hl {
   /* color: #ff3397; */
@@ -193,7 +198,7 @@ h2, .name {
   z-index: 1000;
   padding: 0;
   margin: 0;
-  box-shadow: 0px 5px 25px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
 }
 #menu div {
   height: 64px;
