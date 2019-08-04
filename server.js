@@ -46,7 +46,7 @@ function api_handler(r, s, u) {
       s.end();
     });
   } else {
-    flip(s, 405 /* Method Not Allowed */, 'Excepting a POST request.');
+    flip(s, 405 /* Method Not Allowed */, 'Expecting a POST request.');
   }
 }
 
