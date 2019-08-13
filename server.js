@@ -6,7 +6,7 @@ const fs = require('fs'),
       hk = require('./housekeeping.js');
 require('object.fromentries').shim();
 
-const REQUEST_BODY_SIZE_LIMIT = 1024;
+const REQUEST_BODY_SIZE_LIMIT = 1 << 14;
 
 const fourohfour = static('404.html', 'text/html'),
   routes = {
@@ -40,10 +40,12 @@ function api_handler(r, s, u) {
       } catch(e) {
         flip(400 /* Bad Request */, 'The request body could not be parsed as JSON.');
       }
-      let resp = api(json);
-      s.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      s.write(JSON.stringify(resp));
-      s.end();
+      api(json, data => {
+        data = data || { success: true };
+        s.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        s.write(JSON.stringify(data));
+        s.end();
+      });
     });
   } else {
     flip(s, 405 /* Method Not Allowed */, 'Expecting a POST request.');
@@ -51,11 +53,11 @@ function api_handler(r, s, u) {
 }
 
 function static(fname, mime) {
-  // // This line implies that the files Toadua uses are stored (cached)
-  // // in the memory. Which is great.
-  // let f = fs.readFileSync(fname);
+  let f = fs.readFileSync(fname);
+  let t = fs.statSync(fname).mtimeMs;
   return (r, s) => {
-    let f = fs.readFileSync(fname);
+    let t_ = fs.statSync(fname).mtimeMs;
+    if(t_ > t) f = fs.readFileSync(fname);
     s.writeHead(200, {
       'content-type': `${mime}; charset=utf-8`
     });

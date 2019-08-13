@@ -21,14 +21,18 @@ function apisend(what, or, and) {
   if(req) req.abort();
   queue[what.action] = req = new XMLHttpRequest();
   req.open('POST', 'api', true);
-  if(app) what.token = app.token;
+  if(app && app.token) what.token = app.token;
   req.send(JSON.stringify(what));
   req.onreadystatechange = function() {
     if(this.readyState == 4 && this.status == 200) {
       try {
         var data = JSON.parse(this.responseText);
         if(data.success) and.call(this, data);
-        else or(data.error);
+        else {
+          if(data.error == 'token has expired')
+            app.clear_account();
+          or(data.error);
+        }
       } catch(e) {
         or('mystically bad error');
         console.warn(e);
@@ -85,7 +89,7 @@ app = new Vue({
     count_stat: null,
     limit_search: false,
     scope: 0,
-    scopes: ['en', 'toa', 'jbo', 'ja'],
+    scopes: ['en', 'toa', 'jbo', 'ja', 'es'],
     login_name: '',
     login_pass: '',
     new_head: '',
@@ -239,12 +243,12 @@ app = new Vue({
         app.whoami();
       });
     },
+    clear_account: function() {
+      app.token = app.username = undefined;
+      store.removeItem('token');
+    },
     logout: function() {
-      var either_way = function() {
-        app.token = app.username = undefined;
-        store.removeItem('token');
-      };
-      apisend({action: 'logout'}, either_way, either_way);
+      apisend({action: 'logout'}, clear_account, clear_account);
     },
     whoami: function() {
       apisend({action: 'whoami', token: this.token}, function(data) {

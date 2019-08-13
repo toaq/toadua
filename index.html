@@ -88,7 +88,7 @@
         </div>
         <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
         <ul class="controls">
-          <li><input type="submit" value="submit" class="submit" @click="create"></li><!--
+          <li><input type="submit" :value="'submit to ' + scope_name" class="submit" @click="create"></li><!--
           --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
         </ul>
       </div>

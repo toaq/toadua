@@ -41,8 +41,10 @@ class OurAdapter extends BaseAdapter {
   }
 }
 
-const db = lowdb(new OurAdapter(    'dict.db', {defaultValue: {entries: {}, count: 0}})),
-    pass = lowdb(new OurAdapter('accounts.db', {defaultValue: {hashes: {}, tokens: {}}}));
+const db = lowdb(new OurAdapter(    'dict.db',
+                 {defaultValue: {entries: {},  count: 0 }})),
+    pass = lowdb(new OurAdapter('accounts.db',
+                 {defaultValue: { hashes: {}, tokens: {}}}));
 
 call.db = db;
 call.pass = pass;
@@ -52,7 +54,7 @@ call.replacements = replacements;
 let actions = {};
 
 const flip = e => ({success: false, error: e});
-const good = d => ({...d, success: true});
+const good = d => ({success: true,  ...d});
 
 call.score = score;
 function score(entry) {
@@ -68,15 +70,15 @@ function present(entry, id, uname) {
 }
 
 function guard(logged_in, conds, f) {
-  return (i, uname) => {
+  return (ret, i, uname) => {
     if(logged_in && ! uname)
-      return flip('must be logged in');
+      return ret(flip('must be logged in'));
     if(conds) for([k, v] of Object.entries(conds)) {
       let err = v(i[k]);
       if(err !== true)
-        return flip(`error for field ${k}: ${err}`);
+        return ret(flip(`error for field ${k}: ${err}`));
     }
-    return f(i, uname);
+    f(ret, i, uname);
   };
 }
 const checks = {
@@ -98,27 +100,45 @@ function author_color(name) {
   return Number.parseInt(color_convert.hsl.hex(n, 100, 30), 16);
 }
 
-function call(i, admin) {
+// 7 days
+const EXPIRY = 7 * 24 * 60 * 60 * 1000;
+const UUID = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/;
+function call(i, ret, admin) {
   let action = actions.hasOwnProperty(i.action) && actions[i.action];
-  if(! action) return flip('unknown action');
-  let uname = admin || pass.get('tokens').get(i.token).value();
+  if(! action) return ret(flip('unknown action'));
+  let uname;
+  if(admin) uname = admin;
+  else if(i.token) {
+    if(!typeof i.token == 'string' || !i.token.match(UUID))
+      return ret(flip('token is not a valid UUID'));
+    let token = pass.get('tokens').get(i.token).value();
+    if(token) {
+      uname = token.name;
+      let now = +new Date;
+      if(now > token.last + EXPIRY) {
+        ret(flip('token has expired'));
+        return pass.get('tokens').unset(i.token).write();
+      } else
+        pass.get('tokens').get(i.token)
+          .set('last', now).write();
+    }
+  }
   try {
-    let res = action(i, uname);
-    return res || good();
+    action(ret, i, uname);
   } catch(e) {
     process.stderr.write(e.stack + '\n');
-    return flip('internal error');
+    ret(flip('internal error'));
   }
 }
 
-actions.whoami = guard(false, {}, (i, uname) => {
-  return good({
-    data: uname || '',
+actions.whoami = guard(false, {}, (ret, i, uname) => {
+  ret(good({
+    data: uname /* || undefined */,
     count: db.get('count').value()
-  });
+  }));
 });
 
-// not using a dictionary because it would mangle the RegExp objects
+// not using a dictionary because it would mangle the RegExp objects.
 // the second returned element of each entry – if it's an array – is
 // the heaviness, i.e., how little time it takes to run the function
 // on an entry multiplied by how far the function narrows down the
@@ -152,8 +172,7 @@ const PATTERNS = [
     let f = e => e.body.split(/[;.]/).map(_ => {
       let matches = _.match(/▯/g);
       return matches ? matches.length : -1;
-    }).reduce((a, b) => // this is confusing
-      Math.max(a, b), -1) == n;
+    }).reduce((a, b) => Math.max(a, b), -1) == n;
     f.heaviness = 5;
     return f;
   }],
@@ -182,7 +201,7 @@ function parse_term(term) {
 }
 
 let cache;
-actions.search = guard(false, {query: checks.present}, (i, uname) => {
+actions.search = guard(false, {query: checks.present}, (ret, i, uname) => {
   let start = +new Date;
   let query = i.query.toString().split(' ').filter(_ => _);
   // each term of the query gets mapped to a filtering function
@@ -196,7 +215,6 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
       - 6 * bare_terms.some(_ => e._head.indexOf(_) != -1)
       + 1 * bare_terms.reduce((_, term) => _ + 
         (e._head.indexOf(term) != -1) * levenshtein(term, e._head), 0)
-      - 8 * (e.by == 'official') // the stigma is real
       - 2 * e.score
       + 4 * (['oldofficial', 'oldexamples', 'oldcountries'].includes(e.by))
       + Math.exp((new Date() - new Date(e.on)) / (-1000 * 3600 * 24 * 7))
@@ -204,34 +222,35 @@ actions.search = guard(false, {query: checks.present}, (i, uname) => {
   let data = sorted.value().map(_ => present(_, _.id, uname));
   process.stderr.write(`\u001b[37mapi.search:\u001b[0m query «\u001b[32m${
     i.query}\u001b[0m» took \u001b[1m${new Date - start}\u001b[0m ms\n`);
-  return good({data});
+  ret(good({data}));
 });
 
-actions.info = guard(false, {id: checks.shortid}, (i, uname) => {
+actions.info = guard(false, {id: checks.shortid}, (ret, i, uname) => {
   let res = cached(i.id);
-  if(res) return good({data: present(res, i.id, uname)});
-  else return flip('not found');
+  ret(res ? good({data: present(res, i.id, uname)})
+          : flip('not found'));
 });
 
 // TODO: messy code
 actions.vote = guard(true, {
   id: checks.shortid, vote: _ => [-1, 0, 1].includes(_)
-}, (i, uname) => {
+}, (ret, i, uname) => {
   let e = db.get('entries').get(i.id);
-  if(!e) return flip('not found');
+  if(!e) return ret(flip('not found'));
   let ec = cached(i.id);
   let old_vote = ec.votes[uname] || 0;
   e.get('votes').set(uname, i.vote).write();
   // ec.votes[uname] = i.vote;
   ec.score += i.vote - old_vote;
+  ret();
 });
 
 actions.note = guard(true, {
   id: checks.shortid, content: checks.nobomb
-}, (i, uname) => {
+}, (ret, i, uname) => {
   let word = db.get('entries').get(i.id);
   if(word.value() == undefined)
-    return flip('word doesn\'t exist');
+    return ret(flip('word doesn\'t exist'));
   let this_note = {
     on: new Date().toISOString(),
     content: replacements(i.content),
@@ -242,7 +261,7 @@ actions.note = guard(true, {
     .write();
   // Don't do this! The objects are semi-shallow copies! (for some reason)
   // // cached(i.id).notes.push(this_note);
-  cached(i.id)._content += `${this_note.content} `;
+  cached(i.id)._content += `${deburr(this_note.content)} `;
   word = word.value();
   announce({
     color: author_color(uname),
@@ -254,7 +273,7 @@ actions.note = guard(true, {
     description: this_note.content,
     url: `http://uakci.pl/toadua/#%23${i.id}`
   });
-  return good();
+  ret();
 });
 
 // compat purposes
@@ -266,7 +285,7 @@ function replacements(s) {
 
 actions.create = guard(true, {
   head: checks.nobomb, body: checks.nobomb, scope: checks.scope
-}, (i, uname) => {
+}, (ret, i, uname) => {
   let id = shortid.generate();
   let this_entry = {
     on: new Date().toISOString(),
@@ -276,8 +295,9 @@ actions.create = guard(true, {
     notes: [],
     votes: {}
   };
-  db.get('entries').set(id, this_entry).write();
   cache.push(cacheify(this_entry, id));
+  ret(good({data: id}));
+  db.get('entries').set(id, this_entry).write();
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
@@ -285,42 +305,36 @@ actions.create = guard(true, {
     url: `http://uakci.pl/toadua/#%23${id}`
   });
   db.set('count', Object.entries(db.get('entries').value()).length).write();
-  return good({data: id});
 });
 
 actions.login = guard(false, {
   name: checks.present, pass: checks.present
-}, (i) => {
+}, (ret, i) => {
   let expected = pass.get('hashes').get(i.name).value();
-  if(!expected) return flip('user not registered');
+  if(!expected) return ret(flip('user not registered'));
   if(bcrypt.compareSync(i.pass, expected)) {
     var token = uuidv4();
     pass.get('tokens')
-      .set(token, i.name)
+      .set(token, { name: i.name, last: +new Date })
       .write();
-    return good({ token: token, name: i.name });
-  } else return flip('password doesn\'t match');
+    ret(good({ token: token, name: i.name }));
+  } else ret(flip('password doesn\'t match'));
 });
 
 actions.register = guard(false, {
   name: it => (it.match(/^[a-zA-Z]{1,64}$/) && true) || 'name must be 1-64 Latin characters',
   pass: checks.limit(128)
-}, (i) => {
+}, (ret, i) => {
   if(pass.get('hashes').get(i.name).value())
-    return flip('already registered');
+    return ret(flip('already registered'));
   pass.get('hashes')
     .set(i.name, bcrypt.hashSync(i.pass, ROUND_NO))
     .write();
-  let entry = pass.get('hashes').get(i.name).value();
-  if(! entry) return flip('couldn\'t complete registration');
-  let token = uuidv4();
-  pass.get('tokens')
-    .set(token, i.name)
-    .write();
-  return good({ token, name: i.name });
+  actions.login(ret, { name: i.name, pass: i.pass });
 });
 
-actions.logout = guard(true, {}, (i, uname) => {
+actions.logout = guard(true, {}, (ret, i, uname) => {
+  ret();
   pass.get('tokens')
     .unset(i.token)
     .write();
@@ -328,14 +342,15 @@ actions.logout = guard(true, {}, (i, uname) => {
 
 actions.remove = guard(true, {
   id: checks.shortid
-}, (i, uname) => {
+}, (ret, i, uname) => {
   let entry = db.get('entries').get(i.id).value();
   if(entry.by != uname)
-    return flip('you are not the owner of this entry');
+    return ret(flip('you are not the owner of this entry'));
   if(entry.score > 0)
-    return flip('this entry has a positive amount of votes');
-  db.get('entries').unset(i.id).write();
+    return ret(flip('this entry has a positive amount of votes'));
   cache.splice(cache.findIndex(_ => _.id == i.id), 1);
+  ret();
+  db.get('entries').unset(i.id).write();
   announce({
     color: author_color(uname),
     title: `*${uname}* removed **${entry.head}**`,
@@ -367,8 +382,21 @@ db.set('entries',
       }
       if(_.score != undefined) delete _.score;
       return _;
-    }).value())
-  .write();
+    }).value()
+  ).write();
+
+let now = +new Date;
+pass.set('tokens',
+  Object.entries(pass.get('tokens').value())
+    .map(([k, v]) => {
+      if(typeof v == 'string')
+        return [k, { name: v,
+                     last: +new Date }];
+      else if(typeof v == 'object')
+        return (now > v.last) ? [k, v] : undefined;
+      else return undefined;
+    }).filter(_ => _)
+  ).write();
 
 cache = Object.entries(db.get('entries').value())
   .map(([id, e]) => cacheify(e, id));

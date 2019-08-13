@@ -9,6 +9,8 @@ an error in the original query or in the backend, alongside with a
 string `error` field. Successful results typically come with a `data`
 field.
 
+  Please note that your query may not exceed 16 KiB in size.
+
 ### Entry object format
 
 Entries are JSON objects with the following fields:
