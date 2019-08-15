@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "description": "A collaborative dictionary for the Toaq language.",
   "main": "server.js",
+  "engines": {
+    "node": ">=11.0.0"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "color-convert": "^2.0.0",
     "js-levenshtein": "^1.1.6",
-    "lodash": "^4.17.11",
-    "lowdb": "^1.0.0",
-    "npm": "^6.9.0",
+    "js-yaml": "^3.13.1",
+    "lodash": "^4.17.15",
     "object.fromentries": "^2.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
@@ -19,12 +21,13 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "true",
-    "start": "node server.js"
+    "test": "false",
+    "start": "node server.js",
+    "build": "false && node setup.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ciuak/toadua.git"
+    "url": "https://github.com/uakci/toadua.git"
   },
   "author": "uakci",
   "license": "MIT",

@@ -284,3 +284,19 @@ a {
     height: 80px;
   }
 }
+
+/* Curtain definitions */
+
+.ohno {
+  box-shadow: none;
+  border: 2px solid #777;
+  padding: 14px;
+  background-color: transparent;
+  margin: auto auto;
+  float: left;
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  -ms-transform: translate(-50%);
+      transform: translate(-50%);
+}

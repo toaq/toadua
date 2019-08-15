@@ -1,3 +1,5 @@
+"use strict";
+
 var app;
 var HOW_MANY_AT_A_TIME = 25;
 var dismissal = 'aq';
@@ -52,7 +54,7 @@ function replacements(content) {
   return escape(content).replace(/▯/g, '◌')
     // can't use lookbehind due to compat :(
     .replace(/[#@][^\ ]+|&lt;.*?&gt;|\*\*.*?\*\*/g, function(m) {
-      // hasty code, plsfix
+      // hasty code, plsfix TODO
       var ante = '', post = '';
       var which;
       // note to self: messy patchwork code TODO
@@ -219,7 +221,7 @@ app = new Vue({
     },
     update_entry: function(whom) {
       apisend({action: 'info', id: whom.id}, function(data) {
-        for(p in data.data)
+        for(var p in data.data)
           if(Object.hasOwnProperty.call(data.data, p))
             whom[p] = data.data[p];
         app.process_entry(whom);
@@ -248,7 +250,7 @@ app = new Vue({
       store.removeItem('token');
     },
     logout: function() {
-      apisend({action: 'logout'}, clear_account, clear_account);
+      apisend({action: 'logout'}, this.clear_account, this.clear_account);
     },
     whoami: function() {
       apisend({action: 'whoami', token: this.token}, function(data) {

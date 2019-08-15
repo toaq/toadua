@@ -3,7 +3,8 @@ const fs = require('fs'),
     http = require('http'),
       lo = require('lodash'),
      api = require('./backend.js'),
-      hk = require('./housekeeping.js');
+      hk = require('./housekeeping.js'),
+      tr = require('./transaction.js');
 require('object.fromentries').shim();
 
 const REQUEST_BODY_SIZE_LIMIT = 1 << 14;
@@ -19,7 +20,7 @@ const fourohfour = static('404.html', 'text/html'),
 
 function api_handler(r, s, u) {
   let flip = (code, message) => {
-    s.writeHead(code, { 'content-type': 'text/plain; charset=utf-8' });
+    s.writeHead(code, {'content-type': 'text/plain; charset=utf-8'});
     s.write(message);
     s.end();
   };
@@ -48,7 +49,7 @@ function api_handler(r, s, u) {
       });
     });
   } else {
-    flip(s, 405 /* Method Not Allowed */, 'Expecting a POST request.');
+    flip(405 /* Method Not Allowed */, 'Expecting a POST request.');
   }
 }
 
@@ -76,19 +77,22 @@ function handler(r, s) {
 let server = http.createServer(handler);
 server.listen(59138);
 process.stderr.write('Server started!\n');
-let sync_int;
-hk.sync(api).then(() => {
-  sync_int = setInterval(() => hk.sync(api), 3 * 60 * 1000);
-});
-let backup_int    = setInterval(() => hk.backup(api),            1 * 60 * 1000);
-let obsoleted_int = setInterval(() => hk.remove_obsoleted(api), 10 * 60 * 1000);
+
+let intervals = {
+       sync: setInterval(() => hk.  sync_resources(api),  3 * 60 * 1000),
+       save: setInterval(() => hk.  sync_databases(api),  3 * 60 * 1000),
+     backup: setInterval(() => hk.          backup(api),  1 * 60 * 1000),
+  obsoleted: setInterval(() => hk.remove_obsoleted(api), 10 * 60 * 1000)
+};
 
 function bye() {
-  process.stderr.write('Trying to exit gracefully\n')
-  clearInterval(sync_int); clearInterval(backup_int); clearInterval(obsoleted_int);
+  process.stderr.write('Trying to exit gracefully\n');
+  Object.values(intervals).forEach(clearInterval);
   server.close();
-  api.db.write();
-  api.pass.write();
+  while(Object.keys(tr.using).length) {}
+  process.stderr.write('Trying to save database…\n');
+  process.stderr.write(hk.sync_databases(api) ? 'Saved.\n'
+                                              : 'Failed!\n');
   process.exitCode = 0;
 }
 process.on('SIGINT', bye);

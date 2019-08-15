@@ -8,108 +8,121 @@
     <meta name="description" content="An online collaborative dictionary for the Toaq language.">
   </head>
   <body>
-    <div id="main" v-show="true" style="display: none;">
-      <nav id="menu">
-        <div>
-          <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
-          --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
+    <div id="main">
+      <span style="display: none;" v-show="true">
+        <nav id="menu">
+          <div>
+            <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
+            --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
+          </div>
+        </nav>
+        <div id="spacer"></div>
+        <div id="results">
+          <div class="card" v-for="result in results">
+            <div class="title">
+              <h2>
+                <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
+                <span class="info">
+                  <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.by)">{{result.scope}}</a>
+                  <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
+                  <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
+                  <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
+                </span>
+              </h2>
+            </div>
+            <p class="body" v-html="result.fancy_body"></p>
+            <div class="notes">
+              <p class="note" v-for="note in result.notes">
+                <span :style="color_for(note.by)" class="note-author" @click="navigate('@' + note.by)">{{note.by}}</span><span v-html="note.fancy_content"></span>
+              </p>
+              <p class="note new_note" v-if="result.uncollapsed">
+                <span :style="color_for(username)" class="note-author">{{username}}</span><input type="text" v-model="result.input" placeholder="your note?…">
+              </p>
+            </div>
+            <ul class="controls" v-if="username">
+              <li v-if="! result.uncollapsed">
+                <input type="button" value="add note" @click="uncollapse(result)">
+              </li><!--
+              --><li v-if="result.uncollapsed">
+                <input type="button" value="submit"   @click="note(result)">
+              </li><!--
+              --><li v-if="result.vote != +1">
+                <input type="button" value="+"        @click="vote(result, +1)">
+              </li><!--
+              --><li v-if="result.vote !=  0">
+                <input type="button" value="±"        @click="vote(result,  0)">
+              </li><!--
+              --><li v-if="result.vote != -1">
+                <input type="button" value="−"        @click="vote(result, -1)">
+              </li><!--
+              --><li v-if="username == result.by && !result.hesitating">
+                <input type="button" value="remove"   @click="result.hesitating = true">
+              </li><!--
+              --><li v-if="result.hesitating">
+                <input type="button" value="sure?"    @click="remove(result)">
+              </li><!--
+              --><li>
+                <input type="button" value="fork"     @click="fork(result)">
+              </li>
+            </ul>
+          </div>
         </div>
-      </nav>
-      <div id="spacer"></div>
-      <div id="results">
-        <div class="card" v-for="result in results">
-          <div class="title">
-            <h2>
-              <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
-              <span class="info">
-                <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.by)">{{result.scope}}</a>
-                <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
-                <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
-                <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
-              </span>
-            </h2>
-          </div>
-          <p class="body" v-html="result.fancy_body"></p>
-          <div class="notes">
-            <p class="note" v-for="note in result.notes">
-              <span :style="color_for(note.by)" class="note-author" @click="navigate('@' + note.by)">{{note.by}}</span><span v-html="note.fancy_content"></span>
-            </p>
-            <p class="note new_note" v-if="result.uncollapsed">
-              <span :style="color_for(username)" class="note-author">{{username}}</span><input type="text" v-model="result.input" placeholder="your note?…">
-            </p>
-          </div>
-          <ul class="controls" v-if="username">
-            <li v-if="! result.uncollapsed">
-              <input type="button" value="add note" @click="uncollapse(result)">
-            </li><!--
-            --><li v-if="result.uncollapsed">
-              <input type="button" value="submit"   @click="note(result)">
-            </li><!--
-            --><li v-if="result.vote != +1">
-              <input type="button" value="+"        @click="vote(result, +1)">
-            </li><!--
-            --><li v-if="result.vote !=  0">
-              <input type="button" value="±"        @click="vote(result,  0)">
-            </li><!--
-            --><li v-if="result.vote != -1">
-              <input type="button" value="−"        @click="vote(result, -1)">
-            </li><!--
-            --><li v-if="username == result.by && !result.hesitating">
-              <input type="button" value="remove"   @click="result.hesitating = true">
-            </li><!--
-            --><li v-if="result.hesitating">
-              <input type="button" value="sure?"    @click="remove(result)">
-            </li><!--
-            --><li>
-              <input type="button" value="fork"     @click="fork(result)">
+        <div class="card" v-if="query || results.length">
+          <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
+          <ul class="controls" v-if="done_searching && username">
+            <li>
+              <input type="button" :value="'create ‘' + query + '’?'" @click="new_word">
             </li>
           </ul>
         </div>
-      </div>
-      <div class="card" v-if="query || results.length">
-        <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
-        <ul class="controls" v-if="done_searching && username">
-          <li>
-            <input type="button" :value="'create ‘' + query + '’?'" @click="new_word">
-          </li>
-        </ul>
-      </div>
-      <div class="card" id="welcome" v-if="! (dismissed || query.length)">
-        <h2>Scopes</h2>
-        <p>In order to properly reintegrate Tỏajōe, I added the ‘scopes’ feature. At this point, a scope simply determines the language your definition is in (I can add yours if you wish to). In order to write in a certain language, switch to it with the bottom panel.</p>
-        <p>If your aim is to write definitions in English only, disregard this whole scopes thing – you won't need to think about it at all.</p>
-        <ul class="controls">
-          <li><input type="button" value="dismiss forever" @click="dismiss"></li>
-        </ul>
-      </div>
-      <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
-        <div class="title">
-          <input type="text" id="create_name" class="name" placeholder="Create new entry" v-model="new_head">
+        <div class="card" id="welcome" v-if="! (dismissed || query.length)">
+          <h2>Scopes</h2>
+          <p>In order to properly reintegrate Tỏajōe, I added the ‘scopes’ feature. At this point, a scope simply determines the language your definition is in (I can add yours if you wish to). In order to write in a certain language, switch to it with the bottom panel.</p>
+          <p>If your aim is to write definitions in English only, disregard this whole scopes thing – you won't need to think about it at all.</p>
+          <ul class="controls">
+            <li><input type="button" value="dismiss forever" @click="dismiss"></li>
+          </ul>
         </div>
-        <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
-        <ul class="controls">
-          <li><input type="submit" :value="'submit to ' + scope_name" class="submit" @click="create"></li><!--
-          --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
+        <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
+          <div class="title">
+            <input type="text" id="create_name" class="name" placeholder="Create new entry" v-model="new_head">
+          </div>
+          <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
+          <ul class="controls">
+            <li><input type="submit" :value="'submit to ' + scope_name" class="submit" @click="create"></li><!--
+            --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
+          </ul>
+        </div>
+        <div class="card" id="login" v-if="!(username || query)">
+          <h2>Access</h2>
+          <form>
+            <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name" autocomplete="username"></div>
+            <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
+          </form>
+          <ul class="controls">
+               <li><input type="button" value="login"    @click="account('login')"></li><!--
+            --><li><input type="button" value="register" @click="account('register')"></li>
+          </ul>
+        </div>
+        <div class="card" id="logout" v-if="! query">
+          <ul class="controls">
+            <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+            --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
+            --><li>scope:&thinsp;<input type="button" :value="scope_name" class="submit" @click="update_scope"></li><!--
+            --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
+          </ul>
+        </div>
+      </span>
+      <div class="card ohno" v-if="false">
+        <h2>Tỏadūa will not work</h2>
+        <p>Possible reasons for this include:</p>
+        <ul>
+          <li>That <b>the page is still loading</b> (hold tight!);</li>
+          <li>An old browser <small>(upgrade to Internet Explorer 9, Edge 12, Firefox 21, Chrome 23, Safari 6, Opera 15, or newer)</small>;</li>
+          <li>JavaScript being disabled;</li>
+          <li>A programming error that bailed the app.</li>
         </ul>
-      </div>
-      <div class="card" id="login" v-if="!(username || query)">
-        <h2>Access</h2>
-        <form>
-          <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name" autocomplete="username"></div>
-          <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
-        </form>
-        <ul class="controls">
-          <li><input    type="button" value="login"    @click="account('login')"></li><!--
-          --><li><input type="button" value="register" @click="account('register')"></li>
-        </ul>
-      </div>
-      <div class="card" id="logout" v-if="! query">
-        <ul class="controls">
-          <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-          --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
-          --><li>scope:&thinsp;<input type="button" :value="scope_name" class="submit" @click="update_scope"></li><!--
-          --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
-        </ul>
+        <p>If the problem persists, <a href="//github.com/uakci/toadua/issues">let me know</a>. Sorry for the inconvenience.</p>
       </div>
     </div>
     <script src="vue.js"></script>

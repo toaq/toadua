@@ -1,10 +1,11 @@
+# the database files
 accounts.db
-backup
 dict.db
-HOOK
-log.log
+# the folder for backups
+backup
+# duh
 node_modules
-run.sh
-URLS.json
+config.yml
+# recommended locations for Vue.js
 vue.js
 vue-production.js

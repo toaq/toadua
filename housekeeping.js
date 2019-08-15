@@ -1,27 +1,34 @@
 module.exports = {
-  backup, sync, remove_obsoleted
+  backup, sync_databases, sync_resources, remove_obsoleted
 };
 
 const http = require('http'),
         fs = require('fs'),
         lo = require('lodash'),
   announce = require('./announce.js'),
+        tr = require('./transaction.js'),
    request = require('request-promise-native');
 
 // Back the dictionary up (every midnight).
 function backup(api) {
-  // TODO: apply DRY
   try {
-    fs.mkdirSync('backup');
+    fs.mkdirSync('backup')
   } catch(e) {
     if(e.code !== 'EEXIST') throw e; 
   }
-  try {
-    fs.writeFileSync(`backup/${new Date().toISOString().split('T')[0]}.json`,
-      JSON.stringify(api.db), {flags: 'wx'});
-  } catch(e) {
-    if(e.code !== 'EEXIST') throw e; 
-  }
+  if(!tr.write(
+    `backup/${new Date().toISOString().split(':')[0]
+      .replace(/T/, '-')}`, api.db))
+    process.stderr.write('note: backup failed\n');
+}
+
+function sync_databases(api) {
+  const decache = db => 
+    ({  count: db.count,
+      entries: Object.fromEntries(Object.entries(db.entries)
+                 .map(([k, v]) => [k, api.decacheify(v)]))});
+  return tr.write('dict.db',     decache(api.db))
+      && tr.write('accounts.db', api.pass);
 }
 
 const URLS = require('./URLS.json');
@@ -42,7 +49,7 @@ const USERNAMES = {
 }
 
 function try_times(n, promise_maker) {
-  if(n <= 0) throw new Error("I don't think I can try doing something less than once");
+  if(n <= 0) throw new Error("attempt count is flat out wrong");
   return new Promise((yes, no) => {
     promise_maker()
       .then((...data) => { yes(...data); })
@@ -54,9 +61,10 @@ function try_times(n, promise_maker) {
 }
 
 function remove_obsoleted(api) {
-  Object.entries(api.db.get('entries').value())
+  Object.entries(api.db.entries)
     .filter(([id, e]) => api.score(e) < -3 &&
-      ['oldofficial', 'oldexamples', 'oldcountries', 'spreadsheet'].includes(e.by))
+      ['oldofficial', 'oldexamples', 'oldcountries', 'spreadsheet']
+        .includes(e.by))
     .forEach(([id, e]) => api({ action: 'remove', id }, e.by));
 }
 
@@ -67,7 +75,8 @@ let word_lists = {};
 //   - official entries,
 //   - spreadsheet example entries and country names
 // to the dictionary (every N minutes).
-function sync(api) {
+// TODO: clean up (!!!); extract to a separate file and add a switch
+function sync_resources(api) {
   return Promise.all(Object.entries(URLS).map(([resource, url]) => { 
     return try_times(3, () => request.get(url))
       .catch(err => console.log(`note: failed to get resource ${
@@ -96,7 +105,7 @@ function sync(api) {
           process.stderr.write(`resource ${resource} not changed – skipping\n`);
         } else {
           process.stderr.write(`\n\u001b[1mupdating resource ${resource}\u001b[0m\n`);
-          let entries = api.db.get('entries').value();
+          let entries = api.db.entries;
           word_list.filter(a => ! Object.values(entries).some(
             b => api.replacements(a[0]) == b.head
               && api.replacements(a[1]) == b.body))
@@ -120,7 +129,7 @@ function sync(api) {
     process.stderr.write(`\n\u001b[1mobsoleting…\u001b[0m\n`);
     let authors = Object.values(USERNAMES);
     let everything = Object.values(word_lists).flat();
-    api.db.get('entries').filter(_ => authors.includes(_.by))
+    Object.values(api.db.entries).filter(_ => authors.includes(_.by))
       .forEach(e => {
         if(! everything.some(_ => api.replacements(_[0]) == e.head
                                && api.replacements(_[1]) == e.body)) {
@@ -133,7 +142,7 @@ function sync(api) {
             url: `http://uakci.pl/toadua/#${e.id}`
           });
         }
-      }).write();
+      });
     process.stderr.write(`\n\u001b[1;92mobsoleting finished\u001b[0m\n\n`);
   });
 }

@@ -6,50 +6,25 @@ const   shortid = require('shortid'),
     levenshtein = require('js-levenshtein'),
              fs = require('fs');
              lo = require('lodash'),
-          lowdb = require('lowdb'),
-        msgpack = require('what-the-pack').initialize(2 ** 24 /* = 16 MiB */),
           https = require('https'),
   color_convert = require('color-convert'),
-       announce = require('./announce.js');
+       announce = require('./announce.js'),
+             hk = require('./housekeeping.js'),
+             tr = require('./transaction.js');
 
 require('object.fromentries').shim();
 
 const ROUND_NO = 8;
-const deburr = s => s.normalize('NFD').replace(/\u0131/g, 'i').replace(/[\u0300-\u030f]/g, '').replace(/[^0-9A-Za-z_-]+/g, ' ').toLowerCase();
+const deburr = s => s.normalize('NFD')
+  .replace(/\u0131/g, 'i')
+  .replace(/[\u0300-\u030f]/g, '')
+  .replace(/[^0-9A-Za-z_-]+/g, ' ')
+  .toLowerCase();
 
-const BaseAdapter = require('lowdb/adapters/Base');
-class OurAdapter extends BaseAdapter {
-  read() {
-    let buf;
-    try {
-      buf = fs.readFileSync(this.source);
-    } catch(e) {
-      process.stderr.write(`\u001b[1;91mNote: setting the default value for ${this.source} because of a file read failure\u001b[0m\n`);
-      this.write(this.defaultValue);
-      return this.defaultValue;
-    }
-    let o;
-    try {
-      o = JSON.parse(buf.toString());
-    } catch(e) {
-      o = msgpack.decode(buf);
-    }
-    return o;
-  }
-  write(data) {
-    fs.writeFileSync(this.source, msgpack.encode(data));
-  }
-}
-
-const db = lowdb(new OurAdapter(    'dict.db',
-                 {defaultValue: {entries: {},  count: 0 }})),
-    pass = lowdb(new OurAdapter('accounts.db',
-                 {defaultValue: { hashes: {}, tokens: {}}}));
-
-call.db = db;
-call.pass = pass;
-call.call = call;
-call.replacements = replacements;
+let db = call.db   = tr.read('dict.db',    
+                             {entries: {},  count: 0 }),
+  pass = call.pass = tr.read('accounts.db',
+                             { hashes: {}, tokens: {}});
 
 let actions = {};
 
@@ -60,13 +35,6 @@ call.score = score;
 function score(entry) {
   return Object.entries(entry.votes)
     .reduce((a, b) => a + b[1], 0);
-}
-
-function present(entry, id, uname) {
-  let e = {...entry, id};
-  if(uname) e.vote = e.votes[uname] || 0;
-  delete e.votes; delete e._head; delete e._content;
-  return e;
 }
 
 function guard(logged_in, conds, f) {
@@ -86,6 +54,9 @@ const checks = {
     scope: i => !(i && typeof i == 'string') ? 'scope is not string' :
              !!i.match(/^[a-z-]{1,24}$/) || 'scope must match [a-z-]{1,24}',
   shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
+   goodid: i => checks.shortid(i) &&
+             Object.hasOwnProperty.call(db.entries, i) ||
+             'not a recognised ID',
     limit: lim => i => (!i || !typeof i == 'string') ? 'absent' :
              (i.length <= lim || `too long (max. ${lim} characters)`),
 };
@@ -104,6 +75,7 @@ function author_color(name) {
 const EXPIRY = 7 * 24 * 60 * 60 * 1000;
 const UUID = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/;
 function call(i, ret, admin) {
+  ret = ret instanceof Function ? ret : () => {};
   let action = actions.hasOwnProperty(i.action) && actions[i.action];
   if(! action) return ret(flip('unknown action'));
   let uname;
@@ -111,16 +83,16 @@ function call(i, ret, admin) {
   else if(i.token) {
     if(!typeof i.token == 'string' || !i.token.match(UUID))
       return ret(flip('token is not a valid UUID'));
-    let token = pass.get('tokens').get(i.token).value();
+    let token = pass.tokens[i.token];
     if(token) {
       uname = token.name;
       let now = +new Date;
       if(now > token.last + EXPIRY) {
         ret(flip('token has expired'));
-        return pass.get('tokens').unset(i.token).write();
+        delete pass.tokens[i.token];
+        return;
       } else
-        pass.get('tokens').get(i.token)
-          .set('last', now).write();
+        pass.tokens[i.token].last = now;
     }
   }
   try {
@@ -134,7 +106,7 @@ function call(i, ret, admin) {
 actions.whoami = guard(false, {}, (ret, i, uname) => {
   ret(good({
     data: uname /* || undefined */,
-    count: db.get('count').value()
+    count: db.count
   }));
 });
 
@@ -200,7 +172,6 @@ function parse_term(term) {
   return deft;
 }
 
-let cache;
 actions.search = guard(false, {query: checks.present}, (ret, i, uname) => {
   let start = +new Date;
   let query = i.query.toString().split(' ').filter(_ => _);
@@ -208,7 +179,8 @@ actions.search = guard(false, {query: checks.present}, (ret, i, uname) => {
   let conds = lo(query.map(parse_term).filter(_ => _ != whatever))
     .sortBy('.heaviness').value();
   let bare_terms = conds.map(_ => _.bare).filter(_ => _);
-  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), cache);
+  let filtered = conds.reduce((sofar, cond) => sofar.filter(cond), 
+    Object.values(db.entries));
   let sorted = lo(filtered).sortBy([
     e =>
       - 6 * bare_terms.some(_ => e._content.indexOf(` ${_} `) != -1)
@@ -225,44 +197,34 @@ actions.search = guard(false, {query: checks.present}, (ret, i, uname) => {
   ret(good({data}));
 });
 
-actions.info = guard(false, {id: checks.shortid}, (ret, i, uname) => {
-  let res = cached(i.id);
-  ret(res ? good({data: present(res, i.id, uname)})
-          : flip('not found'));
+actions.info = guard(false, {id: checks.goodid}, (ret, i, uname) => {
+  ret(good({data: present(db.entries[i.id], i.id, uname)}));
 });
 
 // TODO: messy code
 actions.vote = guard(true, {
-  id: checks.shortid, vote: _ => [-1, 0, 1].includes(_)
+  id: checks.goodid, vote: _ => [-1, 0, 1].includes(_)
 }, (ret, i, uname) => {
-  let e = db.get('entries').get(i.id);
-  if(!e) return ret(flip('not found'));
-  let ec = cached(i.id);
-  let old_vote = ec.votes[uname] || 0;
-  e.get('votes').set(uname, i.vote).write();
-  // ec.votes[uname] = i.vote;
-  ec.score += i.vote - old_vote;
+  let e = db.entries[i.id];
+  let old_vote = e.votes[uname] || 0;
+  e.votes[uname] = i.vote;
+  e.score += i.vote - old_vote;
   ret();
 });
 
 actions.note = guard(true, {
-  id: checks.shortid, content: checks.nobomb
+  id: checks.goodid, content: checks.nobomb
 }, (ret, i, uname) => {
-  let word = db.get('entries').get(i.id);
-  if(word.value() == undefined)
+  let word = db.entries[i.id];
+  if(!word)
     return ret(flip('word doesn\'t exist'));
   let this_note = {
     on: new Date().toISOString(),
     content: replacements(i.content),
     by: uname
   };
-  word.get('notes')
-    .push(this_note)
-    .write();
-  // Don't do this! The objects are semi-shallow copies! (for some reason)
-  // // cached(i.id).notes.push(this_note);
-  cached(i.id)._content += `${deburr(this_note.content)} `;
-  word = word.value();
+  word.notes.push(this_note);
+  word._content += `${deburr(this_note.content)} `;
   announce({
     color: author_color(uname),
     fields: [{
@@ -279,9 +241,10 @@ actions.note = guard(true, {
 // compat purposes
 actions.comment = actions.note;
 
-function replacements(s) {
-  return s.replace(/___/g, '▯').replace(/[\n\r]+/g, '').normalize('NFC');
-}
+const replacements = call.replacements =
+  s => s.replace(/___/g, '▯')
+    .replace(/[\n\r]+/g, '')
+    .normalize('NFC');
 
 actions.create = guard(true, {
   head: checks.nobomb, body: checks.nobomb, scope: checks.scope
@@ -295,28 +258,25 @@ actions.create = guard(true, {
     notes: [],
     votes: {}
   };
-  cache.push(cacheify(this_entry, id));
+  db.entries[id] = this_entry = cacheify(this_entry, id);
+  db.count++;
   ret(good({data: id}));
-  db.get('entries').set(id, this_entry).write();
   announce({
     color: author_color(uname),
     title: `*${uname}* created **${i.head}**`,
     description: i.body.replace(/___/g, '\u25af'),
     url: `http://uakci.pl/toadua/#%23${id}`
   });
-  db.set('count', Object.entries(db.get('entries').value()).length).write();
 });
 
 actions.login = guard(false, {
   name: checks.present, pass: checks.present
 }, (ret, i) => {
-  let expected = pass.get('hashes').get(i.name).value();
+  let expected = pass.hashes[i.name];
   if(!expected) return ret(flip('user not registered'));
   if(bcrypt.compareSync(i.pass, expected)) {
     var token = uuidv4();
-    pass.get('tokens')
-      .set(token, { name: i.name, last: +new Date })
-      .write();
+    pass.tokens[token] = {name: i.name, last: +new Date};
     ret(good({ token: token, name: i.name }));
   } else ret(flip('password doesn\'t match'));
 });
@@ -325,78 +285,83 @@ actions.register = guard(false, {
   name: it => (it.match(/^[a-zA-Z]{1,64}$/) && true) || 'name must be 1-64 Latin characters',
   pass: checks.limit(128)
 }, (ret, i) => {
-  if(pass.get('hashes').get(i.name).value())
+  if(pass.hashes[i.name])
     return ret(flip('already registered'));
-  pass.get('hashes')
-    .set(i.name, bcrypt.hashSync(i.pass, ROUND_NO))
-    .write();
+  pass.hashes[i.name] = bcrypt.hashSync(i.pass, ROUND_NO);
   actions.login(ret, { name: i.name, pass: i.pass });
 });
 
 actions.logout = guard(true, {}, (ret, i, uname) => {
+  delete pass.tokens[i.token];
   ret();
-  pass.get('tokens')
-    .unset(i.token)
-    .write();
 });
 
 actions.remove = guard(true, {
-  id: checks.shortid
+  id: checks.goodid
 }, (ret, i, uname) => {
-  let entry = db.get('entries').get(i.id).value();
+  let entry = db.entries[i.id];
   if(entry.by != uname)
     return ret(flip('you are not the owner of this entry'));
   if(entry.score > 0)
     return ret(flip('this entry has a positive amount of votes'));
-  cache.splice(cache.findIndex(_ => _.id == i.id), 1);
+  delete db.entries[i.id];
   ret();
-  db.get('entries').unset(i.id).write();
   announce({
     color: author_color(uname),
     title: `*${uname}* removed **${entry.head}**`,
     description: entry.body.replace(/___/g, '\u25af')
   });
-  db.set('count', db.get('count').value() - 1).write();
+  db.count--;
 });
 
 Object.freeze(actions);
 
+call.cacheify = cacheify;
 function cacheify(e, id) {
-  return {...e, id, _head: deburr(e.head), score: score(e),
-      _content: deburr(` ${e.head} ${e.body} ${
-        e.notes.map(_ => _.content).join(' ')} `)};
+  e.id    = id;
+  e._head = deburr(e.head);
+  e.score = score(e),
+  e._content = deburr(` ${e.head} ${e.body} ${
+    e.notes.map(_ => _.content).join(' ')} `);
+  return e;
 }
 
-function cached(id) {
-  return cache.find(_ => _.id == id);
+call.decacheify = decacheify;
+function decacheify(e) {
+  let f = {...e};
+  for(let k of ['_head', '_content', 'score', 'id'])
+    delete f[k];
+  return f;
 }
 
-db.set('entries',
-  db.get('entries')
-    .mapValues(_ => {
-      if(! _.votes) _.votes = {};
-      if(! _.scope) _.scope = 'en';
-      if(_.comments) {
-        _.notes = _.comments;
-        delete _.comments;
-      }
-      if(_.score != undefined) delete _.score;
-      return _;
-    }).value()
-  ).write();
+function present(entry, id, uname) {
+  let e = {...entry};
+  delete e._head; delete e._content;
+  if(uname) e.vote = e.votes[uname] || 0;
+  return e;
+}
+
+db.count = Object.keys(db.entries).length;
+
+for(let k in db.entries) {
+  let e = db.entries[k];
+  e.votes = e.votes || {};
+  e.scope = e.scope || 'en';
+  if(e.comments) {
+    e.notes = e.comments;
+    delete e.comments;
+  }
+  if(Object.hasOwnProperty.call(e, 'score'))
+    delete e.score;
+  db.entries[k] = cacheify(e, k);
+}
 
 let now = +new Date;
-pass.set('tokens',
-  Object.entries(pass.get('tokens').value())
-    .map(([k, v]) => {
-      if(typeof v == 'string')
-        return [k, { name: v,
-                     last: +new Date }];
-      else if(typeof v == 'object')
-        return (now > v.last) ? [k, v] : undefined;
-      else return undefined;
-    }).filter(_ => _)
-  ).write();
-
-cache = Object.entries(db.get('entries').value())
-  .map(([id, e]) => cacheify(e, id));
+for(let k in pass.tokens) {
+  let v = pass.tokens[k];
+  if(typeof v == 'string')
+    pass.tokens[k] = {name: v, last: +new Date};
+  else if(typeof v == 'object')
+    if(now > v.last + EXPIRY)
+      delete pass.tokens[k];
+}
