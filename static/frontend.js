@@ -303,11 +303,11 @@ app = new Vue({
       apisend({action: 'logout'},
         this.clear_account, this.clear_account);
     },
-    welcome: function() {
-      apisend({action: 'welcome'}, function(data) {
+    welcome: function(token) {
+      apisend({action: 'welcome', token: token}, function(data) {
         app.username = data.name;
         app.motd = data.motd;
-        if(! app.username) app.token = null;
+        if(! data.name) app.token = null;
         else app.perform_search();
       });
     }
@@ -317,11 +317,11 @@ app = new Vue({
       app.perform_search();
     }, 300);
     this.perform_search();
-    this.token = store.getItem('token') || store.getItem('id');
+    var token = this.token = store.getItem('token') || store.getItem('id');
     this.limit_search = store.getItem('limit_search') === 'true';
     this.scope = this.scopes.indexOf(store.getItem('scope'));
     if(this.scope === -1) this.scope = 0;
-    this.welcome();
+    this.welcome(token);
   },
   updated: function() {
     if(this.scroll_up) {
