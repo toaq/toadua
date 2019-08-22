@@ -1,11 +1,5 @@
-# the database files
-accounts.db
-dict.db
-# the folder for backups
-backup
-# duh
+backup/*
+data/*
 node_modules
-config.yml
-# recommended locations for Vue.js
-vue.js
-vue-production.js
+config/config.yml
+config/sources.yml

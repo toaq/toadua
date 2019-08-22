@@ -73,6 +73,9 @@ body {
 .notes {
   padding-top: 16px;
 }
+.notes :last-child {
+  padding-bottom: 16px;
+}
 #login input[type="text"],
 #login input[type="password"] {
   width: 50%;

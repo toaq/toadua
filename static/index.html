@@ -12,7 +12,7 @@
       <span style="display: none;" v-show="true">
         <nav id="menu">
           <div>
-            <input type="text" id="search" :placeholder="search_pholder" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
+            <input type="text" id="search" placeholder="search!" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
             --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
           </div>
         </nav>
@@ -23,8 +23,8 @@
               <h2>
                 <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
                 <span class="info">
-                  <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.by)">{{result.scope}}</a>
-                  <a :href="'#@' + result.by" :style="color_for(result.by)" @click="navigate('@' + result.by)">{{result.by}}</a>
+                  <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.user)">{{result.scope}}</a>
+                  <a :href="'#@' + result.user" :style="color_for(result.user)" @click="navigate('@' + result.user)">{{result.user}}</a>
                   <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
                   <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
                 </span>
@@ -33,35 +33,28 @@
             <p class="body" v-html="result.fancy_body"></p>
             <div class="notes">
               <p class="note" v-for="note in result.notes">
-                <span :style="color_for(note.by)" class="note-author" @click="navigate('@' + note.by)">{{note.by}}</span><span v-html="note.fancy_content"></span>
+                <span :style="color_for(note.user)" class="note-author" @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
               </p>
               <p class="note new_note" v-if="result.uncollapsed">
                 <span :style="color_for(username)" class="note-author">{{username}}</span><input type="text" v-model="result.input" placeholder="your note?…">
               </p>
             </div>
             <ul class="controls" v-if="username">
-              <li v-if="! result.uncollapsed">
+                   <li v-if="! result.uncollapsed">
                 <input type="button" value="add note" @click="uncollapse(result)">
-              </li><!--
-              --><li v-if="result.uncollapsed">
+              </li><li v-if="result.uncollapsed">
                 <input type="button" value="submit"   @click="note(result)">
-              </li><!--
-              --><li v-if="result.vote != +1">
+              </li><li v-if="result.vote != +1">
                 <input type="button" value="+"        @click="vote(result, +1)">
-              </li><!--
-              --><li v-if="result.vote !=  0">
+              </li><li v-if="result.vote !=  0">
                 <input type="button" value="±"        @click="vote(result,  0)">
-              </li><!--
-              --><li v-if="result.vote != -1">
+              </li><li v-if="result.vote != -1">
                 <input type="button" value="−"        @click="vote(result, -1)">
-              </li><!--
-              --><li v-if="username == result.by && !result.hesitating">
+              </li><li v-if="username == result.user && !result.hesitating">
                 <input type="button" value="remove"   @click="result.hesitating = true">
-              </li><!--
-              --><li v-if="result.hesitating">
+              </li><li v-if="result.hesitating">
                 <input type="button" value="sure?"    @click="remove(result)">
-              </li><!--
-              --><li>
+              </li><li>
                 <input type="button" value="fork"     @click="fork(result)">
               </li>
             </ul>
@@ -75,13 +68,9 @@
             </li>
           </ul>
         </div>
-        <div class="card" id="welcome" v-if="! (dismissed || query.length)">
-          <h2>Scopes</h2>
-          <p>In order to properly reintegrate Tỏajōe, I added the ‘scopes’ feature. At this point, a scope simply determines the language your definition is in (I can add yours if you wish to). In order to write in a certain language, switch to it with the bottom panel.</p>
-          <p>If your aim is to write definitions in English only, disregard this whole scopes thing – you won't need to think about it at all.</p>
-          <ul class="controls">
-            <li><input type="button" value="dismiss forever" @click="dismiss"></li>
-          </ul>
+        <div class="card" id="welcome" v-if="!dismissed && !query.length && motd.length">
+          <h2 v-html="motd[0]">Tỏadūa</h2>
+          <p v-for="par in motd.slice(1)" v-html="par"></p>
         </div>
         <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
           <div class="title">
@@ -100,7 +89,7 @@
             <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
           </form>
           <ul class="controls">
-               <li><input type="button" value="login"    @click="account('login')"></li><!--
+               <li><input type="button" value="login"    @click="account('login'   )"></li><!--
             --><li><input type="button" value="register" @click="account('register')"></li>
           </ul>
         </div>
@@ -114,15 +103,14 @@
         </div>
       </span>
       <div class="card ohno" v-if="false">
-        <h2>Tỏadūa will not work</h2>
-        <p>Possible reasons for this include:</p>
+        <h2>Loading…</h2>
+        <p>If this screen stays here for too long, you may be suffering from any of the following:</p>
         <ul>
-          <li>That <b>the page is still loading</b> (hold tight!);</li>
+          <li>A bad internet connection, or a bad connection with uakci.pl;</li>
           <li>An old browser <small>(upgrade to Internet Explorer 9, Edge 12, Firefox 21, Chrome 23, Safari 6, Opera 15, or newer)</small>;</li>
-          <li>JavaScript being disabled;</li>
-          <li>A programming error that bailed the app.</li>
+          <li>JavaScript disabled.</li>
         </ul>
-        <p>If the problem persists, <a href="//github.com/uakci/toadua/issues">let me know</a>. Sorry for the inconvenience.</p>
+        <p>Alternatively, there may be an error in the app that caused it to bail. If the problem persists, <a href="//github.com/uakci/toadua/issues">please let me know</a>. Sorry for the inconvenience.</p>
       </div>
     </div>
     <script src="vue.js"></script>

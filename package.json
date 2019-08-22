@@ -1,29 +1,27 @@
 {
   "name": "toadua",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "A collaborative dictionary for the Toaq language.",
-  "main": "server.js",
+  "main": "core/server.js",
   "engines": {
     "node": ">=11.0.0"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "color-convert": "^2.0.0",
-    "js-levenshtein": "^1.1.6",
-    "js-yaml": "^3.13.1",
-    "lodash": "^4.17.15",
-    "object.fromentries": "^2.0.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.7",
-    "shortid": "^2.2.14",
-    "uuid": "^3.3.2",
-    "what-the-pack": "^2.0.3"
+    "bcryptjs": "2.4",
+    "color-convert": "2",
+    "js-yaml": "3.13",
+    "object.fromentries": "2",
+    "request": "^2.34",
+    "request-promise-native": "1",
+    "shortid": "2.2",
+    "uuid": "3",
+    "what-the-pack": "2",
+    "vue": "2.6.10"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "false",
-    "start": "node server.js",
-    "build": "false && node setup.js"
+    "why you can't use `npm start`": ": 'because it captures interrupts such as ^C/SIGINT which Toadūa needs to intercept on its own in order to rescue data'",
+    "start": "echo -e '\\e[41;97mrun ./core/server.js instead\\e[0m\\n' && false"
   },
   "repository": {
     "type": "git",

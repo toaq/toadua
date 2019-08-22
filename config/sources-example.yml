@@ -1,0 +1,27 @@
+# config/sources-example.yml
+# where to fetch data from
+
+# what follows is the example definition of a source; you may define
+# as many as you desire
+
+# name
+example_source:
+  # under what username to publish the words
+  user: foobar
+  # a URL to a downloadable TSV or JSON file
+  source: 'http(s)://example.com/my_dic'
+  format: tsv | json
+  # for TSV files: how many rows to skip before processing
+  # this field can only be left empty in case of JSON files
+  skip: 1
+  # these patterns shape the definitions of words based on the
+  # values of the columns found in the source file. 0-indexed.
+  # with a column like: a\tb\tc\td\te\tf\t, these patterns would
+  # produce two entries: 'a: b c!' and 'd: e is not f'
+  # in case of JSON files, use numbers or field names; i.e., both
+  # %(0) and %(english) is fine
+  patterns:
+    - head: '%(0)'
+      body: '%(1) %(2)!'
+    - head: '%(3)'
+      body: '%(4) is not %(5)'
