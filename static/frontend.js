@@ -304,8 +304,8 @@ app = new Vue({
         this.clear_account, this.clear_account);
     },
     welcome: function() {
-      apisend({action: 'welcome', token: this.token}, function(data) {
-        app.username = data.user;
+      apisend({action: 'welcome'}, function(data) {
+        app.username = data.name;
         app.motd = data.motd;
         if(! app.username) app.token = null;
         else app.perform_search();
