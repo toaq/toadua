@@ -15,8 +15,8 @@
     "request-promise-native": "1",
     "shortid": "2.2",
     "uuid": "3",
-    "what-the-pack": "2",
-    "vue": "2.6.10"
+    "vue": "2.6.10",
+    "what-the-pack": "2"
   },
   "devDependencies": {},
   "scripts": {

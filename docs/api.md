@@ -46,17 +46,17 @@ be present in the object.
 ### `search`
 
 > **Inputs:**
-> 
-> * `query` array of 
-> 
+>
+> * `query` array of
+>
 > **Outputs:**
-> 
+>
 > * `results` entry array
 
   Execute a search against the database given a Lisp-like description
 of the search. The following paragraphs describe the exact format of
 this description.
-  
+
   A query is a tree-like array structure which describes constraints
 in terms of certain criteria or logical operations on such criteria.
 The interpretation of non-initial elements of an array (called
@@ -88,7 +88,7 @@ query := ["and" | "or", ...query]
   - `arity` (*Toaq-specific*): succeeds if the highest number of
     argument places in the parts of a definition is equal to the one
     supplied (must be a number, not a string representation thereof)
-* *Textual constraints*:
+* **Textual constraints**:
   - `term`: succeeds if the supplied string, after removing special
     characters, appears in either the head, the definition, or the
     comments of an entry
@@ -96,7 +96,7 @@ query := ["and" | "or", ...query]
 ### `note` (L)
 
 > **Inputs:**
-> 
+>
 > * `id` string
 > * `content` string
 >
@@ -110,11 +110,11 @@ not be over 2048 characters long. Returns the new state of the entry.
 ### `create` (L)
 
 > **Inputs:**
-> 
+>
 > * `head` string
 > * `body` string
 > * `scope` string?
-> 
+>
 > **Outputs:**
 >
 > * `entry` entry
@@ -127,15 +127,15 @@ characters on each of the head and the body. Don't go crazy.
 ### `login`
 
 > **Inputs:**
-> 
+>
 > * `name` string
 > * `pass` string
-> 
+>
 > **Outputs:**
-> 
+>
 > * `token` string
 
-  Attempts to log in with the given credentials. 
+  Attempts to log in with the given credentials.
 
 ### `logout` (L)
 
@@ -144,12 +144,12 @@ characters on each of the head and the body. Don't go crazy.
 ### `register`
 
 > **Inputs:**
-> 
+>
 > * `name` string
 > * `pass` string
-> 
+>
 > **Outputs:**
-> 
+>
 > * `token` string
 
   Attempts to register with the given credentials. Note that `name`
@@ -159,7 +159,7 @@ restriction on the length, too.
 ### `vote` (L)
 
 > **Inputs:**
-> 
+>
 > * `id` string
 > * `vote` number
 >
@@ -174,18 +174,18 @@ vote.
 ### `welcome`
 
 > **Inputs:**
-> 
+>
 > * `token` string?
-> 
+>
 > **Outputs:**
-> 
+>
 > * `motd` string array
 > * `user` string | `null`
 
   Make `welcome` the first message you send to the server. `motd` will
 contain the Message of the Day – the first entry is the header and the
 following (possibly zero in number) are successive paragraphs.  
-  
+
   If you send a valid token, you will get your username back in
 `user`; otherwise, `user` will be `null` and you will know your token
 is invalid or has expired.
