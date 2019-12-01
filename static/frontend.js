@@ -148,9 +148,9 @@ app = new Vue({
       this.debounced_perform();
     },
     parse_query: function() {
-      var longish = ['and'].concat(this.query.split(/ /)
+      var parts = this.query.split(/ /)
         .map(function(a) {
-        return ['or'].concat(a.split(/\|/).map(function(b) {
+        var parts = a.split(/\|/).map(function(b) {
           var negative, what;
           if(negative = (b[0] === '!'))
             b = b.substring(1);
@@ -174,14 +174,18 @@ app = new Vue({
               ? ['and'].concat(operations) : operations[0];
           }
           return negative ? ['not', what] : what;
-        }));
-      }));
-      // strip the unneeded `and` and `or`
-      for(var _ = 0; _ < 2; ++_) {
-        if(longish.length !== 2) break;
-        longish = longish[1];
+        });
+        if(parts.length > 1) {
+          return ["or"].concat(parts);
+        } else {
+          return parts[0];
+        }
+      });
+      if(parts.length > 1) {
+        return ["and"].concat(parts);
+      } else {
+        return parts[0];
       }
-      return longish;
     },
     perform_search: function() {
       this.done_searching = false;
