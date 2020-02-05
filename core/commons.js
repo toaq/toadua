@@ -15,13 +15,12 @@ let config;
 
 const old_log = console.log;
 
-function log(s) {
+function log() {
   let date = new Date().toISOString()
     .replace(/[:-]/g, '')
     .replace('T', '.')
     .substring(4, 15);
-  let message = (s && s.toString ? s.toString() 
-                                 : Object.prototype.toString.call(s))
+  let message = Array.from(arguments).join(' ')
                  // padding the message so that it doesn't interfere
                  // with the timestamp column:
                  //                '\nMMDD.hhmmss <message>'
@@ -31,9 +30,11 @@ function log(s) {
 
 function deburr(s) {
   return s.normalize('NFD')
-          .replace(/\u0131/g, 'i')
+          .replace(/ı/g, 'i')
           .replace(/[\u0300-\u030f]/g, '')
-          .replace(/[^0-9A-Za-z_-]+/g, ' ')
+          .replace(/[^0-9A-Za-z'_-]+/g, ' ')
+          .replace(/ +/g, ' ')
+          .trim()
           .toLowerCase();
 }
 

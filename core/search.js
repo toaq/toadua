@@ -152,23 +152,27 @@ function search(query, uname) {
   let filter = parse_query(query);
   if(typeof filter === 'string')
     return `malformed query: ${filter}`;
-  let bares = bare_terms(query);
-  let deburrs = bares.map(deburr);
+  let bares = bare_terms(query),
+    deburrs = bares.map(deburr),
+    paddeds = deburrs.map(_ => ` ${_} `);
   let filtered = cache.filter(filter);
   let sorted = filtered.map(e => {
+    let rating = e.score + !!(e.$.user === 'official');
+    // we like logistic curves
+    let multiplier = 1 / (1 + Math.exp(-rating));
     let relevance =
-      + 1 * (e.score + !!(e.$.user === 'official'))
-      // full keyword match
-      + 2 *   deburrs.filter(_ => e.content
-                                   .indexOf(` ${_} `)  !== -1).length
+      (  1
       // partial keyword match
-      + 1 *   deburrs.filter(_ => e.content.indexOf(_) !== -1).length
+      +  1 * deburrs.filter(_ => e.content.indexOf(_) !== -1).length
+      // full keyword match
+      +  2 * paddeds.filter(_ => e.content.indexOf(_) !== -1).length
       // header substring match
-      + 2 * !!deburrs.filter(_ => e.head   .indexOf(_) !== -1).length
-      // full header match
-      + 4 * (bares.indexOf(e.$.head) !== -1);
-    return [e, relevance];
-  }).sort((e1, e2) => e2[1] - e1[1])
-    .map(_ => present(_[0], uname));
-  return sorted;
+      +  4 * deburrs.filter(_ => e.head   .indexOf(_) !== -1).length
+      +  8 * deburrs.filter(_ => _.indexOf(e.head)    !== -1).length
+      // exact match
+      + 16 * deburrs.every (_ => _ === e.head));
+    return [e, multiplier * relevance];
+  }).sort((e1, e2) => e2[1] - e1[1]);
+  let presented = sorted.map(_ => present(_[0], uname));
+  return presented;
 }

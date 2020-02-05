@@ -195,4 +195,4 @@ function bye(error) {
 process.on('exit', code => console.log(`exiting with code ${code}`));
 
 server.listen(config().port);
-console.log(`server started!`);
+console.log(`server started on :${config().port}!`);
