@@ -148,7 +148,7 @@ actions.note = guard(true, {
 
 const replacements = module.exports.replacements =
   s => s.replace(/___/g, '▯')
-    .replace(/[\n\r]+/g, '')
+    .replace(/[\n\r\t\ ]+$/g, '')
     .normalize('NFC');
 
 actions.create = guard(true, {

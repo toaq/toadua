@@ -119,7 +119,7 @@ function parse_query(query) {
   let args;
   try {
     args = query.map(arg => {
-      if(typeof arg === 'string') return arg;
+      if(typeof arg !== 'object') return arg;
       let might_be_it = parse_query(arg);
       if(typeof might_be_it === 'string')
         throw might_be_it;
