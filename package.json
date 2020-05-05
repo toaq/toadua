@@ -16,12 +16,15 @@
     "shortid": "2.2",
     "uuid": "3",
     "vue": "2.6.10",
-    "what-the-pack": "2"
+    "what-the-pack": "2",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {},
   "scripts": {
     "why you can't use `npm start`": ": 'because it captures interrupts such as ^C/SIGINT which Toadūa needs to intercept on its own in order to rescue data'",
-    "start": "echo -e '\\e[41;97mrun ./core/server.js instead\\e[0m\\n' && false"
+    "start": "echo -e '\\e[41;97mrun ./core/server.js instead\\e[0m\\n' && false",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -29,5 +32,6 @@
   },
   "author": "uakci",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "snyk": true
 }
