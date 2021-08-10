@@ -18,12 +18,11 @@ function focus_body() {
 function normalize_head(head) {
   return head
     .trim()
-    .toLowerCase()
     .replace(/\s+/g, " ")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\u2018\u2019x-]/g, "'")
-    .replace(/(\s*)[^aeiouy]+[aeiouy]/g, (m, s) => m + (s ? "\u0309" : "\u0304"))
+    .replace(/[\u2018\u2019x-]/gi, "'")
+    .replace(/(\s*)[^aeiouy]+[aeiouy]/gi, (m, s) => m + (s ? "\u0309" : "\u0304"))
     .replace("\u0304", "")
     .normalize("NFC")
     .replace(/i/g, "ı")
