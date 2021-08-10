@@ -15,6 +15,21 @@ function focus_body() {
   }, 0);
 }
 
+function normalize_head(head) {
+  return head
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2018\u2019x-]/g, "'")
+    .replace(/(\s*)[^aeiouy]+[aeiouy]/g, (m, s) => m + (s ? "\u0309" : "\u0304"))
+    .replace("\u0304", "")
+    .normalize("NFC")
+    .replace(/i/g, "ı")
+    .replace(/ȷ/g, "j");
+}
+
 var queue = {};
 function apisend(what, or, and) {
   if(!and) {
@@ -103,7 +118,13 @@ app = new Vue({
     login_name: '',
     login_pass: '',
     new_head: '',
+    normalized_new_head: '',
     new_body: ''
+  },
+  watch: {
+    new_head: function() {
+      this.normalized_new_head = normalize_head(this.new_head);
+    },
   },
   computed: {
     scope_name: function() {
@@ -255,10 +276,10 @@ app = new Vue({
       });
     },
     create: function() {
-      apisend({action: 'create', head: this.new_head,
+      apisend({action: 'create', head: this.normalized_new_head,
                body: this.new_body, scope: this.scope_name},
         function(data) {
-        app.new_head = app.new_body = '';
+        app.new_head = app.normalized_new_head = app.new_body = '';
         document.querySelector('#create_body').style.height = 24;
         app.done_searching = app.dismissed = true;
         app.add_to_history(app.query = '#' + data.entry.id);

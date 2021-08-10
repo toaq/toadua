@@ -120,6 +120,12 @@ body {
   overflow: hidden;
   padding-bottom: 16px;
 }
+#create .head-preview {
+  cursor: default;
+  opacity: 0.5;
+  float: left;
+  margin-top: 6px;
+}
 p.new_note.note input[type="text"] {
   box-sizing: border-box;
   width: 100%;
