@@ -197,7 +197,7 @@ app = new Vue({
         return;
       }
       let parsed_query = this.parse_query();
-      if (this.limit_search) parsed_query = ['and', parsed_query, ['scope', this.scope_name]];
+      if (this.limit_search) parsed_query = ['and', ['scope', this.scope_name], parsed_query];
       this.current_search_request = apisend(
         {action: 'search', query: parsed_query},
         function(data) {
