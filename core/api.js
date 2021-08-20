@@ -54,7 +54,7 @@ function call(i, ret, uname) {
   }
 }
 
-if(!store.db)   store.db   = {entries: {}, count: 0};
+if(!store.db)   store.db   = {entries: [], count: 0};
 if(!store.pass) store.pass = { hashes: {}, tokens: {}};
 
 let actions = {};
