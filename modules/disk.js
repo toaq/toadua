@@ -121,7 +121,7 @@ function state_change() {
       intervals[k] = commons.setInterval(acts[k], this[k]);
   }
   if(first_go) {
-    store.db   = read('data/dict.db',     {entries: {},  count: 0 }),
+    store.db   = read('data/dict.db',     {entries: [],  count: 0 }),
     store.pass = read('data/accounts.db', { hashes: {}, tokens: {}}); 
     first_go = false;
   } else if(!this) {

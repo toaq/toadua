@@ -216,8 +216,10 @@ app = new Vue({
         this.scroll_up = true;
         return;
       }
+      let parsed_query = this.parse_query();
+      if (this.limit_search) parsed_query = ['and', ['scope', this.scope_name], parsed_query];
       this.current_search_request = apisend(
-        {action: 'search', query: this.parse_query()},
+        {action: 'search', query: parsed_query},
         function(data) {
           app.scroll_up = true;
           app.result_cache = data.results.map(app.process_entry);
