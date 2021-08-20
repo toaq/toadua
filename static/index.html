@@ -77,6 +77,10 @@
             <input type="text" id="create_name" class="name" placeholder="Create new entry" v-model="new_head">
           </div>
           <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" v-model="new_body"></textarea>
+          <div class="head-preview">
+            <span v-if="normalized_new_head">Submitting as <b>{{ normalized_new_head }}</b></span>
+            <span v-else>&nbsp;</span>
+          </div>
           <ul class="controls">
             <li><input type="submit" :value="'submit to ' + scope_name" class="submit" @click="create"></li><!--
             --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
