@@ -5,18 +5,9 @@
 const commons = require('./../core/commons.js')(__filename);
 module.exports = {state_change, message, entry};
 
-const   request = require('request-promise-native'),
-  color_convert = require('color-convert'),
-            api = commons.require('./api.js');
-
-function author_color(name) {
-  if(name === 'official')
-    return 0x333333;
-  var n = 0;
-  for(var i = 0, l = name.length; i < l; ++i)
-    n = (((n << 5) - n) + name.charCodeAt(i)) % 360;
-  return Number.parseInt(color_convert.hsl.hex(n, 100, 30), 16);
-}
+const request = require('request-promise-native'),
+       shared = require('./../shared/shared.js'),
+          api = commons.require('./api.js');
 
 function entry(ev, entry, note) {
   let action = (() => {
@@ -26,12 +17,14 @@ function entry(ev, entry, note) {
         return `${ev}d`;
       case 'note':
         return 'noted on';
+      default:
+        return null;
     }
   })();
+  if(!action) message(entry);
   message({
-          color: author_color((note && note.user) || entry.user),
-          title: `*${(note && note.user) || entry.user}* ${action
-                  } **${entry.head}**`,
+          color: shared.color_for((note && note.user) || entry.user).hex,
+          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**`,
          fields: (note && [{ name: `(definition by *${entry.user}*)`,
                        value: entry.body}]) || undefined,
     description: note ? note.content : entry.body,
@@ -53,12 +46,12 @@ function message(what) {
 
 function send_off() {
   if(!queue.length) return;
-  let m = queue[0];
+  let m = queue.pop();
   request(m).then(() => {
     console.log(`-> '${m.body.embeds[0].title}' announced`);
-    queue.shift();
     setTimeout(send_off, 0);
   }, err => {
+    queue.push(m);
     if(err.statusCode === 429)
       setTimeout(send_off, err.error.retryAfter);
     else {
@@ -74,4 +67,5 @@ function state_change() {
     for(let ev of ['create', 'note', 'remove'])
       commons.emitter[options.enabled ? 'on' : 'off'](ev, entry);
   enabled = options.enabled;
+  if(!enabled) queue.splice(0, queue.length);
 }

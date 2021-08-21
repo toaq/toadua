@@ -6,44 +6,42 @@ const commons = require('./../core/commons.js')(__filename);
 let store = commons.store;
 module.exports = {state_change, read, write, using, backup, save};
 
-const http = require('http'),
-        fs = require('fs'),
-   msgpack = require('what-the-pack').initialize(1 << 22);
+const  http = require('http'),
+         fs = require('fs'),
+       zlib = require('zlib'),
+     stream = require('stream');
 
 function read(fname, deft) {
-  let buf;
+  let gzip;
   try {
-    buf = fs.readFileSync(fname);
+    gzip = fs.readFileSync(fname);
   } catch(e) {
     console.log(`Note: setting the default value for '${fname
       }' because of a file read failure (${e.code})`);
     write(fname, deft);
     return deft;
   }
-  let o;
-  try {
-    o = JSON.parse(buf.toString());
-  } catch(e) {
-    o = msgpack.decode(buf);
-  }
+  let buf = zlib.gunzipSync(gzip);
+  let o = JSON.parse(buf.toString());
   console.log(`successfully read ${buf.length}b from '${fname}'`);
   return o;
 }
 
 function write_(fname, data, guard_override) {
+  let gzip = zlib.gzipSync(
+    Buffer.from(JSON.stringify(data)));
   let backup = fname + '~',
-     encoded = msgpack.encode(data),
-    our_size = encoded.length,
+    our_size = gzip.length,
      success = false,
     unbackup = true;
   if(!guard_override)
     try {
       let {size: old_size} = fs.statSync(fname);
-      if(encoded.length / (old_size || 1) < 0.5) {
+      if(gzip.length / (old_size || 1) < 0.5) {
         console.log(
           `warning: refusing to destructively write ${our_size
            }b over ${old_size}b file '${fname}'`);
-        console.log(`will write to backup '${backup}' only`);
+        console.log(`will write to backup '${backup}' instead`);
         unbackup = false;
       }
     } catch(e) {
@@ -52,7 +50,7 @@ function write_(fname, data, guard_override) {
     }
   for(let _ = 0; _ < 3; ++_) {
     try {
-      fs.writeFileSync(backup, encoded);
+      fs.writeFileSync(backup, gzip);
     } catch(e) {
       console.log(`error when saving to backup '${backup
         }': ${e.stack}\n`);
@@ -102,14 +100,14 @@ function backup() {
   } catch(e) {
     if(e.code !== 'EEXIST') throw e; 
   } if(!write(`backup/${new Date().toISOString().split(':')[0]
-      .replace(/T/, '-')}`, store))
+      .replace(/T/, '-')}.json.gz`, store))
     console.log(`note: backup failed`);
 }
 
 function save() {
   return ((a, b) => a && b)(
-    write('data/dict.db',     store.db),
-    write('data/accounts.db', store.pass));
+    write('data/dict.json.gz',     store.db),
+    write('data/accounts.json.gz', store.pass));
 }
 
 const acts = {save_interval: save, backup_interval: backup};
@@ -121,8 +119,8 @@ function state_change() {
       intervals[k] = commons.setInterval(acts[k], this[k]);
   }
   if(first_go) {
-    store.db   = read('data/dict.db',     {entries: [],  count: 0 }),
-    store.pass = read('data/accounts.db', { hashes: {}, tokens: {}}); 
+    store.db   = read('data/dict.json.gz',     {entries: [],  count: 0 }),
+    store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {}}); 
     first_go = false;
   } else if(!this) {
     console.log(`trying to save data...`);

@@ -120,12 +120,6 @@ body {
   overflow: hidden;
   padding-bottom: 16px;
 }
-#create .head-preview {
-  cursor: default;
-  opacity: 0.5;
-  float: left;
-  margin-top: 6px;
-}
 p.new_note.note input[type="text"] {
   box-sizing: border-box;
   width: 100%;
@@ -134,29 +128,37 @@ p.new_note.note input[type="text"] {
   margin: 0;
   padding: 0;
 }
-ul.controls {
+span.controls-left {
+  float: left;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.controls {
   font-size: 12px;
   height: 18px;
   margin: 6px 0 0 auto;
   display: block;
   width: fit-content;
   width: -moz-fit-content;
+  height: fit-content;
+  height: -moz-fit-content;
+  text-align: right;
 }
-ul.controls > li {
+.controls > li {
   display: inline-block;
   padding-top: 2px;
   height: 16px;
 }
-ul.controls > li input[type="button"], 
-ul.controls > li input[type="submit"] {
+.controls > li input[type="button"], 
+.controls > li input[type="submit"] {
   font-size: 12px; /* !important it is */
 }
-ul.controls > li::before {
+.controls > li::before {
   content: '•';
   height: 14px;
   padding: 0 2px;
 }
-ul.controls > li:first-child::before {
+.controls > li:first-child::before {
   visibility: hidden;
 }
 h2, .name {

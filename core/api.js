@@ -8,9 +8,10 @@ const {deburr, config, store, emitter} =
 module.exports = call;
 
 const shortid = require('shortid'),
-       uuidv4 = require('uuid/v4'),
+       uuidv4 = require('uuid').v4,
        bcrypt = require('bcryptjs'),
-       search = require('./search.js');
+       search = require('./search.js'),
+       shared = require('../shared/shared.js');
 
 // `uname` is used to override the user – a kind of sudo mode
 function call(i, ret, uname) {
@@ -148,7 +149,7 @@ actions.note = guard(true, {
 
 const replacements = module.exports.replacements =
   s => s.replace(/___/g, '▯')
-    .replace(/[\n\r\t\ ]+$/g, '')
+    .replace(/\s+$/g, '')
     .normalize('NFC');
 
 actions.create = guard(true, {
@@ -158,7 +159,8 @@ actions.create = guard(true, {
   let this_entry = {
     id,
     date: new Date().toISOString(),
-    head: replacements(i.head), body: replacements(i.body),
+    head: shared.normalize(i.head),
+    body: replacements(i.body),
     user: uname,
     scope: i.scope,
     notes: [],

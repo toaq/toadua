@@ -1,5 +1,6 @@
-backup/*
-data/*
-node_modules
-config/config.yml
-config/sources.yml
+/dist
+/backup
+/data
+/node_modules
+/config/config.yml
+/config/sources.yml

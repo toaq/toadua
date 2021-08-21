@@ -6,10 +6,8 @@
 module.exports = pollute;
 
 const fs = require('fs'),
-    yaml = require('js-yaml').safeLoad,
-     ofe = require('object.fromentries'),
+    yaml = require('js-yaml').load,
   {EventEmitter} = require('events');
-ofe.shim();
 
 let config;
 
@@ -115,7 +113,6 @@ function pollute(__filename) {
   let parts = __filename.split(/[\/\\]/);
   log(`loading file '${parts.slice(parts.length - 2).join('/')}'...`);
   
-  ofe.shim();
   console.log = log;
   return exported;
 }

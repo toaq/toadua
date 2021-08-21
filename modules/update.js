@@ -10,7 +10,8 @@ const request = require('request-promise-native'),
           api = commons.require('./api.js'),
        search = commons.require('./search.js'),
      announce = require('./announce.js'),
-       config = commons.fluid_config('config/sources.yml');
+       config = commons.fluid_config('config/sources.yml'),
+       shared = require('../shared/shared.js');
 
 const FORMATS = {
    tsv: (data, options) => data
@@ -32,87 +33,102 @@ let word_lists = {};
 
 // poll for new entries at remote TSV spreadsheets and add them to the
 // dictionary every now and then
-function sync_resources() {
+async function sync_resources() {
   let time = +new Date, cf = config(), changed = false;
-  Promise.all(
+  await Promise.all(
     Object.entries(cf).map(
-      ([name, {source, user, format, ...rest}]) => request.get(source)
-        .catch(err =>
-          console.log(`on resource '${name}': ${err.stack}`))
-        .then(async data => {
-          try {
-            console.log(`updating resource '${name}'`);
-            let word_list = Object.fromEntries(
-              FORMATS[format](data, rest)
-                .filter(_ => _.head && _.body)
-                .map(_ => [api.replacements(_.head),
-                           api.replacements(_.body)]));
-            console.log(`'${name}': entry count was ${
-                         word_lists[name]
-                         ? Object.keys(word_lists[name]).length 
-                         : 0}, is ${
-                         Object.keys(word_list).length}`);
-            if(JSON.stringify(word_lists[name]) !==
-               JSON.stringify(word_list)) changed = true;
-            word_lists[name] = word_list;
-          } catch(e) {
-            console.log(`on resource '${name}': ${e}`);
-          }
-        }))
-  ).then(() => {
-    if(changed) {
-      console.log('adding...');
-      for(let [name, words] of Object.entries(word_lists)) {
-        let user = cf[name].user;
-        for(let [head, body] of Object.entries(words)) {
-          let s = search(['and', ['user', user],
-                                 ['head', head],
-                                 ['body', body]]).length;
-          if(!s) {
-            api({action: 'create', head, body,
-                 scope: 'en'}, (res = {}) => {
-              if(!res.success)
-                   console.log(`!! '${head}' caused error: ${
-                                res.error}`);
-              else console.log(`++ '${head}' added`);
-            }, user);
-          }
+      async ([name, {source, user, format, ...rest}]) => {
+        let data;
+        try {
+          data = await request.get(source);
+          console.log(`updating resource '${name}'`);
+          let word_list = Object.fromEntries(
+            FORMATS[format](data, rest)
+              .filter(_ => _.head && _.body)
+              .map(_ => [shared.normalize(_.head),
+                         api.replacements(_.body)]));
+          console.log(`'${name}': entry count was ${
+                       word_lists[name]
+                       ? Object.keys(word_lists[name]).length 
+                       : 0}, is ${
+                       Object.keys(word_list).length}`);
+          if(JSON.stringify(word_lists[name]) !==
+             JSON.stringify(word_list)) changed = true;
+          word_lists[name] = word_list;
+        } catch(err) {
+          console.log(`on resource '${name}': ${err.stack}`);
         }
+      }));
+  
+  if(!changed) {
+    console.log(`nothing to update (${new Date - time} ms)`);
+    return;
+  }
+  console.log('adding...');
+  for(let [name, words] of Object.entries(word_lists)) {
+    let user = cf[name].user;
+    for(let [head, body] of Object.entries(words)) {
+      let s = search(['and', ['user', user],
+                             ['head', head],
+                             ['body', body]]).length;
+      if(!s) {
+        api({action: 'create', head, body,
+             scope: 'en'}, (res = {}) => {
+          if(!res.success)
+               console.log(`!! '${head}' caused error: ${
+                            res.error}`);
+          else console.log(`++ '${head}' added`);
+        }, user);
       }
-      if(Object.keys(word_lists).length === Object.keys(cf).length) {
-        console.log('obsoleting...');
-        let unames = new Set(Object.values(cf).map(_ => _.user));
-        // ...I do have the right to write messy code, don't I?
-        let fetched = Object.fromEntries(
-          [...unames].map(uname => [uname,
-            Object.fromEntries(
-              Object.entries(cf).filter(_ => _[1].user == uname)
-                .map(_ => Object.entries(word_lists[_[0]]))
-                .flat())]));
-        store.db.entries.filter(e => unames.has(e.user))
-          .forEach(e => {
-            let found = fetched[e.user][e.head];
-            if(!found || found !== e.body) {
-              // we need to re-find the entry because `search` makes
-              // copies on output
-              e = api.by_id(e.id);
-              e.user = `old${e.user}`;
-              e.votes[e.user] = -1;
-              e.score--;
-              console.log(`~~ '${e.head}' obsoleted`);
-              announce.message({
-                      title: `definition for **${e.head}** obsoleted`,
-                description: e.body,
-                        url: `${commons.config().entry_point
-                              }#%23${e.id}`
-              });
-            }
-          });
-      }
-      search.recache();
     }
-    console.log(`updating done (${new Date - time} ms)`);
-  });
+  }
+
+  let messages = {};
+  if(Object.keys(word_lists).length === Object.keys(cf).length) {
+    console.log('obsoleting...');
+    let unames = new Set(Object.values(cf).map(_ => _.user));
+    // ...I do have the right to write messy code, don't I?
+    let fetched = Object.fromEntries(
+      [...unames].map(uname => [uname,
+        Object.fromEntries(
+          Object.entries(cf).filter(_ => _[1].user == uname)
+            .map(_ => Object.entries(word_lists[_[0]]))
+            .flat())]));
+
+    store.db.entries.filter(e => unames.has(e.user)).forEach(e => {
+      let found = fetched[e.user][e.head];
+      if(found && found === e.body) return;
+      // we need to re-find the entry because `search` makes
+      // copies on output
+      e = api.by_id(e.id);
+      e.user = `old${e.user}`;
+      e.votes[e.user] = -1;
+      e.score--;
+      console.log(`~~ '${e.head}' obsoleted`);
+      (messages[e.user] = messages[e.user] || []).push({
+              title: `definition for **${e.head}** obsoleted`,
+        description: e.body,
+                url: `${commons.config().entry_point
+                      }#%23${e.id}`,
+               head: e.head,
+      });
+    });
+  }
+
+  search.recache();
+
+  for(let [user, msgs] of Object.entries(messages)) {
+    if(msgs.length > 5)
+      announce.message({
+              title: `${msgs.length} definitions obsoleted for user *${user}*`,
+        description: msgs.map(_ => _.head).slice(0, 50).join(', ') +
+                     (msgs.length > 50 ? `, and ${msgs.length - 50} more` : ''),
+      });
+    else for(let {title, description, url} of msgs)
+      announce.message({title, description, url});
+  }
+
+  console.log(`updating done (${new Date - time} ms)`);
 }
 
 var interval, options;

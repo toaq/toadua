@@ -15,18 +15,11 @@ const fs = require('fs'),
     http = require('http'),
      api = require('./api.js');
 
-let fourohfour = static_handler('static/404.html', 'text/html', 404),
-       vue_prd = static_handler('node_modules/vue/dist/vue.min.js',
-                                'application/javascript'),
-       vue_dev = static_handler('node_modules/vue/dist/vue.js',
-                                'application/javascript'),
+let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =
-  {'/'         : static_handler('static/index.html', 'text/html'),
-   '/style.css': static_handler('static/style.css',  'text/css'),
-   '/main.js'  : static_handler('static/frontend.js',
-                                'application/javascript'),
-   '/vue.js'   : (...args) =>
-                   (config().production ? vue_prd : vue_dev)(...args),
+  {'/'         : static_handler('frontend/index.html', 'text/html'),
+   '/style.css': static_handler('frontend/style.css',  'text/css'),
+   '/front.js' : static_handler('dist/bundle.js',      'application/javascript'),
    '/api'      : api_handler};
 
 function api_handler(r, s) {
