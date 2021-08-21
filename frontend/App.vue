@@ -307,7 +307,7 @@ methods.note = function note(whom) {
 
 methods.create = function create() {
   this.apisend({action: 'create', head: this.new_head,
-      body: shared.normalize(this.new_body), scope: this.scope_name}, data => {
+      body: this.new_body, scope: this.scope_name}, data => {
     this.new_head = this.new_body = '';
     document.querySelector('#create_body').style.height = 24;
     this.done_searching = this.dismissed = true;
