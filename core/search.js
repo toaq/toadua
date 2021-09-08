@@ -14,6 +14,7 @@ function cacheify(e) {
   return {      $: e,
                id: e.id,
              head: deburr(e.head),
+             date: +new Date(e.date),
             score: e.score,
           content: deburr(` ${e.head} ${e.body} ${
                            e.notes.map(_ => _.content).join(' ')} `)};
@@ -147,8 +148,26 @@ function bare_terms(o) {
   }
 }
 
+function default_ordering(e, paddeds, deburrs) {
+  let rating = e.score + !!(e.$.user === 'official');
+  // we like logistic curves
+  let multiplier = 1 / (1 + Math.exp(-rating));
+  let relevance =
+    (  1
+    // partial keyword match
+    +  1 * deburrs.filter(_ => e.content.indexOf(_) !== -1).length
+    // full keyword match
+    +  2 * paddeds.filter(_ => e.content.indexOf(_) !== -1).length
+    // header substring match
+    +  4 * deburrs.filter(_ => e.head   .indexOf(_) !== -1).length
+    +  8 * deburrs.filter(_ => _.indexOf(e.head)    !== -1).length
+    // exact match
+    + 16 * deburrs.every (_ => _ === e.head));
+  return multiplier * relevance;
+}
+
 module.exports = search;
-function search(query, uname) {
+function search(query, requested_ordering, uname) {
   let filter = parse_query(query);
   if(typeof filter === 'string')
     return `malformed query: ${filter}`;
@@ -156,23 +175,16 @@ function search(query, uname) {
     deburrs = bares.map(deburr),
     paddeds = deburrs.map(_ => ` ${_} `);
   let filtered = cache.filter(filter);
-  let sorted = filtered.map(e => {
-    let rating = e.score + !!(e.$.user === 'official');
-    // we like logistic curves
-    let multiplier = 1 / (1 + Math.exp(-rating));
-    let relevance =
-      (  1
-      // partial keyword match
-      +  1 * deburrs.filter(_ => e.content.indexOf(_) !== -1).length
-      // full keyword match
-      +  2 * paddeds.filter(_ => e.content.indexOf(_) !== -1).length
-      // header substring match
-      +  4 * deburrs.filter(_ => e.head   .indexOf(_) !== -1).length
-      +  8 * deburrs.filter(_ => _.indexOf(e.head)    !== -1).length
-      // exact match
-      + 16 * deburrs.every (_ => _ === e.head));
-    return [e, multiplier * relevance];
-  }).sort((e1, e2) => e2[1] - e1[1]);
+  let ordering = default_ordering;
+  switch(requested_ordering) {
+    case 'newest':  ordering = e => +e.date;       break;
+    case 'oldest':  ordering = e => -e.date;       break;
+    case 'highest': ordering = e => +e.score;      break;
+    case 'lowest':  ordering = e => -e.score;      break;
+    case 'random':  ordering = e => Math.random(); break;
+  }
+  let sorted = filtered.map(e => [e, ordering(e, paddeds, deburrs)])
+                       .sort((e1, e2) => e2[1] - e1[1]);
   let presented = sorted.map(_ => present(_[0], uname));
   return presented;
 }

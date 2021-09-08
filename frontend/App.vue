@@ -215,6 +215,7 @@ methods.search = function search() {
 }
 
 methods.parse_query = function parse_query() {
+  let ordering;
   let parts = this.query.split(/ /)
     .map(a => {
     let parts = a.split(/\|/).map(b => {
@@ -223,9 +224,12 @@ methods.parse_query = function parse_query() {
         b = b.substring(1);
       let parts = b.split(':');
       if(parts.length === 2)
-        what = [parts[0],
-                parts[0] === 'arity' ? parseInt(parts[1], 10) || 0
-                                     : parts[1]];
+        if(parts[0] == 'order') {
+          ordering = parts[1];
+          return ["and"];
+        } else what = [parts[0], parts[0] === 'arity'
+                                 ? parseInt(parts[1], 10) || 0
+                                 : parts[1]];
       else {
         parts = b.split(/(?=[\/@#])/);
         let operations = [];
@@ -246,9 +250,11 @@ methods.parse_query = function parse_query() {
       return ["or"].concat(parts);
     else return parts[0];
   });
+  let query;
   if(parts.length > 1)
-    return ["and"].concat(parts);
-  else return parts[0];
+    query = ["and"].concat(parts);
+  else query = parts[0];
+  return { query, ordering };
 }
 
 methods.perform_search = function perform_search() {
@@ -261,9 +267,10 @@ methods.perform_search = function perform_search() {
     return;
   }
   let parsed_query = this.parse_query();
-  if (this.limit_search) parsed_query = ['and', ['scope', this.scope_name], parsed_query];
+  if (this.limit_search) parsed_query.query = ['and', ['scope', this.scope_name], parsed_query.query];
+  parsed_query.action = 'search';
   this.current_search_request = this.apisend(
-    {action: 'search', query: parsed_query},
+    parsed_query,
     data => {
       this.scroll_up = true;
       this.result_cache = data.results.map(this.process_entry);

@@ -115,9 +115,12 @@ actions.welcome = guard(false, {},
   (ret, i, uname) => ret(good({name: uname,
                                motd: config().motd})));
 
-actions.search = guard(false, {query: checks.present},
+actions.search = guard(false, {
+  query: checks.present,
+  ordering: s => !s || checks.nobomb(s),
+},
 (ret, i, uname) => {
-  let data = search(i.query, uname);
+  let data = search(i.query, i.ordering, uname);
   if(typeof data === 'string') ret(flip(data));
   else                         ret(good({results: data}));
 });
