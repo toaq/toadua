@@ -105,7 +105,6 @@ methods.color_for    = s => shared.color_for  (s).css;
 methods.score_number = shared.score_number;
 methods.normalize    = shared.normalize;
 
-const HOW_MANY_AT_ONCE = 25;
 const character_operators = {'/': 'arity', '@': 'user', '#': 'id'};
 
 methods.focus_body = function focus_body() {
@@ -176,7 +175,7 @@ methods.replacements = function replacements(content, still_editing, plain_text)
       else
         return ante
           + '<a href="#' + encodeURIComponent(m)
-          + '" onclick="javascript:void(this.navigate(\''
+          + '" onclick="javascript:void(app.navigate(\''
           + m.replace(/'/g, '\\\'')
              .replace(/"/g, '')
              .replace(/\\/, '\\\\')
@@ -268,7 +267,7 @@ methods.perform_search = function perform_search() {
     data => {
       this.scroll_up = true;
       this.result_cache = data.results.map(this.process_entry);
-      this.results = this.result_cache.splice(0, HOW_MANY_AT_ONCE);
+      this.results = this.result_cache.splice(0, this.initial_result_count);
       this.add_to_history(this.query);
       this.done_searching = true;
       this.current_search_request = undefined;
@@ -335,7 +334,7 @@ methods.update_entry = function update_entry(whom, what_with) {
 }
 
 methods.new_word = function new_word() {
-  this.new_head = this.query;
+  this.new_head = this.normalize(this.query, true);
   this.navigate('');
   focus_body();
 }
@@ -406,6 +405,7 @@ module.exports = {
       query: decodeURIComponent(window.location.hash.replace(/^#/, '')),
       queue: {},
       result_cache: [],
+      initial_result_count: 25,
       results: [],
       scope: 0,
       scopes: ['en', 'toa', 'jbo', 'ja', 'es'],
