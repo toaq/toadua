@@ -3,9 +3,19 @@
 // the server, duh
 
 "use strict";
-process.cwd(__dirname + '/..');
 console.log('-----------');
-const commons = require('./commons.js')(__filename);
+
+const argparser = new (require('argparse').ArgumentParser)({
+  description: 'Toaq dictionary',
+  add_help: true,
+});
+argparser.add_argument('-d', '--data-directory', {
+  help: 'Where to read and write configuration and data files',
+});
+let dir = argparser.parse_args().data_directory || `${__dirname}/..`;
+process.chdir(dir);
+const commons = require('./commons.js')(__filename, dir);
+
 let config = commons.config;
 const VERSION = require('./../package.json').version;
 
@@ -65,7 +75,8 @@ function api_handler(r, s) {
   }
 }
 
-function static_handler(fname, mime, code) {
+function static_handler(fn, mime, code) {
+  let fname = `${__dirname}/../${fn}`;
   code = code || 200;
   let f = fs.readFileSync(fname);
   let t = fs.statSync(fname).mtimeMs;

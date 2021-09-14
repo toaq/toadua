@@ -95,7 +95,7 @@ function fluid_config(fname, handler) {
 }
 
 const MAIN_CONFIG = 'config/config.yml',
-   DEFAULT_CONFIG = 'config/defaults.yml';
+   DEFAULT_CONFIG = `${__dirname}/../config/defaults.yml`;
 // initialise the global config file
 let  main_config = fluid_config(MAIN_CONFIG),
   default_config = yaml(fs.readFileSync(DEFAULT_CONFIG));
