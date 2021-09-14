@@ -110,7 +110,7 @@ function pollute(__filename, args) {
     throw new Error(
       'commons.js/pollute must be called with __filename');
   }
-  if(args?.port) default_config.port = args.port;
+  if(args && args.port) default_config.port = args.port;
   let parts = __filename.split(/[\/\\]/);
   log(`loading file '${parts.slice(parts.length - 2).join('/')}'...`);
   
