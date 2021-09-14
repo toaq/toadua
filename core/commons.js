@@ -104,12 +104,13 @@ Object.setPrototypeOf(config, new EventEmitter);
 config.update = () => main_config.update();
 main_config.on('update', () => config.emit('update', config()));
 
-function pollute(__filename) {
+function pollute(__filename, args) {
   // announce to the console that a file is going to be loaded
   if(!__filename) {
     throw new Error(
       'commons.js/pollute must be called with __filename');
   }
+  if(args?.port) default_config.port = args.port;
   let parts = __filename.split(/[\/\\]/);
   log(`loading file '${parts.slice(parts.length - 2).join('/')}'...`);
   

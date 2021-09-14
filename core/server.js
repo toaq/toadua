@@ -11,10 +11,16 @@ const argparser = new (require('argparse').ArgumentParser)({
 });
 argparser.add_argument('-d', '--data-directory', {
   help: 'Where to read and write configuration and data files',
+  type: 'str',
 });
-let dir = argparser.parse_args().data_directory || `${__dirname}/..`;
+argparser.add_argument('-p', '--port', {
+  help: 'Bind port',
+  type: 'int',
+});
+let args = argparser.parse_args();
+let dir = args.data_directory || `${__dirname}/..`;
 process.chdir(dir);
-const commons = require('./commons.js')(__filename, dir);
+const commons = require('./commons.js')(__filename, args);
 
 let config = commons.config;
 const VERSION = require('./../package.json').version;
