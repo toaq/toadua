@@ -11,19 +11,17 @@ module.exports = {
     let suffix = trim ? '' : s.match(/\s*$/)[0];
     s = s.normalize('NFD').replace(/ı/g, 'i').replace(/ȷ/g, 'j');
     let words = s.split(/\s+/gi).filter(_ => _);
-    return words.map(w => 
+    return words.map(w =>
       w.replace(
         /(['\u02bc\u2018\u2019x-]*)([^aeiouyq\u0300-\u036f'\u02bc\u2018\u20190-9x-]*)([aeiouy])([\u0300-\u036f]?)([aeiouy]*(?![\u0300-\u036f])q?)([0-8]*)/gi,
-        (_, apo, initial, first, tone, rest, num, offset) => {
-          if(num) tone = ['', '\u0304', '\u0301', '\u0308', '\u0309', '\u0302', '\u0300', '\u0303', ''][num];
-          let retain_tone = tone !== '';
-          let abnormal = offset && retain_tone && tone !== '\u0304';
+        (_, _apo, initial, first, tone, rest, num, offset) => {
+          if(tone == '\u0304') tone = '';
+          if(num) tone = ['', '', '\u0301', '\u0308', '\u0309', '\u0302', '\u0300', '\u0303', ''][num];
+          let abnormal = offset && tone !== '';
           return [
             abnormal && ' ',
             offset && !initial && !abnormal && "'",
-            initial, first,
-            retain_tone ? tone : offset && '\u0304',
-            rest
+            initial, first, tone, rest
           ].filter(_ => _).join('');
         }))
       .join(' ')
