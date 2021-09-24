@@ -21,8 +21,20 @@ function state_change() {
     if(now > last + config().token_expiry)
       delete store.pass.tokens[k];
 
-  for(let entry of store.db.entries)
-    entry.head = shared.normalize(entry.head);
+  let reformed = 0;
+  const reform = (e, p) => {
+    let normalized = shared.normalize(e[p]);
+    let retval = normalized !== e[p];
+    e[p] = normalized;
+    return retval;
+  };
+  for(let entry of store.db.entries) {
+    let didReform = reform(entry, 'head');
+    if(entry.scope === 'toa')
+      didReform = reform(entry, 'body') || didReform;
+    if(didReform) reformed++;
+  }
+  if(reformed) console.log(`reformed ${reformed} entries`);
 
   search.recache();
 }
