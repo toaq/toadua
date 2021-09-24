@@ -42,11 +42,6 @@ module.exports = {
 
   score_color: n => convert_hue(Math.atan(n / 2) / Math.PI * 2),
 
-  convert_hue: n => ({
-    hex: parseInt(hsl_to_hex(n, 100, 30), 16),
-    css: `color: hsl(${n}, 100%, 30%);`
-  }),
-
   score_number: n =>
       n > 0 ? `+${n}`
     : n < 0 ? `−${-n}`
