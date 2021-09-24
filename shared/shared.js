@@ -15,7 +15,7 @@ module.exports = {
       w.replace(
         /(['\u02bc\u2018\u2019x-]*)([^aeiouyq\u0300-\u036f'\u02bc\u2018\u20190-9x-]*)([aeiouy])([\u0300-\u036f]?)([aeiouy]*(?![\u0300-\u036f])q?)([0-8]*)/gi,
         (_, _apo, initial, first, tone, rest, num, offset) => {
-          if(tone == '\u0304') tone = '';
+          if(tone === '\u0304') tone = '';
           if(num) tone = ['', '', '\u0301', '\u0308', '\u0309', '\u0302', '\u0300', '\u0303', ''][num];
           let abnormal = offset && tone !== '';
           return [
