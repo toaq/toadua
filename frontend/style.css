@@ -1,25 +1,39 @@
-/* * {
-  border-top: 1px solid black !important;
-  border-bottom: 1px solid black !important;
-} */
+html {
+  --body-font: 'Noto Sans', sans-serif;
+  --heading-font: 'Inter', sans-serif;
+}
+
+#container {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding-top: 96px;
+  padding-bottom: 16px;
+}
+
 #as_who {
   font-weight: bold;
 }
+
 input, textarea {
   background-color: inherit;
+  appearance: none;
   -webkit-appearance: none;
   outline: none;
+  border: none;
   color: #333;
 }
+
 input[type=button],
 input[type=submit] {
   border: 0;
   padding: 0;
-  font-family: inherit;
+  font-family: var(--heading-font);
   font-weight: bold;
   color: #ff007f;
   cursor: pointer;
 }
+
 input[type=button]:active,
 input[type=button]:hover,
 input[type=button]:focus,
@@ -28,54 +42,73 @@ input[type=submit]:hover,
 input[type=submit]:focus {
   color: #333;
 }
+
 ::placeholder {
-  color: #aaa;
+  color: hsl(330deg, 50%, 75%);
 }
+
 html {
   width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
 }
+
 body {
   width: 100%;
   margin: 0;
+  height: 100%;
   padding: 0;
-  color: #333;
-  font-family: 'Roboto', sans-serif;
+  color: hsl(0deg, 0%, 25%);
+  font-family: var(--body-font);
   font-size: 16px;
-  background-color: #eee;
+  background-color: hsl(330deg, 50%, 97%);
   overflow-y: scroll;
+  caret-color: #ff007f;
 }
-.card, .card-transparent {
+
+.card {
   box-sizing: border-box;
   margin: 16px;
+  margin-top: 0px;
   padding: 16px;
-}
-.card {
   background: white;
-  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.1);
+  border: 2px solid hsl(330deg, 50%, 80%);
+  border-radius: 4px;
+  overflow-x: auto;
 }
+
+#container > .card:last-child {
+  margin-bottom: 0;
+}
+
 .card .title {
   display: block;
   width: 100%;
   position: relative;
 }
+
 .card .info {
   font-size: 16px;
 }
+
 .card .scope {
   color: #777;
 }
+
 .card .body {
   line-height: 24px;
   margin: 0;
 }
+
 .notes {
   padding-top: 16px;
 }
+
 .notes :last-child {
   padding-bottom: 16px;
 }
+
 #login input[type="text"],
 #login input[type="password"] {
   width: 50%;
@@ -85,10 +118,12 @@ body {
   padding: 2px;
   border-bottom: 1px solid #aaa !important; /* hotfix */
 }
+
 #login_username, #login_password {
   padding: 3px 0;
   /* 32 px = 26 px (bounding box) + 2 * _3px_ */
 }
+
 .note input,
 #login input[type="text"],
 #login input[type="password"],
@@ -98,9 +133,11 @@ body {
   border: none;
   border-radius: 0;
 }
+
 #create input[type="text"] {
   line-height: 32px;
 }
+
 #create input[type="text"],
 #create textarea {
   padding: 0;
@@ -111,8 +148,9 @@ body {
   min-width: 100%;
   max-width: 100%;
 }
+
 #create textarea {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--body-font);
   font-size: 16px;
   line-height: 24px;
   padding: 0;
@@ -120,6 +158,7 @@ body {
   overflow: hidden;
   padding-bottom: 16px;
 }
+
 p.new_note.note input[type="text"] {
   box-sizing: border-box;
   width: 100%;
@@ -128,12 +167,15 @@ p.new_note.note input[type="text"] {
   margin: 0;
   padding: 0;
 }
+
 span.controls-left {
   float: left;
   font-size: 12px;
   margin-top: 8px;
 }
+
 .controls {
+  display: block;
   font-size: 12px;
   height: 18px;
   margin: 6px 0 0 auto;
@@ -144,35 +186,45 @@ span.controls-left {
   height: -moz-fit-content;
   text-align: right;
 }
+
 .controls > li {
   display: inline-block;
-  padding-top: 2px;
+  /* padding-top: 2px; */
   height: 16px;
 }
+
 .controls > li input[type="button"], 
 .controls > li input[type="submit"] {
   font-size: 12px; /* !important it is */
 }
+
 .controls > li::before {
   content: '•';
   height: 14px;
+  width: 12px;
+  text-align: center;
   padding: 0 2px;
+  font-family: var(--heading-font);
 }
+
 .controls > li:first-child::before {
   visibility: hidden;
 }
+
 h2, .name {
   margin-top: 0;
   margin-bottom: 0;
   font-size: 24px;
-  font-family: 'Roboto Condensed', sans-serif;
+  font-family: var(--heading-font);
   color: #333;
   display: inline-block;
 }
+
 .word_id {
   color: #333;
   text-decoration: underline;
 }
+
 .note {
   font-size: 12px;
   line-height: 16px;
@@ -183,18 +235,21 @@ h2, .name {
   padding-bottom: 0;
   padding-top: 0;
 }
+
 .hl {
   color: #fff;
   background-color: #333;
 }
+
 .note .hl {
-  /* color: #ff3397; */
   color: #ffffff;
   background-color: #333;
 }
+
 .note-author::after {
   content: ": ";
 }
+
 #main {
   overflow: hidden;
   box-sizing: border-box;
@@ -202,56 +257,109 @@ h2, .name {
   width: 100%;
   padding-bottom: 10px;
 }
+
 #menu {
+  position: fixed;
+  top: 0;
   box-sizing: border-box;
-  height: 64px;
+  height: 82px; /* 10px + 16px + 54px + 2px */
   width: 100%;
   z-index: 1000;
   padding: 0;
   margin: 0;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.9);
-  position: fixed;
-  top: 0;
+  background-color: hsl(210deg, 50%, 97%);
+  border: 2px solid hsl(210deg, 50%, 80%);
+  border-radius: 0px 0px 4px 4px;
 }
-#menu div {
-  height: 64px;
-  width: 512px;
-  padding: 0;
-  margin: 0 auto;
-}
+
 #search {
   box-sizing: border-box;
-  display: inline-block;
-  width: calc(100% - 2 * 64px);
-  height: 64px;
-  margin: 0 0 0 64px;
+  display: inline;
+  width: calc(100% - 2 * 54px - 2 * 10px);
+  height: 54px;
+  margin: 0 10px;
   outline: none;
   font-size: 24px;
-  padding: calc((64px - 24px) / 2) 0;
   border: none;
-  font-family: 'Roboto Condensed', sans-serif;
+  font-family: var(--heading-font);
   text-align: center;
+  color: hsl(210deg, 50%, 25%);
+  padding: 10px 0 15px 0;
+  vertical-align: top;
 }
-#cancel {
-  display: inline-block;
-  height: 64px;
-  width: 64px;
+
+#search::placeholder {
+  color: hsl(210deg, 50%, 75%);
+}
+
+#search-row input[type=button] {
+  height: 54px;
+  width: 54px;
   font-size: 24px;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--body-font);
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  padding-bottom: 5px;
 }
+
+#control-row {
+  height: 16px;
+  width: 100%;
+  overflow-x: auto;
+  margin: 0;
+  padding-top: 10px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#control-row::-webkit-scrollbar {
+  display: none;
+}
+
+#top-controls {
+  width: max-content;
+  width: -moz-max-content;
+  height: 16px;
+  overflow-y: hidden;
+  padding: 0 12px;
+  margin: 0 auto;
+  line-height: 16px;
+  color: hsl(210deg, 25%, 50%);
+}
+
+#top-controls li:first-child::before {
+  display: none;
+}
+
+#top-controls input {
+  color: hsl(210deg, 75%, 25%);
+}
+
+#top-controls input[type=button]:active,
+#top-controls input[type=button]:hover,
+#top-controls input[type=button]:focus,
+#top-controls input[type=submit]:active,
+#top-controls input[type=submit]:hover,
+#top-controls input[type=submit]:focus {
+  color: black;
+}
+
+#top-controls #scope-editor {
+  color: hsl(210deg, 75%, 25%);
+  font-family: var(--heading-font);
+  font-weight: bold;
+}
+
 h1, h2, h3 {
-  font-family: 'Roboto Condensed', sans-serif;
+  font-family: var(--heading-font);
   font-weight: 300;
 }
+
 h2 {
   font-size: 24px;
 }
-#spacer {
-  width: 100%;
-}
+
 a {
   text-decoration: none;
   color: #ff007f;
@@ -260,54 +368,27 @@ a {
 /* 512px + 2 * 16px + (scrollbar) 17px */
 
 @media(min-width: 562px) {
-  .card, .card-transparent {
+  .card {
     margin-left: auto;
     margin-right: auto;
     width: calc(512px - 2 * 16px);
   }
-  .card {
-    margin-top: 0px;
-  }
+
   #menu {
-    top: 16px;
-    left: calc((100% - 512px) / 2);
-    width: 512px;
-  }
-  #spacer {
-    height: 96px;
+    left: calc((100% - 512px) / 2 - 2px);
+    width: 516px; /* 512px + 4px */
+    border-top-width: 0;
   }
 }
 
 @media(max-width: 561px) {
-  .card, .card-transparent {
+  .card {
     width: calc(100% - 2 * 16px);
-    position: relative;
-    margin-top: 0;
   }
-  #menu div {
-    width: 100%;
-  }
+
   #menu {
-    top: 0;
-    left: 0;
+    width: 100%;
+    border-width: 0px 0px 2px 0px;
+    border-radius: 0;
   }
-  #spacer {
-    height: 80px;
-  }
-}
-
-/* Curtain definitions */
-
-.ohno {
-  box-shadow: none;
-  border: 2px solid #777;
-  padding: 14px;
-  background-color: transparent;
-  margin: auto auto;
-  float: left;
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  -ms-transform: translate(-50%);
-      transform: translate(-50%);
 }

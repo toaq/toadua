@@ -112,8 +112,7 @@ function present(e, uname) {
 }
 
 actions.welcome = guard(false, {},
-  (ret, i, uname) => ret(good({name: uname,
-                               motd: config().motd})));
+  (ret, i, uname) => ret(good({name: uname})));
 
 actions.search = guard(false, {
   query: checks.present,

@@ -1,12 +1,20 @@
 <template>
-  <div>
+  <div id="container">
     <nav id="menu">
-      <div>
-        <input type="text" id="search" placeholder="search!" v-model="query" @input.lazy="search" autocomplete="off" autofocus><!--
-        --><input type="button" id="cancel" value="×" v-if="query" @click="navigate('')">
+      <div id="control-row">
+        <ul id="top-controls" class="controls">
+          <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+          --><li>search scope only:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
+          --><li>scope:&thinsp;<span id="scope-editor" contenteditable v-model="scope" @click="focus_scope_editor">en</span></li><!--
+          --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
+        </ul>
+      </div>
+      <div id="search-row">
+        <input type="button" value=" "><!--
+        --><input type="text" id="search" placeholder="search!" v-model="query" @input.lazy="search" autocomplete="off" spellcheck="off"><!--
+        --><input type="button" id="cancel" value="×" v-show="query" @click="navigate(''); focus_search()">
       </div>
     </nav>
-    <div id="spacer"></div>
     <div id="results">
       <div class="card" v-for="result in results">
         <div class="title">
@@ -58,17 +66,13 @@
         </li>
       </ul>
     </div>
-    <div class="card" id="welcome" v-if="!dismissed && !query.length && motd.length">
-      <h2 v-html="motd[0]">Toadua</h2>
-      <p v-for="par in motd.slice(1)" v-html="par"></p>
-    </div>
     <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
       <div class="title">
         <input type="text" id="create_name" class="name" placeholder="Create new entry" :value.sync="new_head" @input="$event.target.value = new_head = normalize($event.target.value, false)">
       </div>
       <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" :value.sync="new_body" @input="$event.target.value = new_body = replacements($event.target.value, true, true)"></textarea>
       <ul class="controls">
-        <li><input type="submit" :value="'submit to ' + scope_name" class="submit" @click="create"></li><!--
+        <li><input type="submit" :value="'submit to ' + scope" class="submit" @click="create"></li><!--
         --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
       </ul>
     </div>
@@ -81,15 +85,6 @@
       <ul class="controls">
            <li><input type="submit" value="login"    @click="account('login'   )"></li><!--
         --><li><input type="button" value="register" @click="account('register')"></li>
-      </ul>
-    </div>
-    <div class="card" id="logout" v-if="! query">
-      <span class="controls-left">Toadua{{version ? ` v${version}` : ''}}</span>
-      <ul class="controls">
-        <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-        --><li>limit search to {{scope_name}}:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
-        --><li>scope:&thinsp;<input type="button" :value="scope_name" class="submit" @click="update_scope"></li><!--
-        --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
       </ul>
     </div>
   </div>
@@ -267,7 +262,7 @@ methods.perform_search = function perform_search() {
     return;
   }
   let parsed_query = this.parse_query();
-  if (this.limit_search) parsed_query.query = ['and', ['scope', this.scope_name], parsed_query.query];
+  if (this.limit_search) parsed_query.query = ['and', ['scope', this.scope], parsed_query.query];
   parsed_query.action = 'search';
   this.current_search_request = this.apisend(
     parsed_query,
@@ -313,7 +308,7 @@ methods.note = function note(whom) {
 
 methods.create = function create() {
   this.apisend({action: 'create', head: this.new_head,
-      body: this.new_body, scope: this.scope_name}, data => {
+      body: this.new_body, scope: this.scope}, data => {
     this.new_head = this.new_body = '';
     document.querySelector('#create_body').style.height = 24;
     this.done_searching = this.dismissed = true;
@@ -324,13 +319,7 @@ methods.create = function create() {
 
 methods.update_limit_search = function update_limit_search() {
   this.limit_search = !this.limit_search;
-  this.store.setItem('limit_search',
-    JSON.stringify(this.limit_search));
-}
-
-methods.update_scope = function update_scope() {
-  this.scope = (this.scope + 1) % this.scopes.length;
-  this.store.setItem('scope', this.scopes[this.scope]);
+  this.store.setItem('limit_search', this.limit_search ? "true" : "" /* death */);
 }
 
 methods.update_entry = function update_entry(whom, what_with) {
@@ -375,7 +364,6 @@ methods.logout = function logout() {
 methods.welcome = function welcome() {
   this.apisend({action: 'welcome', token: this.token}, data => {
     this.username = data.name;
-    this.motd = data.motd;
     if(!data.name) this.token = null;
     else this.perform_search();
   });
@@ -397,6 +385,16 @@ methods.resize = function resize() {
   clone.parentNode.removeChild(clone);
 }
 
+methods.focus_search = function focus_search() {
+  document.getElementById('search').focus();
+}
+
+methods.focus_scope_editor = function focus_scope_editor() {
+  let scopeEditor = document.getElementById('scope-editor');
+  scopeEditor.focus();
+  scopeEditor.select();
+}
+
 module.exports = {
   methods,
   data() {
@@ -406,7 +404,6 @@ module.exports = {
       limit_search: false,
       login_name: '',
       login_pass: '',
-      motd: ['Toadua'],
       new_head: '',
       new_body: '',
       query: decodeURIComponent(window.location.hash.replace(/^#/, '')),
@@ -414,8 +411,7 @@ module.exports = {
       result_cache: [],
       initial_result_count: 25,
       results: [],
-      scope: 0,
-      scopes: ['en', 'toa', 'jbo', 'ja', 'es'],
+      scope: "en",
       scroll_up: false,
       store: window.localStorage ||
         (alert("Your browser doesn't support local storage, " +
@@ -427,9 +423,6 @@ module.exports = {
     };
   },
   computed: {
-    scope_name() {
-      return this.scopes[this.scope];
-    },
     what_should_i_say() { return (
       this.done_searching
         ? this.results.length
@@ -443,11 +436,12 @@ module.exports = {
   created() {
     this.debounced_perform = debounce(() => this.perform_search(), 300);
     this.perform_search();
-    let token = this.token = this.store.getItem('token');
-    this.limit_search = this.store.getItem('limit_search') == 'true';
-    this.scope = this.scopes.indexOf(this.store.getItem('scope'));
-    if(this.scope === -1) this.scope = 0;
-    this.welcome(token);
+    for(let k of ['token', 'limit_search', 'scope'])
+      this[k] = this.store.getItem(k) || this[k];
+    this.welcome(this.token);
+  },
+  mounted() {
+    this.focus_search();
   },
   updated() {
     if(this.scroll_up) {

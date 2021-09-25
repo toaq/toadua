@@ -17,12 +17,6 @@ exit_on_module_load_error: true
 # passed to bcrypt.hash. changing this value will not break existing
 # passwords
 password_rounds: 8
-# the first element is the header
-# each following entry starts in a new paragraph
-motd:
-  - 'Tỏadūa'
-# - '…is a word.'
-# - 'It means ‹word-know(er)›.'
 
 # please note that modules are loaded in the given order. below are
 # given sensible defaults, but you are welcome to use your own values.

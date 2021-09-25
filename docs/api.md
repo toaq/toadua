@@ -189,13 +189,9 @@ vote.
 >
 > **Outputs:**
 >
-> * `motd` string array
 > * `user` string | `null`
 
-  Make `welcome` the first message you send to the server. `motd` will
-contain the Message of the Day – the first entry is the header and the
-following (possibly zero in number) are successive paragraphs.  
-
-  If you send a valid token, you will get your username back in
-`user`; otherwise, `user` will be `null` and you will know your token
-is invalid or has expired.
+  Make `welcome` the first message you send to the server. If you send
+a valid token, you will get your username back in `user`; otherwise,
+`user` will be `null` and you will know your token is invalid or has
+expired.
