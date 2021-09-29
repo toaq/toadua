@@ -110,21 +110,13 @@ function handler(r, s_) {
       if(code !== 200)
         console.log(`responding with code ${code} (${
                      http.STATUS_CODES[code]})`);
-      try {
-        s_.writeHead(code, headers);
-      } catch(e) {
-        console.log(e.stack);
-      }
+      s_.writeHead(code, headers);
       return this;
     },
     write(what) {
       let w = what instanceof Buffer ? what : Buffer.from(what);
       console.log(`sent off ${w.length}b`);
-      try {
-        return s_.write(w);
-      } catch(e) {
-        console.log(e.stack);
-      }
+      return s_.write(w);
     },
     end(...args) {
       s_.end(...args);
@@ -139,7 +131,11 @@ function handler(r, s_) {
     handler(r, s, url);
   } catch(e) {
     console.log(`error in ${handler.name}: ${e.stack}`);
-    s.writeHead(500 /* Internal Server Error */).end();
+    try {
+      s.writeHead(500 /* Internal Server Error */).end();
+    } catch(e) {
+      console.log(`error while handling error. ignore and eat sock: ${e.stack}`);
+    }
   }
 }
 
