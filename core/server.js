@@ -62,6 +62,7 @@ function api_handler(r, s) {
       } catch(e) {
         flip(400 /* Bad Request */,
              'The request body could not be parsed as JSON.');
+        return;
       }
       try {
         api(json, data => {
@@ -74,6 +75,7 @@ function api_handler(r, s) {
         console.log(`unexpected uncaught error: ${e.stack}`);
         flip(500 /* Internal Server Error */,
              'Unexpected error while processing request.');
+        return;
       }
     });
   } else {
