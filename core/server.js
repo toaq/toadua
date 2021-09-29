@@ -110,13 +110,21 @@ function handler(r, s_) {
       if(code !== 200)
         console.log(`responding with code ${code} (${
                      http.STATUS_CODES[code]})`);
-      s_.writeHead(code, headers);
+      try {
+        s_.writeHead(code, headers);
+      } catch(e) {
+        console.log(e.stack);
+      }
       return this;
     },
     write(what) {
       let w = what instanceof Buffer ? what : Buffer.from(what);
       console.log(`sent off ${w.length}b`);
-      return s_.write(w);
+      try {
+        return s_.write(w);
+      } catch(e) {
+        console.log(e.stack);
+      }
     },
     end(...args) {
       s_.end(...args);
