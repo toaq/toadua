@@ -1,90 +1,90 @@
 <template>
-  <div id="container">
-    <nav id="menu">
-      <div id="control-row">
-        <ul id="top-controls" class="controls">
-          <li v-if="username">logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-          --><li>search scope only:&thinsp;<input type="button" :value="limit_search ? 'yes' : 'no'" class="submit" @click="update_limit_search"></li><!--
-          --><li>scope:&thinsp;<span id="scope-editor" contenteditable v-model="scope" @click="focus_scope_editor">en</span></li><!--
-          --><li v-if="username"><input type="button" value="logout" class="submit" @click="logout"></li>
+  <div id=container>
+    <nav id=menu>
+      <div id=control-row>
+        <ul id=top-controls class=controls>
+          <li v-if=username>logged in as <b :style="color_for(username)">{{username}}</b></li><!--
+          --><li>search scope only:&thinsp;<input type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search></li><!--
+          --><li>scope:&thinsp;<span id=scope-editor contenteditable v-model=scope @click=focus_scope_editor>en</span></li><!--
+          --><li v-if=username><input type=button value=logout class=submit @click=logout></li>
         </ul>
       </div>
-      <div id="search-row">
-        <input type="button" value=" "><!--
-        --><input type="text" id="search" placeholder="search!" v-model="query" @input.lazy="search" autocomplete="off" spellcheck="off"><!--
-        --><input type="button" id="cancel" value="×" v-show="query" @click="navigate(''); focus_search()">
+      <div id=search-row>
+        <input type=button value=" "><!--
+        --><input type=text id=search placeholder="search!" v-model=query @input.lazy=search autocomplete=off spellcheck=off><!--
+        --><input type=button id=cancel value="×" v-show=query @click="navigate(''); focus_search()">
       </div>
     </nav>
-    <div id="results">
-      <div class="card" v-for="result in results">
-        <div class="title">
+    <div id=results>
+      <div class=card v-for="result in results">
+        <div class=title>
           <h2>
-            <a :href="'#' + result.head" class="name" @click="navigate(result.head)">{{result.head}}</a>
-            <span class="info">
-              <a :href="'#scope:' + result.scope" class="scope" @click="navigate('scope:' + result.user)">{{result.scope}}</a>
+            <a :href="'#' + result.head" class=name @click="navigate(result.head)">{{result.head}}</a>
+            <span class=info>
+              <a :href="'#scope:' + result.scope" class=scope @click="navigate('scope:' + result.user)">{{result.scope}}</a>
               <a :href="'#@' + result.user" :style="color_for(result.user)" @click="navigate('@' + result.user)">{{result.user}}</a>
               <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
               <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
             </span>
           </h2>
         </div>
-        <p class="body" v-html="result.fancy_body"></p>
-        <div class="notes">
-          <p class="note" v-for="note in result.notes">
-            <span :style="color_for(note.user)" class="note-author" @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
+        <p class=body v-html="result.fancy_body"></p>
+        <div class=notes>
+          <p class=note v-for="note in result.notes">
+            <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
           </p>
           <p class="note new_note" v-if="result.uncollapsed">
-            <span :style="color_for(username)" class="note-author">{{username}}</span><input type="text" placeholder="your note?…" :value.sync="result.input" @input="$event.target.value = result.input = replacements($event.target.value, true, true)">
+            <span :style="color_for(username)" class=note-author>{{username}}</span><input type=text placeholder="your note?…" :value.sync="result.input" @input="$event.target.value = result.input = replacements($event.target.value, true, true)">
           </p>
         </div>
-        <ul class="controls" v-if="username">
+        <ul class=controls v-if=username>
                <li v-if="! result.uncollapsed">
-            <input type="button" value="add note" @click="uncollapse(result)">
+            <input type=button value="add note" @click="uncollapse(result)">
           </li><li v-if="result.uncollapsed">
-            <input type="button" value="submit"   @click="note(result)">
+            <input type=button value=submit   @click="note(result)">
           </li><li v-if="result.vote != +1">
-            <input type="button" value="+"        @click="vote(result, +1)">
+            <input type=button value="+"        @click="vote(result, +1)">
           </li><li v-if="result.vote !=  0">
-            <input type="button" value="±"        @click="vote(result,  0)">
+            <input type=button value="±"        @click="vote(result,  0)">
           </li><li v-if="result.vote != -1">
-            <input type="button" value="−"        @click="vote(result, -1)">
+            <input type=button value="−"        @click="vote(result, -1)">
           </li><li v-if="username == result.user && !result.hesitating">
-            <input type="button" value="remove"   @click="result.hesitating = true">
+            <input type=button value="remove"   @click="result.hesitating = true">
           </li><li v-if="result.hesitating">
-            <input type="button" value="sure?"    @click="remove(result)">
+            <input type=button value="sure?"    @click="remove(result)">
           </li><li>
-            <input type="button" value="fork"     @click="fork(result)">
+            <input type=button value="fork"     @click="fork(result)">
           </li>
         </ul>
       </div>
     </div>
-    <div class="card" v-if="query || results.length">
-      <h2 class="name" style="color: #333">{{what_should_i_say}}</h2>
-      <ul class="controls" v-if="done_searching && username">
+    <div class=card v-if="query || results.length">
+      <h2 class=name style="color: #333">{{what_should_i_say}}</h2>
+      <ul class=controls v-if="done_searching && username">
         <li>
-          <input type="button" :value="'create ‘' + query + '’?'" @click="new_word">
+          <input type=button :value="'create ‘' + query + '’?'" @click=new_word>
         </li>
       </ul>
     </div>
-    <div class="card" id="create" v-if="username && (done_searching || !query) && ! results.length">
-      <div class="title">
-        <input type="text" id="create_name" class="name" placeholder="Create new entry" :value.sync="new_head" @input="$event.target.value = new_head = normalize($event.target.value, false)">
+    <div class=card id=create v-if="username && (done_searching || !query) && ! results.length">
+      <div class=title>
+        <input type=text id=create_name class=name placeholder="Create new entry" :value.sync=new_head @input="$event.target.value = new_head = normalize($event.target.value, false)">
       </div>
-      <textarea id="create_body" class="body" rows="1" placeholder="Type in the Toaq word above and the definition here" :value.sync="new_body" @input="$event.target.value = new_body = replacements($event.target.value, true, true)"></textarea>
-      <ul class="controls">
-        <li><input type="submit" :value="'submit to ' + scope" class="submit" @click="create"></li><!--
-        --><li v-if="new_head || new_body"><input type="button" value="clear" @click="new_head = new_body = ''"></li>
+      <textarea id=create_body class=body rows=1 placeholder="Type in the Toaq word above and the definition here" :value.sync=new_body @input="$event.target.value = new_body = replacements($event.target.value, true, true)"></textarea>
+      <ul class=controls>
+        <li><input type=submit :value="'submit to ' + scope" class=submit @click=create></li><!--
+        --><li v-if="new_head || new_body"><input type=button value=clear @click="new_head = new_body = ''"></li>
       </ul>
     </div>
-    <div class="card" id="login" v-if="!(username || query)">
+    <div class=card id=login v-if="!(username || query)">
       <h2>Access</h2>
       <form>
-        <div id="login_username"><input id="input_username" type="text" placeholder="username" v-model="login_name" autocomplete="username"></div>
-        <div id="login_password"><input id="input_password" type="password" placeholder="password" v-model="login_pass" autocomplete="current-password"></div>
+        <div id=login_username><input id=input_username type=text placeholder=username v-model=login_name autocomplete=username></div>
+        <div id=login_password><input id=input_password type=password placeholder=password v-model=login_pass autocomplete=current-password></div>
       </form>
-      <ul class="controls">
-           <li><input type="submit" value="login"    @click="account('login'   )"></li><!--
-        --><li><input type="button" value="register" @click="account('register')"></li>
+      <ul class=controls>
+           <li><input type=submit value=login    @click="account('login'   )"></li><!--
+        --><li><input type=button value=register @click="account('register')"></li>
       </ul>
     </div>
   </div>
