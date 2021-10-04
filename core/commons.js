@@ -28,10 +28,9 @@ function log() {
 
 function deburr(s) {
   return s.normalize('NFD')
-          .replace(/ı/g, 'i')
-          .replace(/[\u0300-\u037f]/g, '')
-          .toLowerCase()
-          .split(/\s+/)
+          .replace(/\p{M}+/gu, '')
+          .split(/\P{L}+/gu)
+          .map(_ => _.toLowerCase().replace(/ı/g, 'i'))
           .filter(_ => _);
 }
 

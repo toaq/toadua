@@ -18,6 +18,7 @@ function cacheify(e) {
                id: e.id,
              head: deburredHead,
              body: deburredBody,
+            notes: deburredNotes,
              date: +new Date(e.date),
             score: e.score,
           content: [].concat(deburredHead, deburredBody, deburredNotes)};
@@ -32,8 +33,8 @@ function cached_by_id(id) {
 }
 
 search.present = present;
-function present(e, uname) {
-  let original = {...e.$};
+function present(e, uname, relevance) {
+  let original = {...e.$, relevance, content: e.content};
   original.vote = uname ? original.votes[uname] || 0 : undefined;
   delete original.votes;
   return original;
@@ -154,24 +155,19 @@ function bare_terms(o) {
 }
 
 function default_ordering(e, deburrs) {
-  let rating = e.score + !!(e.$.user === 'official');
-  // we like logistic curves
-  let multiplier = 1 / (1 + Math.exp(-rating));
-  let relevance =
-    (  1
-    // partial keyword match
-    +  1 * deburrMatch(deburrs, e.content, deburrMatch.CONTAINING)
+  return Math.sqrt((1 + Math.max(0, e.score) + (e.$.user === 'official')) / (1 + Math.max(0, -e.score))) * (
     // full keyword match
-    +  2 * deburrMatch(deburrs, e.content, deburrMatch.EXACT)
-    // header substring match
-    +  4 * deburrMatch(deburrs, e.body, deburrMatch.CONTAINING)
-    +  6 * deburrMatch(deburrs, e.body, deburrMatch.CONTAINED)
-    + 10 * deburrMatch(deburrs, e.head, deburrMatch.CONTAINING)
-    + 17 * deburrMatch(deburrs, e.head, deburrMatch.CONTAINED)
-    // exact match. the number is very exact too, as you can see
-    + 69.4201337 * (deburrMatch(deburrs, e.head, deburrMatch.EXACT) == deburrs.length)
+    +  1 * (deburrMatch(deburrs, e.notes, deburrMatch.CONTAINING) > 0)
+    // header/body substring/superstring match
+    +  3 * (deburrMatch(deburrs, e.body, deburrMatch.CONTAINED) > 0)
+    +  6 * (deburrMatch(deburrs, e.head, deburrMatch.CONTAINED) > 0)
+    + 10 * (deburrMatch(deburrs, e.body, deburrMatch.CONTAINING) > 0)
+    + 15 * (deburrMatch(deburrs, e.head, deburrMatch.CONTAINING) > 0)
+    // exact match. 
+    + 30 * (deburrMatch(deburrs, e.body, deburrMatch.EXACT) > 0)
+    // the number is very exact too, as you can see
+    + 69.4201337 * (deburrMatch(deburrs, e.head, deburrMatch.EXACT) == e.head.length)
   );
-  return multiplier * relevance;
 }
 
 module.exports = search;
@@ -192,6 +188,6 @@ function search(query, requested_ordering, uname) {
   }
   let sorted = filtered.map(e => [e, ordering(e, deburrs)])
                        .sort((e1, e2) => e2[1] - e1[1]);
-  let presented = sorted.map(_ => present(_[0], uname));
+  let presented = sorted.map(_ => present(_[0], uname, _[1]));
   return presented;
 }
