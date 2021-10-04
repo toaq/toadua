@@ -11,7 +11,7 @@ html {
 }
 
 #as_who {
-  font-weight: bold;
+  font-weight: 600;
 }
 
 input, textarea {
@@ -20,7 +20,8 @@ input, textarea {
   -webkit-appearance: none;
   outline: none;
   border: none;
-  color: #333;
+  color: hsl(330deg, 25%, 25%);
+  font-size: inherit;
 }
 
 input[type=button],
@@ -28,9 +29,13 @@ input[type=submit] {
   border: 0;
   padding: 0;
   font-family: var(--heading-font);
-  font-weight: bold;
-  color: #ff007f;
+  font-weight: 600;
+  color: hsl(330deg, 87.5%, 50%);
   cursor: pointer;
+}
+
+#cancel {
+  color: hsl(210deg, 87.5%, 50%);
 }
 
 input[type=button]:active,
@@ -39,7 +44,13 @@ input[type=button]:focus,
 input[type=submit]:active,
 input[type=submit]:hover,
 input[type=submit]:focus {
-  color: #333;
+  color: hsl(330deg, 25%, 25%);
+}
+
+input[type=button]:disabled,
+input[type=submit]:disabled {
+  color: hsl(330deg, 25%, 75%); /* peachy */
+  cursor: not-allowed;
 }
 
 ::placeholder {
@@ -63,7 +74,7 @@ body {
   font-size: 16px;
   background-color: hsl(330deg, 50%, 97%);
   overflow-y: scroll;
-  caret-color: #ff007f;
+  caret-color: hsl(330deg, 75%, 50%);
 }
 
 .card {
@@ -108,14 +119,14 @@ body {
   padding-bottom: 16px;
 }
 
-#login input[type="text"],
-#login input[type="password"] {
+#login > div > input[type=text],
+#login > div > input[type=password] {
   width: 50%;
   font-family: inherit;
   font-size: inherit;
   margin: 0 auto;
   padding: 2px;
-  border-bottom: 1px solid #aaa !important; /* hotfix */
+  border-bottom: 1px solid hsl(330deg, 50%, 75%);
 }
 
 #login_username, #login_password {
@@ -124,20 +135,35 @@ body {
 }
 
 .note input,
-#login input[type="text"],
-#login input[type="password"],
-#create input[type="text"],
+#login input[type=text],
+#login input[type=password],
+#create input[type=text],
 #create textarea {
   display: block;
   border: none;
   border-radius: 0;
 }
 
-#create input[type="text"] {
+#create input[type=text] {
   line-height: 32px;
 }
 
-#create input[type="text"],
+#create #scope-editor input[type=text]#scope {
+  height: 17px;
+  width: unset;
+  min-width: unset;
+  max-width: unset;
+  line-height: 12px;
+  display: inline;
+  color: hsl(330deg, 87.5%, 50%);
+  font-family: var(--heading-font);
+}
+
+input, textarea {
+  font-family: var(--body-font);
+}
+
+#create input[type=text],
 #create textarea {
   padding: 0;
   border: none;
@@ -158,7 +184,7 @@ body {
   padding-bottom: 16px;
 }
 
-p.new_note.note input[type="text"] {
+p.new_note.note input[type=text] {
   box-sizing: border-box;
   width: 100%;
   font-family: inherit;
@@ -167,18 +193,23 @@ p.new_note.note input[type="text"] {
   padding: 0;
 }
 
+input[type=submit].note-submit {
+  float: right;
+  position: relative;
+  right: 0;
+  padding-bottom: 0;
+}
+
 span.controls-left {
   float: left;
   font-size: 12px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .controls {
   display: block;
   font-size: 12px;
-  height: 18px;
   margin: 6px 0 0 auto;
-  display: block;
   width: fit-content;
   width: -moz-fit-content;
   height: fit-content;
@@ -188,13 +219,7 @@ span.controls-left {
 
 .controls > li {
   display: inline-block;
-  /* padding-top: 2px; */
   height: 16px;
-}
-
-.controls > li input[type="button"], 
-.controls > li input[type="submit"] {
-  font-size: 12px; /* !important it is */
 }
 
 .controls > li::before {
@@ -344,12 +369,6 @@ h2, .name {
   color: black;
 }
 
-#top-controls #scope-editor {
-  color: hsl(210deg, 75%, 25%);
-  font-family: var(--heading-font);
-  font-weight: bold;
-}
-
 h1, h2, h3 {
   font-family: var(--heading-font);
   font-weight: 300;
@@ -361,7 +380,7 @@ h2 {
 
 a {
   text-decoration: none;
-  color: #ff007f;
+  color: hsl(330deg, 87.5%, 50%);
 }
 
 /* 512px + 2 * 16px + (scrollbar) 17px */

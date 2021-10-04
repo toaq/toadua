@@ -2,7 +2,7 @@
 // perform searches of the database
 
 "use strict";
-const {deburr, emitter, config, store} =
+const {deburr, deburrMatch, emitter, config, store} =
   require('./commons.js')(__filename);
 
 // keep an own cache for entries
@@ -11,13 +11,16 @@ var cache = [];
 // compute a few fields for faster processing
 search.cacheify = cacheify;
 function cacheify(e) {
+  let deburredHead = deburr(e.head);
+  let deburredBody = deburr(e.body);
+  let deburredNotes = e.notes.flatMap(({content}) => deburr(content));
   return {      $: e,
                id: e.id,
-             head: deburr(e.head),
+             head: deburredHead,
+             body: deburredBody,
              date: +new Date(e.date),
             score: e.score,
-          content: deburr(` ${e.head} ${e.body} ${
-                           e.notes.map(_ => _.content).join(' ')} `)};
+          content: [].concat(deburredHead, deburredBody, deburredNotes)};
 }
 
 function cached_index(id) {
@@ -90,8 +93,10 @@ let operations = {
           check: one_string,
           build: ([s]) => {
                    let deburred = deburr(s);
-                   return entry => entry.content
-                                        .indexOf(deburred) !== -1;
+                   return entry => deburrMatch(deburred,
+                                               entry.content, 
+                                               deburrMatch.CONTAINING)
+                                     == deburred.length;
                  }}
 };
 search.operations = operations;
@@ -148,21 +153,24 @@ function bare_terms(o) {
   }
 }
 
-function default_ordering(e, paddeds, deburrs) {
+function default_ordering(e, deburrs) {
   let rating = e.score + !!(e.$.user === 'official');
   // we like logistic curves
   let multiplier = 1 / (1 + Math.exp(-rating));
   let relevance =
     (  1
     // partial keyword match
-    +  1 * deburrs.filter(_ => e.content.indexOf(_) !== -1).length
+    +  1 * deburrMatch(deburrs, e.content, deburrMatch.CONTAINING)
     // full keyword match
-    +  2 * paddeds.filter(_ => e.content.indexOf(_) !== -1).length
+    +  2 * deburrMatch(deburrs, e.content, deburrMatch.EXACT)
     // header substring match
-    +  4 * deburrs.filter(_ => e.head   .indexOf(_) !== -1).length
-    +  8 * deburrs.filter(_ => _.indexOf(e.head)    !== -1).length
-    // exact match
-    + 16 * deburrs.every (_ => _ === e.head));
+    +  4 * deburrMatch(deburrs, e.body, deburrMatch.CONTAINING)
+    +  6 * deburrMatch(deburrs, e.body, deburrMatch.CONTAINED)
+    + 10 * deburrMatch(deburrs, e.head, deburrMatch.CONTAINING)
+    + 17 * deburrMatch(deburrs, e.head, deburrMatch.CONTAINED)
+    // exact match. the number is very exact too, as you can see
+    + 69.4201337 * (deburrMatch(deburrs, e.head, deburrMatch.EXACT) == deburrs.length)
+  );
   return multiplier * relevance;
 }
 
@@ -172,8 +180,7 @@ function search(query, requested_ordering, uname) {
   if(typeof filter === 'string')
     return `malformed query: ${filter}`;
   let bares = bare_terms(query),
-    deburrs = bares.map(deburr),
-    paddeds = deburrs.map(_ => ` ${_} `);
+    deburrs = bares.map(deburr).flat();
   let filtered = cache.filter(filter);
   let ordering = default_ordering;
   switch(requested_ordering) {
@@ -183,7 +190,7 @@ function search(query, requested_ordering, uname) {
     case 'lowest':  ordering = e => -e.score;      break;
     case 'random':  ordering = e => Math.random(); break;
   }
-  let sorted = filtered.map(e => [e, ordering(e, paddeds, deburrs)])
+  let sorted = filtered.map(e => [e, ordering(e, deburrs)])
                        .sort((e1, e2) => e2[1] - e1[1]);
   let presented = sorted.map(_ => present(_[0], uname));
   return presented;

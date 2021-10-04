@@ -3,9 +3,8 @@
     <nav id=menu>
       <div id=control-row>
         <ul id=top-controls class=controls>
-          <li v-if=username>logged in as <b :style="color_for(username)">{{username}}</b></li><!--
-          --><li>search scope only:&thinsp;<input type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search></li><!--
-          --><li>scope:&thinsp;<span id=scope-editor contenteditable v-model=scope @click=focus_scope_editor>en</span></li><!--
+          <li v-if=username>logged in as <span :style="color_for(username)">{{username}}</span></li><!--
+          --><li><label for=limit-search>search scope ‘<span style="font-family: var(--heading-font); color: hsl(210deg, 75%, 25%);">{{scope}}</span>’ only:</label>&thinsp;<input id=limit-search type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search></li><!--
           --><li v-if=username><input type=button value=logout class=submit @click=logout></li>
         </ul>
       </div>
@@ -33,67 +32,115 @@
           <p class=note v-for="note in result.notes">
             <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
           </p>
-          <p class="note new_note" v-if="result.uncollapsed">
-            <span :style="color_for(username)" class=note-author>{{username}}</span><input type=text placeholder="your note?…" :value.sync="result.input" @input="$event.target.value = result.input = replacements($event.target.value, true, true)">
-          </p>
+          <form style="display: contents;" v-if="result.uncollapsed" @keypress.13="note(result)">
+            <div class=note>
+              <span :style="color_for(username)" class=note-author>{{username}}</span>
+              <input type=submit value=submit class=note-submit
+                @click="note(result)"
+                :disabled="!result.input">
+            </div>
+            <p class="note new_note">
+              <input type=text autofocus
+                placeholder="comment here"
+                v-model="result.input"
+                @input="$event.target.value
+                      = result.input
+                      = replacements($event.target.value, true, true)">
+            </p>
+          </form>
         </div>
         <ul class=controls v-if=username>
-               <li v-if="! result.uncollapsed">
-            <input type=button value="add note" @click="uncollapse(result)">
-          </li><li v-if="result.uncollapsed">
-            <input type=button value=submit   @click="note(result)">
-          </li><li v-if="result.vote != +1">
-            <input type=button value="+"        @click="vote(result, +1)">
-          </li><li v-if="result.vote !=  0">
-            <input type=button value="±"        @click="vote(result,  0)">
-          </li><li v-if="result.vote != -1">
-            <input type=button value="−"        @click="vote(result, -1)">
-          </li><li v-if="username == result.user && !result.hesitating">
-            <input type=button value="remove"   @click="result.hesitating = true">
-          </li><li v-if="result.hesitating">
-            <input type=button value="sure?"    @click="remove(result)">
+          <li v-if="!result.uncollapsed">
+            <input type=button
+              value="add note"
+              @click="results.forEach(r => r.uncollapsed = false); result.uncollapsed = true">
+              <!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
           </li><li>
-            <input type=button value="fork"     @click="fork(result)">
+            <input type=button value="+"
+              @click="vote(result, +1)"
+              :disabled="result.vote == +1">
+          </li><li>
+            <input type=button value="±"
+              @click="vote(result, 0)"
+              :disabled="result.vote == 0">
+          </li><li>
+            <input type=button value="−"
+              @click="vote(result, -1)"
+              :disabled="result.vote == -1">
+          </li><li v-if="username == result.user && !result.hesitating">
+            <input type=button value="remove"
+              @click="result.hesitating = true; setTimeout(() => result.hesitating = false, 2000)">
+          </li><li v-if="result.hesitating">
+            <input type=button value="sure?"
+              @click="remove(result)">
+          </li><li>
+            <input type=button value="fork"
+              @click="fork(result)">
           </li>
         </ul>
       </div>
     </div>
     <div class=card v-if="query || results.length">
       <h2 class=name style="color: #333">{{what_should_i_say}}</h2>
-      <ul class=controls v-if="done_searching && username">
+      <ul class=controls v-if="done_searching && username && !query.startsWith('#')">
         <li>
           <input type=button :value="'create ‘' + query + '’?'" @click=new_word>
         </li>
       </ul>
     </div>
-    <div class=card id=create v-if="username && (done_searching || !query) && ! results.length">
+    <form class=card id=create v-if="username && (done_searching || !query) && !results.length">
       <div class=title>
-        <input type=text id=create_name class=name placeholder="Create new entry" :value.sync=new_head @input="$event.target.value = new_head = normalize($event.target.value, false)">
+        <input type=text id=create_name class=name
+          placeholder="Create new entry"
+          @input="$event.target.value = new_head = normalize($event.target.value, false)"
+          :value.sync=new_head
+          tabindex=1>
       </div>
-      <textarea id=create_body class=body rows=1 placeholder="Type in the Toaq word above and the definition here" :value.sync=new_body @input="$event.target.value = new_body = replacements($event.target.value, true, true)"></textarea>
+      <textarea class=body id=create_body rows=1
+        placeholder="Type in the Toaq word above and the definition here"
+        @input="$event.target.value = new_body = replacements($event.target.value, true, true)"
+        @keypress.exact.13=create
+        @keypress.shift.13=""
+        :value.sync=new_body
+        tabindex=2></textarea>
+      <span class=controls-left id=scope-editor>
+           <label for=scope>scope:</label>&thinsp;<!--
+        --><input type=text size=5
+            v-model=scope id=scope
+            value=en tabindex=5>
+      </span>
       <ul class=controls>
-        <li><input type=submit :value="'submit to ' + scope" class=submit @click=create></li><!--
-        --><li v-if="new_head || new_body"><input type=button value=clear @click="new_head = new_body = ''"></li>
+        <li>
+          <input type=submit value=submit class=submit
+            @click=create
+            :disabled="!(new_head && new_body)"
+            tabindex=3>
+        </li><li>
+          <input type=button value=clear
+            @click="new_head = new_body = ''"
+            :disabled="!(new_head || new_body)"
+            tabindex=4>
+        </li>
       </ul>
-    </div>
-    <div class=card id=login v-if="!(username || query)">
+    </form>
+    <form class=card id=login v-if="!(username || query)">
       <h2>Access</h2>
-      <form>
-        <div id=login_username><input id=input_username type=text placeholder=username v-model=login_name autocomplete=username></div>
-        <div id=login_password><input id=input_password type=password placeholder=password v-model=login_pass autocomplete=current-password></div>
-      </form>
+      <div id=login_username><input id=input_username type=text
+        placeholder=username v-model=login_name autocomplete=username></div>
+      <div id=login_password><input id=input_password type=password
+        placeholder=password v-model=login_pass autocomplete=current-password></div>
       <ul class=controls>
-           <li><input type=submit value=login    @click="account('login'   )"></li><!--
-        --><li><input type=button value=register @click="account('register')"></li>
+           <li><input type=submit value=login    @click="account('login'   )" :disabled="!(login_name && login_pass)"></li><!--
+        --><li><input type=button value=register @click="account('register')" :disabled="!(login_name && login_pass)"></li>
       </ul>
-    </div>
+    </form>
   </div>
 </template>
 
 <script>
 const debounce = require('lodash/debounce');
 const shared = require('../shared/shared.js');
-let methods = {};
+let methods = { setTimeout };
 
 methods.score_color  = s => shared.score_color(s).css;
 methods.color_for    = s => shared.color_for  (s).css;
@@ -281,18 +328,6 @@ methods.remove = function remove(whom) {
     this.results.splice(this.results.indexOf(whom), 1));
 }
 
-methods.uncollapse = function uncollapse(whom) {
-  whom.uncollapsed = true;
-  // this atrocious and unimaginative code is for focusing the
-  // note field – TODO
-  setTimeout(() => {
-    let el = document.getElementById('results')
-      .children[this.results.indexOf(whom)]
-      .children[2].lastChild.children[1];
-    el.focus();
-  }, 0);
-}
-
 methods.vote = function vote(whom, no) {
   this.apisend({action: 'vote', id: whom.id, vote: no}, 
     data => this.update_entry(whom, data.entry));
@@ -320,6 +355,7 @@ methods.create = function create() {
 methods.update_limit_search = function update_limit_search() {
   this.limit_search = !this.limit_search;
   this.store.setItem('limit_search', this.limit_search ? "true" : "" /* death */);
+  this.perform_search();
 }
 
 methods.update_entry = function update_entry(whom, what_with) {
@@ -389,12 +425,6 @@ methods.focus_search = function focus_search() {
   document.getElementById('search').focus();
 }
 
-methods.focus_scope_editor = function focus_scope_editor() {
-  let scopeEditor = document.getElementById('scope-editor');
-  scopeEditor.focus();
-  scopeEditor.select();
-}
-
 module.exports = {
   methods,
   data() {
@@ -433,8 +463,13 @@ module.exports = {
         : 'Loading…'
     )},
   },
+  watch: {
+    scope(scope) {
+      this.store.setItem('scope', scope);
+    },
+  },
   created() {
-    this.debounced_perform = debounce(() => this.perform_search(), 300);
+    this.debounced_perform = debounce(() => this.perform_search(), 250, {maxWait: 500});
     this.perform_search();
     for(let k of ['token', 'limit_search', 'scope'])
       this[k] = this.store.getItem(k) || this[k];

@@ -29,12 +29,27 @@ function log() {
 function deburr(s) {
   return s.normalize('NFD')
           .replace(/ı/g, 'i')
-          .replace(/[\u0300-\u030f]/g, '')
-          .replace(/[^0-9A-Za-z'_-]+/g, ' ')
-          .replace(/ +/g, ' ')
-          .trim()
-          .toLowerCase();
+          .replace(/[\u0300-\u037f]/g, '')
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(_ => _);
 }
+
+function deburrMatch(what, where, mode) {
+  const predicate = [
+    (a, b) => b.indexOf(a) != -1,
+    (a, b) => a.indexOf(b) != -1,
+    (a, b) => a == b,
+  ][mode];
+  let count = 0;
+  for(let w of what)
+    if(where.some(y => predicate(w, y)))
+      count++;
+  return count;
+}
+deburrMatch.CONTAINING = 0,
+deburrMatch.CONTAINED  = 1,
+deburrMatch.EXACT      = 2;
 
 let interval_cache = [];
 function setInterval_(...args) {
@@ -121,8 +136,9 @@ function pollute(__filename, args) {
 // a store for stuff and things
 var store = {};
 
-const exported = {store, deburr, setInterval: setInterval_, 
-                               clearInterval: clearInterval_, 
+const exported = {store, deburr, deburrMatch,
+                  setInterval:   setInterval_, 
+                  clearInterval: clearInterval_, 
                   clearAllIntervals, fluid_config, config, require,
                   emitter};
 
