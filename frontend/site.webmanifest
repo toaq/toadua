@@ -1,0 +1,15 @@
+{
+  "name": "toadua",
+  "short_name": "toadua",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#f5bcd9",
+  "background_color": "#f5bcd9",
+  "start_url": "https://toadua.uakci.pl/",
+  "display": "standalone"
+}

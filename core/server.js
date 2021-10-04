@@ -33,10 +33,13 @@ const fs = require('fs'),
 
 let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =
-  {'/'         : static_handler('frontend/index.html', 'text/html'),
-   '/style.css': static_handler('frontend/style.css',  'text/css'),
-   '/front.js' : static_handler('dist/bundle.js',      'application/javascript'),
-   '/api'      : api_handler};
+  {'/api'        : api_handler,
+   '/'           : static_handler('frontend/index.html',  'text/html'),
+   '/style.css'  : static_handler('frontend/style.css',   'text/css'),
+   '/front.js'   : static_handler('dist/bundle.js',       'application/javascript'),
+   '/site.webmanifest': static_handler('frontend/site.webmanifest', 'application/json'),
+   '/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
+  };
 
 function api_handler(r, s) {
   const flip = (code, message) => {
