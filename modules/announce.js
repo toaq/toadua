@@ -24,7 +24,8 @@ function entry(ev, entry, note) {
   if(!action) message(entry);
   message({
           color: shared.color_for((note && note.user) || entry.user).hex,
-          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**`,
+          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**${
+            ev == 'note' || entry.scope === 'en' ? '' : `in scope ${entry.scope}`}`,
          fields: (note && [{ name: `(definition by *${entry.user}*)`,
                        value: entry.body}]) || undefined,
     description: note ? note.content : entry.body,

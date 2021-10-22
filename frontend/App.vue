@@ -32,7 +32,7 @@
           <p class=note v-for="note in result.notes">
             <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
           </p>
-          <form style="display: contents;" v-if="result.uncollapsed" @keypress.13="note(result)">
+          <form style="display: contents;" action="javascript:void('note')" v-show="result.uncollapsed" @keypress.13="note(result)" autocomplete=off>
             <div class=note>
               <span :style="color_for(username)" class=note-author>{{username}}</span>
               <input type=submit value=submit class=note-submit
@@ -41,6 +41,7 @@
             </div>
             <p class="note new_note">
               <input type=text autofocus
+                autocomplete=off
                 placeholder="comment here"
                 v-model="result.input"
                 @input="$event.target.value
@@ -88,12 +89,15 @@
         </li>
       </ul>
     </div>
-    <form class=card id=create v-if="username && (done_searching || !query) && !results.length">
+    <form class=card id=create action="javascript:void('create')"
+      v-show="username && (done_searching || !query) && !results.length"
+      autocomplete=off>
       <div class=title>
         <input type=text id=create_name class=name
           placeholder="Create new entry"
           @input="$event.target.value = new_head = normalize($event.target.value, false)"
           :value.sync=new_head
+          autocomplete=off
           tabindex=1>
       </div>
       <textarea class=body id=create_body rows=1
@@ -102,12 +106,22 @@
         @keypress.exact.13=create
         @keypress.shift.13=""
         :value.sync=new_body
+        autocomplete=off
         tabindex=2></textarea>
       <span class=controls-left id=scope-editor>
            <label for=scope>scope:</label>&thinsp;<!--
         --><input type=text size=5
             v-model=scope id=scope
-            value=en tabindex=5>
+            autocomplete=language
+            list=common-languages
+            value=en tabindex=5><!--
+        --><datalist id=common-languages>
+             <option value=en />
+             <option value=toa />
+             <option value=ja />
+             <option value=jbo />
+             <option value=fr />
+           </datalist>
       </span>
       <ul class=controls>
         <li>
@@ -123,7 +137,8 @@
         </li>
       </ul>
     </form>
-    <form class=card id=login v-if="!(username || query)">
+    <form class=card id=login v-show="!(username || query)"
+      action="javascript:void('login')" autocomplete=on>
       <h2>Access</h2>
       <div id=login_username><input id=input_username type=text
         placeholder=username v-model=login_name autocomplete=username></div>
