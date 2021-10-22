@@ -22,11 +22,11 @@ function entry(ev, entry, note) {
     }
   })();
   if(!action) message(entry);
+  let sköp = entry.scope === 'en' ? '' : ` in scope __${entry.scope}__`;
   message({
           color: shared.color_for((note && note.user) || entry.user).hex,
-          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**${
-            ev == 'note' || entry.scope === 'en' ? '' : `in scope ${entry.scope}`}`,
-         fields: (note && [{ name: `(definition by *${entry.user}*)`,
+          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**${ev === 'note' ? '' : sköp}`,
+         fields: (note && [{ name: `(definition by *${entry.user}*${sköp})`,
                        value: entry.body}]) || undefined,
     description: note ? note.content : entry.body,
             url: ev === 'remove' ? undefined
