@@ -4,14 +4,14 @@
       <div id=control-row>
         <ul id=top-controls class=controls>
           <li v-if=username>logged in as <span :style="color_for(username)">{{username}}</span></li><!--
-          --><li><label for=limit-search>search scope ‘<span style="font-family: var(--heading-font); color: hsl(210deg, 75%, 25%);">{{scope}}</span>’ only:</label>&thinsp;<input id=limit-search type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search></li><!--
-          --><li v-if=username><input type=button value=logout class=submit @click=logout></li>
+          --><li><label for=limit-search>search scope ‘<span style="font-family: var(--heading-font); color: hsl(210deg, 75%, 25%);">{{scope}}</span>’ only:</label>&thinsp;<input id=limit-search type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search tabindex=8></li><!--
+          --><li v-if=username><input type=button value=logout class=submit @click=logout tabindex=9></li>
         </ul>
       </div>
       <div id=search-row>
         <input type=button value=" "><!--
-        --><input type=text id=search placeholder="search!" v-model=query @input.lazy=search autocomplete=off spellcheck=off><!--
-        --><input type=button id=cancel value="×" v-show=query @click="navigate(''); focus_search()">
+        --><input type=text id=search placeholder="search!" v-model=query @input.lazy=search autocomplete=off spellcheck=off tabindex=1><!--
+        --><input type=button id=cancel value="×" v-show=query @click="navigate(''); focus_search()" tabindex=2>
       </div>
     </nav>
     <div id=results>
@@ -32,7 +32,7 @@
           <p class=note v-for="note in result.notes">
             <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
           </p>
-          <form style="display: contents;" action="javascript:void('note')" v-show="result.uncollapsed" @keypress.13="note(result)" autocomplete=off>
+          <form style="display: contents;" action="javascript:void('note')" v-if="result.uncollapsed" @keypress.13="note(result)" autocomplete=off>
             <div class=note>
               <span :style="color_for(username)" class=note-author>{{username}}</span>
               <input type=submit value=submit class=note-submit
@@ -97,8 +97,8 @@
           placeholder="Create new entry"
           @input="$event.target.value = new_head = normalize($event.target.value, false)"
           :value.sync=new_head
-          autocomplete=off
-          tabindex=1>
+          autocomplete=off autocorrect=off autocapitalize=off spellcheck=false
+          tabindex=3>
       </div>
       <textarea class=body id=create_body rows=1
         placeholder="Type in the Toaq word above and the definition here"
@@ -106,15 +106,15 @@
         @keypress.exact.13=create
         @keypress.shift.13=""
         :value.sync=new_body
-        autocomplete=off
-        tabindex=2></textarea>
+        autocomplete=off autocorrect=on autocapitalize=on spellcheck=true
+        tabindex=4></textarea>
       <span class=controls-left id=scope-editor>
            <label for=scope>scope:</label>&thinsp;<!--
         --><input type=text size=5
             v-model=scope id=scope
             autocomplete=language
             list=common-languages
-            value=en tabindex=5><!--
+            value=en tabindex=7><!--
         --><datalist id=common-languages>
              <option value=en />
              <option value=toa />
@@ -128,12 +128,12 @@
           <input type=submit value=submit class=submit
             @click=create
             :disabled="!(new_head && new_body)"
-            tabindex=3>
+            tabindex=4>
         </li><li>
           <input type=button value=clear
             @click="new_head = new_body = ''"
             :disabled="!(new_head || new_body)"
-            tabindex=4>
+            tabindex=5>
         </li>
       </ul>
     </form>
@@ -141,12 +141,12 @@
       action="javascript:void('login')" autocomplete=on>
       <h2>Access</h2>
       <div id=login_username><input id=input_username type=text
-        placeholder=username v-model=login_name autocomplete=username></div>
+        placeholder=username v-model=login_name autocomplete=username tabindex=3></div>
       <div id=login_password><input id=input_password type=password
-        placeholder=password v-model=login_pass autocomplete=current-password></div>
+        placeholder=password v-model=login_pass autocomplete=current-password tabindex=4></div>
       <ul class=controls>
-           <li><input type=submit value=login    @click="account('login'   )" :disabled="!(login_name && login_pass)"></li><!--
-        --><li><input type=button value=register @click="account('register')" :disabled="!(login_name && login_pass)"></li>
+           <li><input type=submit value=login    @click="account('login'   )" :disabled="!(login_name && login_pass)" tabindex=5></li><!--
+        --><li><input type=button value=register @click="account('register')" :disabled="!(login_name && login_pass)" tabindex=6></li>
       </ul>
     </form>
   </div>
