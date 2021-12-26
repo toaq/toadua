@@ -192,6 +192,8 @@ actions.register = guard(false, {
               || 'name must be 1-64 Latin characters',
   pass: checks.limit(128)
 }, (ret, i) => {
+  if(config().disable_registration)
+    return ret(flip('registration temporarily disabled'));
   if(store.pass.hashes[i.name])
     return ret(flip('already registered'));
   store.pass.hashes[i.name] = bcrypt.hashSync(i.pass,
