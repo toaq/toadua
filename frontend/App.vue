@@ -32,7 +32,7 @@
           <p class=note v-for="note in result.notes">
             <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
           </p>
-          <form style="display: contents;" action="javascript:void('note')" v-if="result.uncollapsed" @keypress.13="note(result)" autocomplete=off>
+          <form style="display: contents;" action="javascript:void('note')" v-if="result.uncollapsed" @keypress.13.prevent="note(result)" autocomplete=off>
             <div class=note>
               <span :style="color_for(username)" class=note-author>{{username}}</span>
               <input type=submit value=submit class=note-submit
