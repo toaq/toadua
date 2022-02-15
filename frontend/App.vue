@@ -114,7 +114,7 @@
             v-model=scope id=scope
             autocomplete=language
             list=common-languages
-            value=en tabindex=7><!--
+            tabindex=7><!--
         --><datalist id=common-languages>
              <option value=en />
              <option value=toa />
