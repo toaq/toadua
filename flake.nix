@@ -22,8 +22,7 @@
               cp -r . $out
               mkdir $out/bin
               tee >> $out/bin/toadua <<EOF
-                cd $out
-                ${nodejs}/bin/node ./core/server.js \$@
+                ${nodejs}/bin/node $out/core/server.js \$@
               EOF
               chmod +x $out/bin/toadua
             '';

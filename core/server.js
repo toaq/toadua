@@ -5,12 +5,14 @@
 "use strict";
 console.log('-----------');
 
-const argparser = new (require('argparse').ArgumentParser)({
+const   fs = require('fs'),
+  argparse = require('argparse');
+const argparser = new (argparse.ArgumentParser)({
   description: 'Toaq dictionary',
   add_help: true,
 });
 argparser.add_argument('-d', '--data-directory', {
-  help: 'Where to read and write configuration and data files',
+  help: 'Directory containing config/ and data/ subdirectories',
   type: 'str',
 });
 argparser.add_argument('-p', '--port', {
@@ -18,7 +20,7 @@ argparser.add_argument('-p', '--port', {
   type: 'int',
 });
 let args = argparser.parse_args();
-let dir = args.data_directory || `${__dirname}/..`;
+let dir = fs.realpathSync(args.data_directory) || `${__dirname}/..`;
 process.chdir(dir);
 const commons = require('./commons.js')(__filename, args);
 
@@ -27,16 +29,15 @@ const VERSION = require('./../package.json').version;
 
 console.log(`starting up v${VERSION}...`);
 
-const fs = require('fs'),
-    http = require('http'),
-     api = require('./api.js');
+const http = require('http'),
+       api = require('./api.js');
 
 let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =
   {'/api'        : api_handler,
    '/'           : static_handler('frontend/index.html',  'text/html'),
    '/style.css'  : static_handler('frontend/style.css',   'text/css'),
-   '/front.js'   : static_handler('dist/bundle.js',       'application/javascript'),
+   '/frontend.js': static_handler('dist/bundle.js',       'application/javascript'),
    '/site.webmanifest': static_handler('frontend/site.webmanifest', 'application/json'),
    '/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
   };
@@ -95,7 +96,7 @@ function static_handler(fn, mime, code) {
     let t_ = fs.statSync(fname).mtimeMs;
     if(t_ > t) {
       console.log(
-        `file '${fname}' has been reloaded (mtime ${t_} > ${t})`);
+        `file '${fname}' has been reloaded (${f.length}b; mtime ${t_} > ${t})`);
       f = fs.readFileSync(fname);
     }
     s.writeHead(code, {

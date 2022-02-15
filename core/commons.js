@@ -79,8 +79,10 @@ emitter.emit = function(ev, ...args) {
 // for ever-changing configuration files, etc.
 const FluidConfig = {
   update() {
+    let file;
     try {
-      this.cache = yaml(fs.readFileSync(this.fname));
+      file = fs.readFileSync(this.fname)
+      this.cache = yaml(file);
     } catch(e) {
       if(e.code == 'ENOENT') {
         log(`fluid_config '${this.fname}' absent from disk ` +
@@ -88,7 +90,7 @@ const FluidConfig = {
         return;
       } else throw e;
     }
-    log(`fluid_config '${this.fname}' updated`);
+    log(`updating fluid_config '${this.fname}' (${file.length}b read)`);
     this.emit('update', this.cache);
   },
   _maxListeners: Infinity
