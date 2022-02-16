@@ -35,10 +35,10 @@
         devShell = pkgs.mkShell { buildInputs = [ nodejs ]; };
       })) // {
         nixosModule = { pkgs, lib, config, inputs, system, ... }:
-          let inherit (config.services.toadua) enabled package port dataDir;
+          let inherit (config.services.toadua) enable package port dataDir;
           in with lib; {
             options.services.toadua = {
-              enabled = mkEnableOption "toadua";
+              enable = mkEnableOption "toadua";
               package = mkOption {
                 default = self.defaultPackage.${system};
                 type = types.package;
@@ -47,7 +47,7 @@
               dataDir = mkOption { type = types.path; };
             };
             config.systemd.services.toadua = {
-              inherit enabled;
+              inherit enable;
               description = "Toaq Dictionary";
               wantedBy = [ "multi-user.target" ];
               wants = [ "network-online.target" ];
