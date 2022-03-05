@@ -20,7 +20,7 @@ argparser.add_argument('-p', '--port', {
   type: 'int',
 });
 let args = argparser.parse_args();
-let dir = fs.realpathSync(args.data_directory) || `${__dirname}/..`;
+let dir = args.data_directory ? fs.realpathSync(args.data_directory) : `${__dirname}/..`;
 process.chdir(dir);
 const commons = require('./commons.js')(__filename, args);
 
