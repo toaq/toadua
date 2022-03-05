@@ -216,7 +216,7 @@ methods.escape = function escape(s) {
 }
 
 methods.replacements = function replacements(content, still_editing, plain_text) {
-  return (plain_text ? content : this.escape(content)).replace(/▯|◌|___/g, still_editing ? '▯' : '◌')
+  return (plain_text ? content : this.escape(content)).replace(/▯|___/g, '▯')
     .replace(plain_text
       ? /[#@][0-9a-zA-Z_-]+|<.*?>|\*\*.*?(\*{2})|\*\*.*/g
       : /[#@][0-9a-zA-Z_-]+|&lt;.*?&gt;|\*\*.*?(\*{2})|\*\*.*/g, (m, ending) => {
