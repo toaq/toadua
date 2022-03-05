@@ -22,16 +22,23 @@ function state_change() {
       delete store.pass.tokens[k];
 
   let reformed = 0;
-  const reform = (e, p) => {
-    let normalized = shared.normalize(e[p]);
+  const reform = (e, p, f) => {
+    let normalized = f(e[p]);
     let retval = normalized !== e[p];
     e[p] = normalized;
     return retval;
   };
   for(let entry of store.db.entries) {
-    let didReform = reform(entry, 'head');
+    // update to modern Toaq
+    let didReform = reform(entry, 'head', shared.normalize);
     if(entry.scope === 'toa')
-      didReform = reform(entry, 'body') || didReform;
+      didReform += reform(entry, 'body', shared.normalize);
+
+    const normalizePlaceholders = s => s.replace(/___|◌/g, '▯');
+    didReform += reform(entry, 'body', normalizePlaceholders);
+    for(let note of entry.notes)
+      didReform += reform(note, 'content', normalizePlaceholders);
+
     if(didReform) reformed++;
   }
   if(reformed) console.log(`reformed ${reformed} entries`);
