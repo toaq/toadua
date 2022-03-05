@@ -229,7 +229,7 @@ span.controls-left {
   height: 16px;
 }
 
-.controls > li + li::before, footer span + span::before {
+.controls > li + li::before {
   content: '•';
   height: 14px;
   width: 12px;
