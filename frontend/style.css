@@ -77,6 +77,13 @@ body {
   caret-color: hsl(330deg, 75%, 50%);
 }
 
+footer .controls {
+  font-size: 12px;
+  text-align: center;
+  padding: 0;
+  margin: auto;
+}
+
 .card {
   box-sizing: border-box;
   margin: 16px;
@@ -222,17 +229,13 @@ span.controls-left {
   height: 16px;
 }
 
-.controls > li::before {
+.controls > li + li::before, footer span + span::before {
   content: '•';
   height: 14px;
   width: 12px;
   text-align: center;
   padding: 0 2px;
   font-family: var(--heading-font);
-}
-
-.controls > li:first-child::before {
-  visibility: hidden;
 }
 
 h2, .name {

@@ -1,6 +1,6 @@
-# Tỏadūa
+# Tỏadua
 
-*Tỏadūa* is the/an online collaborative dictionary for the
+*Tỏadua* is the/an online collaborative dictionary for the
 [Toaq](http://toaq.org) constructed language. It is also currently
 being remodelled to suit general usage. You can visit the current
 instance at <https://uakci.pl/toadua/>.
@@ -14,9 +14,11 @@ information below with a pinch of salt. Sorry.
 
 ## Installing
 
-Run `npm install` in the cloned repository to get the dependencies,
-and then `./core/server.js` to start the service up. You will need a
-modern version of node (`>=11`).
+* Install [Node.js](https://nodejs.org/en/) version ≥11.
+* Run `npm install` in the cloned repository to get the dependencies.
+* Run `npm run dev` to build the frontend to `dist/`.
+* Run `./core/server.js -d .` to start the service up.
+* Go to http://localhost:29138/ in your browser.
 
 Please note that the server is set up to run on port 29138 (by
 default) and serve HTTP; however, you’re not supposed to expose the
