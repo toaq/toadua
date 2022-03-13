@@ -20,7 +20,7 @@
           <h2>
             <a :href="'#' + result.head" class=name @click="navigate(result.head)">{{result.head}}</a>
             <span class=info>
-              <a :href="'#scope:' + result.scope" class=scope @click="navigate('scope:' + result.user)">{{result.scope}}</a>
+              <a :href="'#scope:' + result.scope" class=scope @click="navigate('scope:' + result.scope)">{{result.scope}}</a>
               <a :href="'#@' + result.user" :style="color_for(result.user)" @click="navigate('@' + result.user)">{{result.user}}</a>
               <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
               <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
