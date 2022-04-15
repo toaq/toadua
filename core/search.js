@@ -49,7 +49,7 @@ emitter.on('remove', (_, entry) =>
   cache.splice(cached_index(entry.id), 1));
 emitter.on('create', (_, entry) =>
   cache.push(cacheify(entry)));
-for(let k of ['vote', 'comment'])
+for(let k of ['vote', 'note'])
   emitter.on(k, (_, entry) =>
     cache.splice(cached_index(entry.id), 1, 
       cacheify(entry)));
