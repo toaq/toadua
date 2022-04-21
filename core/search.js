@@ -7,6 +7,7 @@ const {deburr, deburrMatch, emitter, config, store} =
 
 // keep an own cache for entries
 var cache = [];
+var re_cache = {};
 
 // compute a few fields for faster processing
 search.cacheify = cacheify;
@@ -57,6 +58,7 @@ for(let k of ['vote', 'note'])
 search.recache = recache;
 function recache() {
   cache = store.db.entries.map(cacheify);
+  re_cache = {};
 }
 
 let all_funcs = args => args.every(_ => _ instanceof Function),
@@ -100,11 +102,25 @@ let operations = {
                                      == deburred.length;
                  }}
 };
+
+function make_re(s) {
+  s = s.replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&');
+  s = s.replaceAll('*', '.*');
+  s = s.replaceAll('?', '.');
+  s = s.replaceAll('i', '[ıi]');
+  s = s.replaceAll('C', "(?:[bcdfghjklnprstz']|ch|sh|nh)");
+  s = s.replaceAll('V\\+', 'V+').replaceAll('V', '[aeıiouy]');
+  return new RegExp('^' + s + '$');
+}
+
 search.operations = operations;
-for(let trait of ['id', 'user', 'scope', 'head', 'body', 'date'])
-  operations[trait] = { type: OTHER,
-                       check: one_string,
-                       build: ([s]) => entry => entry.$[trait] === s};
+for(let trait of ['id', 'user', 'scope', 'head', 'body', 'date']) {
+  const build = ([s]) =>
+    /[?*CV]/.test(s)
+      ? (entry => (re_cache[s] ??= make_re(s)).test(entry.$[trait]))
+      : (entry => s === entry.$[trait]);
+  operations[trait] = { type: OTHER, check: one_string, build };
+}
 
 // parse the query (an embedded array structure like below) into a
 // function (entry => bool)
