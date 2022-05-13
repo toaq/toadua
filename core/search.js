@@ -7,7 +7,10 @@ const {deburr, deburrMatch, emitter, config, store} =
 
 // keep an own cache for entries
 var cache = [];
-var re_cache = {};
+
+const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'];
+const empty_re_cache = () => Object.fromEntries(RE_TRAITS.map(trait => [trait, {}]));
+var re_cache = empty_re_cache();
 
 // compute a few fields for faster processing
 search.cacheify = cacheify;
@@ -58,14 +61,14 @@ for(let k of ['vote', 'note'])
 search.recache = recache;
 function recache() {
   cache = store.db.entries.map(cacheify);
-  re_cache = {};
+  re_cache = empty_re_cache();
 }
 
 let all_funcs = args => args.every(_ => _ instanceof Function),
    one_string = args => args.length === 1 && 
                           typeof args[0] === 'string';
 const OTHER = 0, TEXTUAL = 1, FUNCTOR = 2;
-let operations = {
+let operations = search.operations = {
     and: { type: FUNCTOR,
           check: all_funcs,
           build: args => entry => {
@@ -103,29 +106,38 @@ let operations = {
                  }}
 };
 
-function make_re(s, { phonological_patterns = false } = {}) {
+for(let trait of RE_TRAITS) {
+  operations[trait] = {
+    type: OTHER,
+    check: one_string,
+    build: ([s]) => re_cache[trait][s] || (re_cache[trait][s] = make_re(trait, s)),
+  };
+}
+
+function make_raw(trait, s) {
+  return entry => s === entry.$[trait];
+}
+
+function make_re(trait, s) {
+  if(!/[?*CV]/.test(s))
+    return make_raw(s);
+
   s = s
     .replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&')
     .replace(/\*/g, '.*')
     .replace(/\?/g, '.')
     .replace(/i/g, '[ıi]');
 
-  if(phonological_patterns) s = s
+  if(['head', 'body'].includes(trait)) s = s
     .replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
     .replace(/V\\\+/g, 'V+').replace(/V/g, '[aeıiouy]');
 
-  return new RegExp(`^${s}\$`, 'iu');
-}
-
-search.operations = operations;
-for(let trait of ['id', 'user', 'scope', 'head', 'body', 'date']) {
-  const build = ([s]) =>
-    /[?*CV]/.test(s)
-      ? entry => (re_cache[s] = re_cache[s] || make_re(s, {
-          phonological_patterns: ['head', 'body'].includes(trait),
-        })).test(entry.$[trait])
-      : entry => s === entry.$[trait];
-  operations[trait] = { type: OTHER, check: one_string, build };
+  try {
+    let regexp = new RegExp(`^${s}\$`, 'iu');
+    return entry => regexp.test(entry.$[trait]);
+  } catch(e) {
+    return make_raw(s);
+  }
 }
 
 // parse the query (an embedded array structure like below) into a
