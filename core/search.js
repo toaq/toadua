@@ -112,6 +112,11 @@ for(let trait of RE_TRAITS) {
     check: one_string,
     build: ([s]) => re_cache[trait][s] || (re_cache[trait][s] = make_re(trait, s)),
   };
+  operations[`${trait}_raw`] = {
+    type: OTHER,
+    check: one_string,
+    build: ([s]) => query => s === query.$[trait],
+  };
 }
 
 function make_raw(trait, s) {

@@ -68,9 +68,9 @@ async function sync_resources() {
   for(let [name, words] of Object.entries(word_lists)) {
     let user = cf[name].user;
     for(let [head, body] of Object.entries(words)) {
-      let s = search(['and', ['user', user],
-                             ['head', head],
-                             ['body', body]]).length;
+      let s = search(['and', ['user_raw', user],
+                             ['head_raw', head],
+                             ['body_raw', body]]).length;
       if(!s) {
         api({action: 'create', head, body,
              scope: 'en'}, (res = {}) => {
