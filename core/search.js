@@ -103,22 +103,28 @@ let operations = {
                  }}
 };
 
-function make_re(s) {
-  s = s.replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&');
-  s = s.replaceAll('*', '.*');
-  s = s.replaceAll('?', '.');
-  s = s.replaceAll('i', '[ıi]');
-  s = s.replaceAll('C', "(?:[bcdfghjklnprstz']|ch|sh|nh)");
-  s = s.replaceAll('V\\+', 'V+').replaceAll('V', '[aeıiouy]');
-  return new RegExp('^' + s + '$');
+function make_re(s, { phonological_patterns = false } = {}) {
+  s = s
+    .replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.')
+    .replace(/i/g, '[ıi]');
+
+  if(phonological_patterns) s = s
+    .replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
+    .replace(/V\\\+/g, 'V+').replace(/V/g, '[aeıiouy]');
+
+  return new RegExp(`^${s}\$`, 'iu');
 }
 
 search.operations = operations;
 for(let trait of ['id', 'user', 'scope', 'head', 'body', 'date']) {
   const build = ([s]) =>
     /[?*CV]/.test(s)
-      ? (entry => (re_cache[s] ??= make_re(s)).test(entry.$[trait]))
-      : (entry => s === entry.$[trait]);
+      ? entry => (re_cache[s] = re_cache[s] || make_re(s, {
+          phonological_patterns: ['head', 'body'].includes(trait),
+        })).test(entry.$[trait])
+      : entry => s === entry.$[trait];
   operations[trait] = { type: OTHER, check: one_string, build };
 }
 

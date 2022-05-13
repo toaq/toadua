@@ -168,7 +168,7 @@ methods.color_for    = s => shared.color_for  (s).css;
 methods.score_number = shared.score_number;
 methods.normalize    = shared.normalize;
 
-const character_operators = {'/': 'arity', '@': 'user', '#': 'id'};
+const character_operators = {'/': 'arity', '@': 'user', '#': 'id', '=': 'head'};
 
 methods.focus_body = function focus_body() {
   setTimeout(() => {
@@ -294,9 +294,9 @@ methods.parse_query = function parse_query() {
                                  ? parseInt(parts[1], 10) || 0
                                  : parts[1]];
       else {
-        parts = b.split(/(?=[\/@#])/);
+        parts = b.split(/(?=[\/@#=])/);
         let operations = [];
-        if(!parts[0].match(/^[\/@#]/))
+        if(!parts[0].match(/^[\/@#=]/))
           operations.push(['term', parts.shift()]);
         for(let i = 0; i < parts.length; ++i) {
           let rest = parts[i].substring(1);
