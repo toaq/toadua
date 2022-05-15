@@ -119,13 +119,9 @@ for(let trait of RE_TRAITS) {
   };
 }
 
-function make_raw(trait, s) {
-  return entry => s === entry.$[trait];
-}
-
 function make_re(trait, s) {
-  if(!/[?*CV]/.test(s))
-    return make_raw(s);
+  const raw = entry => s === entry.$[trait];
+  if(!/[?*CV]/.test(s)) return raw;
 
   s = s
     .replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&')
@@ -141,7 +137,7 @@ function make_re(trait, s) {
     let regexp = new RegExp(`^${s}\$`, 'iu');
     return entry => regexp.test(entry.$[trait]);
   } catch(e) {
-    return make_raw(s);
+    return raw;
   }
 }
 
