@@ -129,7 +129,7 @@ function make_re(trait, s) {
         ).test(s)) throw null;
 
     s = s
-      .replace(/[\[\]{}()+.\\^$|#]/g, '\\$&')
+      .replace(/[\[\]{}()+.\\^$|]/g, '\\$&')
       .replace(/\*+/g, '.*')
       .replace(/\?/g, '.')
       .replace(/i/g, '[ıi]');
