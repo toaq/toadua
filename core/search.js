@@ -119,25 +119,30 @@ for(let trait of RE_TRAITS) {
   };
 }
 
+const is_morphological = trait => ['head', 'body'].includes(trait);
+
 function make_re(trait, s) {
-  const raw = entry => s === entry.$[trait];
-  if(!/[?*CV]/.test(s)) return raw;
-
-  s = s
-    .replace(/[-[\]{}()+.,\\^$|#\s]/g, '\\$&')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.')
-    .replace(/i/g, '[ıi]');
-
-  if(['head', 'body'].includes(trait)) s = s
-    .replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
-    .replace(/V\\\+/g, 'V+').replace(/V/g, '[aeıiouy]');
-
   try {
+
+    if(!(is_morphological(trait) ? /[?*CV]/
+                                 : /[?*]/
+        ).test(s)) throw null;
+
+    s = s
+      .replace(/[\[\]{}()+.\\^$|#]/g, '\\$&')
+      .replace(/\*+/g, '.*')
+      .replace(/\?/g, '.')
+      .replace(/i/g, '[ıi]');
+
+    if(is_morphological(trait)) s = s
+      .replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
+      .replace(/V\\\+/g, 'V+').replace(/V/g, '[aeıiouy]');
+
     let regexp = new RegExp(`^${s}\$`, 'iu');
     return entry => regexp.test(entry.$[trait]);
-  } catch(e) {
-    return raw;
+
+  } catch(_) {
+    return entry => s === entry.$[trait];
   }
 }
 
