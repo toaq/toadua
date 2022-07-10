@@ -38,8 +38,11 @@ let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
    '/'           : static_handler('frontend/index.html',  'text/html'),
    '/style.css'  : static_handler('frontend/style.css',   'text/css'),
    '/frontend.js': static_handler('dist/bundle.js',       'application/javascript'),
-   '/site.webmanifest': static_handler('frontend/site.webmanifest', 'application/json'),
    '/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
+   '/site.webmanifest':
+                   static_handler('frontend/site.webmanifest', 'application/json'),
+   '/.well-known/assetlinks.json':
+                   static_handler('frontend/assetlinks.json', 'application/json'),
   };
 
 function api_handler(r, s) {
