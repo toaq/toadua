@@ -1,161 +1,159 @@
 <template>
-  <div id=container>
-    <nav id=menu>
-      <div id=control-row>
-        <ul id=top-controls class=controls>
-          <li v-if=username>logged in as <span :style="color_for(username)">{{username}}</span></li><!--
-          --><li><label for=limit-search>search scope ‘<span style="font-family: var(--heading-font); color: hsl(210deg, 75%, 25%);">{{scope}}</span>’ only:</label>&thinsp;<input id=limit-search type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search tabindex=8></li><!--
-          --><li v-if=username><input type=button value=logout class=submit @click=logout tabindex=9></li>
-        </ul>
-      </div>
-      <div id=search-row>
-        <input type=button value=" "><!--
-        --><input type=text id=search placeholder="search!" v-model=query @input.lazy=search autocomplete=off spellcheck=off tabindex=1><!--
-        --><input type=button id=cancel value="×" v-show=query @click="navigate(''); focus_search()" tabindex=2>
-      </div>
-    </nav>
-    <div id=results>
-      <div class=card v-for="result in results">
-        <div class=title>
-          <h2>
-            <a :href="'#' + result.head" class=name @click="navigate(result.head)">{{result.head}}</a>
-            <span class=info>
-              <a :href="'#scope:' + result.scope" class=scope @click="navigate('scope:' + result.scope)">{{result.scope}}</a>
-              <a :href="'#@' + result.user" :style="color_for(result.user)" @click="navigate('@' + result.user)">{{result.user}}</a>
-              <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
-              <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
-            </span>
-          </h2>
-        </div>
-        <p class=body v-html="result.fancy_body"></p>
-        <div class=notes>
-          <p class=note v-for="note in result.notes">
-            <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
-          </p>
-          <form style="display: contents;" action="javascript:void('note')" v-if="result.uncollapsed" @keypress.13.prevent="note(result)" autocomplete=off>
-            <div class=note>
-              <span :style="color_for(username)" class=note-author>{{username}}</span>
-              <input type=submit value=submit class=note-submit
-                @click="note(result)"
-                :disabled="!result.input">
-            </div>
-            <p class="note new_note">
-              <input type=text autofocus
-                autocomplete=off
-                placeholder="comment here"
-                v-model="result.input"
-                @input="$event.target.value
-                      = result.input
-                      = replacements($event.target.value, true, true)">
-            </p>
-          </form>
-        </div>
-        <ul class=controls v-if=username>
-          <li v-if="!result.uncollapsed">
-            <input type=button
-              value="add note"
-              @click="results.forEach(r => r.uncollapsed = false); result.uncollapsed = true">
-              <!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
-          </li><li>
-            <input type=button value="+"
-              @click="vote(result, +1)"
-              :disabled="result.vote == +1">
-          </li><li>
-            <input type=button value="±"
-              @click="vote(result, 0)"
-              :disabled="result.vote == 0">
-          </li><li>
-            <input type=button value="−"
-              @click="vote(result, -1)"
-              :disabled="result.vote == -1">
-          </li><li v-if="username == result.user && !result.hesitating">
-            <input type=button value="remove"
-              @click="result.hesitating = true; setTimeout(() => result.hesitating = false, 2000)">
-          </li><li v-if="result.hesitating">
-            <input type=button value="sure?"
-              @click="remove(result)">
-          </li><li>
-            <input type=button value="fork"
-              @click="fork(result)">
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class=card v-if="query || results.length">
-      <h2 class=name style="color: #333">{{what_should_i_say}}</h2>
-      <ul class=controls v-if="done_searching && username && !query.startsWith('#')">
-        <li>
-          <input type=button :value="'create ‘' + query + '’?'" @click=new_word>
-        </li>
+  <nav id=menu>
+    <div id=control-row>
+      <ul id=top-controls class=controls>
+        <li v-if=username>logged in as <span :style="color_for(username)">{{username}}</span></li>
+        <li><label for=limit-search>search scope ‘<span style="font-family: var(--heading-font); color: hsl(210deg, 75%, 25%);">{{scope}}</span>’ only:</label>&thinsp;<input id=limit-search type=button :value="limit_search ? 'yes' : 'no'" class=submit @click=update_limit_search tabindex=8></li>
+        <li v-if=username><input type=button value=logout class=submit @click=logout tabindex=9></li>
       </ul>
     </div>
-    <form class=card id=create action="javascript:void('create')"
-      v-show="username && (done_searching || !query) && !results.length"
-      autocomplete=off>
+    <div id=search-row>
+      <input type=button value=" ">
+      <input type=text id=search placeholder="search!" v-model=query @input.lazy=search autocomplete=off spellcheck=off tabindex=1>
+      <input type=button id=cancel value="×" v-show=query @click="navigate(''); focus_search()" tabindex=2>
+    </div>
+  </nav>
+  <div id=results>
+    <div class=card v-for="result in results">
       <div class=title>
-        <input type=text id=create_name class=name
-          placeholder="Create new entry"
-          @input="$event.target.value = new_head = normalize($event.target.value, false)"
-          :value.sync=new_head
-          autocomplete=off autocorrect=off autocapitalize=off spellcheck=false
-          tabindex=3>
+        <h2>
+          <a :href="'#' + result.head" class=name @click="navigate(result.head)">{{result.head}}</a>
+          <span class=info>
+            <a :href="'#scope:' + result.scope" class=scope @click="navigate('scope:' + result.scope)">{{result.scope}}</a>
+            <a :href="'#@' + result.user" :style="color_for(result.user)" @click="navigate('@' + result.user)">{{result.user}}</a>
+            <a :href="'##' + result.id" @click="navigate('#' + result.id)">#{{result.id}}</a>
+            <span :style="score_color(result.score)">{{score_number(result.score)}}</span>
+          </span>
+        </h2>
       </div>
-      <textarea class=body id=create_body rows=1
-        placeholder="Type in the Toaq word above and the definition here"
-        @input="$event.target.value = new_body = replacements($event.target.value, true, true)"
-        @keypress.exact.13=create
-        @keypress.shift.13=""
-        :value.sync=new_body
-        autocomplete=off autocorrect=on autocapitalize=on spellcheck=true
-        tabindex=4></textarea>
-      <span class=controls-left id=scope-editor>
-           <label for=scope>scope:</label>&thinsp;<!--
-        --><input type=text size=5
-            v-model=scope id=scope
-            autocomplete=language
-            list=common-languages
-            tabindex=7><!--
-        --><datalist id=common-languages>
-             <option value=en />
-             <option value=toa />
-             <option value=ja />
-             <option value=jbo />
-             <option value=fr />
-           </datalist>
-      </span>
-      <ul class=controls>
-        <li>
-          <input type=submit value=submit class=submit
-            @click=create
-            :disabled="!(new_head && new_body)"
-            tabindex=4>
+      <p class=body v-html="result.fancy_body"></p>
+      <div class=notes>
+        <p class=note v-for="note in result.notes">
+          <span :style="color_for(note.user)" class=note-author @click="navigate('@' + note.user)">{{note.user}}</span><span v-html="note.fancy_content"></span>
+        </p>
+        <form style="display: contents;" action="javascript:void('note')" v-if="result.uncollapsed" @keypress.13.prevent="note(result)" autocomplete=off>
+          <div class=note>
+            <span :style="color_for(username)" class=note-author>{{username}}</span>
+            <input type=submit value=submit class=note-submit
+              @click="note(result)"
+              :disabled="!result.input">
+          </div>
+          <p class="note new_note">
+            <input type=text autofocus
+              autocomplete=off
+              placeholder="comment here"
+              v-model="result.input"
+              @input="$event.target.value
+                    = result.input
+                    = replacements($event.target.value, true, true)">
+          </p>
+        </form>
+      </div>
+      <ul class=controls v-if=username>
+        <li v-if="!result.uncollapsed">
+          <input type=button
+            value="add note"
+            @click="results.forEach(r => r.uncollapsed = false); result.uncollapsed = true">
+            <!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
         </li><li>
-          <input type=button value=clear
-            @click="new_head = new_body = ''"
-            :disabled="!(new_head || new_body)"
-            tabindex=5>
+          <input type=button value="+"
+            @click="vote(result, +1)"
+            :disabled="result.vote == +1">
+        </li><li>
+          <input type=button value="±"
+            @click="vote(result, 0)"
+            :disabled="result.vote == 0">
+        </li><li>
+          <input type=button value="−"
+            @click="vote(result, -1)"
+            :disabled="result.vote == -1">
+        </li><li v-if="username == result.user && !result.hesitating">
+          <input type=button value="remove"
+            @click="result.hesitating = true; setTimeout(() => result.hesitating = false, 2000)">
+        </li><li v-if="result.hesitating">
+          <input type=button value="sure?"
+            @click="remove(result)">
+        </li><li>
+          <input type=button value="fork"
+            @click="fork(result)">
         </li>
       </ul>
-    </form>
-    <form class=card id=login v-show="!(username || query)"
-      action="javascript:void('login')" autocomplete=on>
-      <h2>Access</h2>
-      <div id=login_username><input id=input_username type=text
-        placeholder=username v-model=login_name autocomplete=username tabindex=3></div>
-      <div id=login_password><input id=input_password type=password
-        placeholder=password v-model=login_pass autocomplete=current-password tabindex=4></div>
-      <ul class=controls>
-           <li><input type=submit value=login    @click="account('login'   )" :disabled="!(login_name && login_pass)" tabindex=5></li><!--
-        --><li><input type=button value=register @click="account('register')" :disabled="!(login_name && login_pass)" tabindex=6></li>
-      </ul>
-    </form>
-    <footer>
-      <ul class=controls>
-        <li><a href="https://toaq.me/Toadua">help</a></li><!--
-     --><li><a href="https://github.com/uakci/toadua">github</a></li>
-      </ul>
-    </footer>
+    </div>
   </div>
+  <div class=card v-if="query || results.length">
+    <h2 class=name style="color: #333">{{what_should_i_say}}</h2>
+    <ul class=controls v-if="done_searching && username && !query.startsWith('#')">
+      <li>
+        <input type=button :value="'create ‘' + query + '’?'" @click=new_word>
+      </li>
+    </ul>
+  </div>
+  <form class=card id=create action="javascript:void('create')"
+    v-show="username && (done_searching || !query) && !results.length"
+    autocomplete=off>
+    <div class=title>
+      <input type=text id=create_name class=name
+        placeholder="Create new entry"
+        @input="$event.target.value = new_head = normalize($event.target.value, false)"
+        :value.sync=new_head
+        autocomplete=off autocorrect=off autocapitalize=off spellcheck=false
+        tabindex=3>
+    </div>
+    <textarea class=body id=create_body rows=1
+      placeholder="Type in the Toaq word above and the definition here"
+      @input="$event.target.value = new_body = replacements($event.target.value, true, true)"
+      @keypress.exact.13=create
+      @keypress.shift.13=""
+      :value.sync=new_body
+      autocomplete=off autocorrect=on autocapitalize=on spellcheck=true
+      tabindex=4></textarea>
+    <span class=controls-left id=scope-editor>
+      <label for=scope>scope:</label>&thinsp;
+      <input type=text size=5
+       v-model=scope id=scope
+       autocomplete=language
+       list=common-languages
+       tabindex=7>
+      <datalist id=common-languages>
+        <option value=en />
+        <option value=toa />
+        <option value=ja />
+        <option value=jbo />
+        <option value=fr />
+      </datalist>
+    </span>
+    <ul class=controls>
+      <li>
+        <input type=submit value=submit class=submit
+          @click=create
+          :disabled="!(new_head && new_body)"
+          tabindex=4>
+      </li><li>
+        <input type=button value=clear
+          @click="new_head = new_body = ''"
+          :disabled="!(new_head || new_body)"
+          tabindex=5>
+      </li>
+    </ul>
+  </form>
+  <form class=card id=login v-show="!(username || query)"
+    action="javascript:void('login')" autocomplete=on>
+    <h2>Access</h2>
+    <div id=login_username><input id=input_username type=text
+      placeholder=username v-model=login_name autocomplete=username tabindex=3></div>
+    <div id=login_password><input id=input_password type=password
+      placeholder=password v-model=login_pass autocomplete=current-password tabindex=4></div>
+    <ul class=controls>
+      <li><input type=submit value=login    @click="account('login'   )" :disabled="!(login_name && login_pass)" tabindex=5></li>
+      <li><input type=button value=register @click="account('register')" :disabled="!(login_name && login_pass)" tabindex=6></li>
+    </ul>
+  </form>
+  <footer>
+    <ul class=controls>
+      <li><a href="https://toaq.me/Toadua">help</a></li>
+      <li><a href="https://github.com/uakci/toadua">github</a></li>
+    </ul>
+  </footer>
 </template>
 
 <script>

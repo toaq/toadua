@@ -1,12 +1,9 @@
-const Vue = require('vue').default;
-const App = require('./App.vue').default;
+import { createApp } from 'vue';
+import App from './App.vue';
 
-let app = global.app = new Vue({
-  el: '#main',
-  render: h => h(App),
-  components: { App },
-  template: '<App/>',
-}).$children[0];
+let app = createApp(App);
+app.mount('#container');
+app = globalThis.app = app.component('App');
 
 let body = document.querySelector('body');
 window.onscroll = scrape_cache;

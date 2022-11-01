@@ -1,24 +1,21 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-21.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-22.05";
     flake-utils.url = "github:numtide/flake-utils";
-    npmlock2nix = {
-      url = "github:nix-community/npmlock2nix/master";
-      flake = false;
-    };
+    nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
+    nix-npm-buildpackage.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils, npmlock2nix, ... }:
+  outputs = { self, nixpkgs, flake-utils, nix-npm-buildpackage, ... }:
     (flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-        nodejs = pkgs.nodejs-14_x;
+        pkgs = import nixpkgs { inherit system; };
+        nodejs = pkgs.nodejs_latest;
         package = { dev }:
-          (import npmlock2nix { inherit pkgs; }).build {
+          (pkgs.callPackage nix-npm-buildpackage { inherit nodejs; }).buildNpmPackage {
             src = ./.;
-            inherit nodejs;
-            buildCommands = [ (if dev then "npm run dev" else "npm run prod") ];
             installPhase = ''
+              ${if dev then "npm run dev" else "npm run prod"}
               cp -r . $out
               mkdir $out/bin
               tee >> $out/bin/toadua <<EOF
@@ -52,7 +49,7 @@
               wantedBy = [ "multi-user.target" ];
               wants = [ "network-online.target" ];
               script = strings.concatStringsSep " " ([
-                "${pkgs.nodejs-16_x}/bin/node"
+                "${nodejs}/bin/node"
                 "${package}/core/server.js"
                 "--data-directory ${dataDir}"
               ] ++ (lib.optionals (port != null)
