@@ -4,7 +4,7 @@
   "description": "A collaborative dictionary for the Toaq language.",
   "main": "core/server.js",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "argparse": "2.0.1",
