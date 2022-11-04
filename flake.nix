@@ -8,18 +8,19 @@
 
   outputs = { self, nixpkgs, flake-utils, nix-npm-buildpackage, ... }:
     (flake-utils.lib.eachDefaultSystem (system:
-      let
+      (let
         pkgs = import nixpkgs { inherit system; };
-        nodejs = pkgs.nodejs_latest;
         package = { dev }:
-          (pkgs.callPackage nix-npm-buildpackage { inherit nodejs; }).buildNpmPackage {
+          (pkgs.callPackage nix-npm-buildpackage {
+            nodejs = pkgs.nodejs_latest;
+          }).buildNpmPackage {
             src = ./.;
             installPhase = ''
               ${if dev then "npm run dev" else "npm run prod"}
               cp -r . $out
               mkdir $out/bin
               tee >> $out/bin/toadua <<EOF
-                ${nodejs}/bin/node $out/core/server.js \$@
+                ${pkgs.nodejs_latest}/bin/node $out/core/server.js \$@
               EOF
               chmod +x $out/bin/toadua
             '';
@@ -29,8 +30,8 @@
       in {
         packages = { inherit toadua toaduaDev; };
         defaultPackage = toadua;
-        devShell = pkgs.mkShell { buildInputs = [ nodejs ]; };
-      })) // {
+        devShell = pkgs.mkShell { buildInputs = [ pkgs.nodejs_latest ]; };
+      }) // {
         nixosModule = { pkgs, lib, config, inputs, system, ... }:
           let inherit (config.services.toadua) enable package port dataDir;
           in with lib; {
@@ -49,7 +50,7 @@
               wantedBy = [ "multi-user.target" ];
               wants = [ "network-online.target" ];
               script = strings.concatStringsSep " " ([
-                "${nodejs}/bin/node"
+                "${pkgs.nodejs_latest}/bin/node"
                 "${package}/core/server.js"
                 "--data-directory ${dataDir}"
               ] ++ (lib.optionals (port != null)
@@ -57,5 +58,5 @@
               serviceConfig.WorkingDirectory = dataDir;
             };
           };
-      };
+      }));
 }
