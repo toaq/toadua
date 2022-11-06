@@ -9,6 +9,11 @@ const request = require('request-promise-native'),
        shared = require('./../shared/shared.js'),
           api = commons.require('./api.js');
 
+function trim(max, str) {
+  if(str.length <= max) return str;
+  return str.substring(0, max - 1) + '…';
+}
+
 function entry(ev, entry, note) {
   let action = (() => {
     switch(ev) {
@@ -23,15 +28,16 @@ function entry(ev, entry, note) {
   })();
   if(!action) message(entry);
   let sköp = entry.scope === 'en' ? '' : ` in scope __${entry.scope}__`;
-  message({
+  let payload = {
           color: shared.color_for((note && note.user) || entry.user).hex,
-          title: `*${(note && note.user) || entry.user}* ${action} **${entry.head}**${ev === 'note' ? '' : sköp}`,
-         fields: (note && [{ name: `(definition by *${entry.user}*${sköp})`,
-                       value: entry.body}]) || undefined,
-    description: note ? note.content : entry.body,
+          title: trim(256, `*${(note && note.user) || entry.user}* ${action} **${entry.head}**${ev === 'note' ? '' : sköp}`),
+         fields: (note && [{ name: trim(256, `(definition by *${entry.user}*${sköp})`),
+                            value: trim(1024, entry.body) }]) || undefined,
+    description: trim(4096, note ? note.content : entry.body),
             url: ev === 'remove' ? undefined
                  : `${commons.config().entry_point}#%23${entry.id}`
-  })
+  };
+  message(payload);
 }
 
 function message(what) {
@@ -57,7 +63,8 @@ function send_off() {
       setTimeout(send_off, err.error.retryAfter);
     else {
       console.log(`-> error when posting message: ${err.stack}`);
-      setTimeout(send_off, 0);
+      if(err.statusCode !== 400)
+        setTimeout(send_off, 0);
     }
   });
 }
