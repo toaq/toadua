@@ -496,6 +496,7 @@ module.exports = {
   },
   mounted() {
     this.focus_search();
+    globalThis.app = this;
   },
   updated() {
     if(this.scroll_up) {
