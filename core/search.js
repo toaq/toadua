@@ -211,7 +211,9 @@ function default_ordering(e, deburrs) {
 }
 
 module.exports = search;
-function search(query, requested_ordering, uname) {
+function search(i, uname) {
+  let {query, ordering: requested_ordering,
+       preferred_scope, preferred_scope_bias} = i;
   let filter = parse_query(query);
   if(typeof filter === 'string')
     return `malformed query: ${filter}`;
@@ -226,7 +228,9 @@ function search(query, requested_ordering, uname) {
     case 'lowest':  ordering = e => -e.score;      break;
     case 'random':  ordering = e => Math.random(); break;
   }
-  let sorted = filtered.map(e => [e, ordering(e, deburrs)])
+  let sorted = filtered.map(e => [e, ordering(e, deburrs)
+                                     + (e.$.scope === preferred_scope)
+                                       * (preferred_scope_bias || 0)])
                        .sort((e1, e2) => e2[1] - e1[1]);
   let presented = sorted.map(_ => present(_[0], uname, _[1]));
   return presented;

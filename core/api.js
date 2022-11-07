@@ -85,6 +85,7 @@ const checks = {
                   ? 'scope is not string'
                   : !!i.match(/^[a-z-]{1,24}$/)
                     || 'scope must match [a-z-]{1,24}',
+   number: i => (i && typeof i === 'number') || 'not a valid number',
      uuid: i => /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/
                   .test(i) || 'not a valid token UUID',
   shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
@@ -95,6 +96,7 @@ const checks = {
                           `too long (max. ${lim} characters)`),
 };
 checks.nobomb = checks.limit(2048);
+checks.optional = f => s => !s || f(s);
 
 module.exports.index_of = index_of;
 function index_of(id) {
@@ -116,10 +118,12 @@ actions.welcome = guard(false, {},
 
 actions.search = guard(false, {
   query: checks.present,
-  ordering: s => !s || checks.nobomb(s),
+  ordering: checks.optional(checks.nobomb),
+  preferred_scope: checks.optional(checks.scope),
+  preferred_scope_bias: checks.optional(checks.number),
 },
 (ret, i, uname) => {
-  let data = search(i.query, i.ordering, uname);
+  let data = search(i, uname);
   if(typeof data === 'string') ret(flip(data));
   else                         ret(good({results: data}));
 });
