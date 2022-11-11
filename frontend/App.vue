@@ -214,36 +214,46 @@ methods.escape = function escape(s) {
 }
 
 methods.replacements = function replacements(content, still_editing, plain_text) {
-  return (plain_text ? content : this.escape(content)).replace(/▯|___/g, '▯')
-    .replace(plain_text
-      ? /[#@][0-9a-zA-Z_-]+|<.*?>|\*\*.*?(\*{2})|\*\*.*/g
-      : /[#@][0-9a-zA-Z_-]+|&lt;.*?&gt;|\*\*.*?(\*{2})|\*\*.*/g, (m, ending) => {
-      // hasty code, plsfix TODO
-      let ante = '', post = '';
-      let which;
-      // note to self: messy patchwork code TODO
-      if((which = m.startsWith('&lt;') || m.startsWith('<')) || m.startsWith('**')) {
-        ante = which ? plain_text ? '<' : '&lt;' : '**';
-        post = which ? plain_text ? '>' : '&gt;' : (ending || '');
-        m = m.substring(ante.length, m.length - post.length);
+  content = plain_text ? content : this.escape(content);
+  content = content.replace(/___/g, '▯');
+  let i = 0, accum = [];
+  const STARTERS = [
+    plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
+    still_editing && /([*]{2})(?!.*?[*]{2})(.*)()/g,
+    /([*]{2})(.*?)([*]{2})/g,
+    /()([@#][0-9a-zA-Z_-]*)()/g,
+  ].filter(_ => _);
+  let matches = STARTERS
+    .flatMap(starter => [...content.matchAll(starter)])
+    .sort((a, b) => a.index - b.index);
+  while(i < content.length && matches.length) {
+    let nearestMatch = matches[0];
+    let [all, start, cont, end] = nearestMatch;
+    accum.push(content.substring(i, nearestMatch.index))
+    i = nearestMatch.index + all.length;
+    let replacement;
+    if(start == "**" && still_editing)
+      replacement = start + this.normalize(cont, !!end) + end;
+    else if(!plain_text && !still_editing) {
+      let href = "#" + encodeURIComponent(cont);
+      let style = cont.startsWith("@") ? `style=${shared.color_for(cont).css}"` : "";
+      replacement = `<a href="${href}" ${style}>${cont}</a>`;
+    } else
+      replacement = all;
+    accum.push(replacement);
+    let catchUp;
+    while(catchUp = matches.shift()) {
+      if(catchUp.index >= i) {
+        matches.unshift(catchUp);
+        break;
       }
-
-      if(still_editing)
-        if(ante == '**')
-          return ante + this.normalize(m, post === '**') + post;
-        else
-          return ante + m + post;
-      else
-        return ante
-          + '<a href="#' + encodeURIComponent(m)
-          + '" onclick="javascript:void(app.navigate(\''
-          + m.replace(/'/g, '\\\'')
-             .replace(/"/g, '')
-             .replace(/\\/, '\\\\')
-          + '\'))"'
-          + (ante == '@' ? ` style="${shared.color_for(m).css}"` : '')
-          + '>' + m + '</a>' + post;
-    });
+    }
+  }
+  if(i < content.length) accum.push(content.substring(i));
+  if(!plain_text && !still_editing)
+    return accum.join('').replace(/\\(.)/g, '$1');
+  else
+    return accum.join('');
 }
 
 methods.navigate = function navigate(where) {
@@ -256,12 +266,14 @@ methods.process_entry = function process_entry(e) {
   if(e.uncollapsed === undefined)
     e.uncollapsed = false;
   e.hesitating = false;
-  e.fancy_body = this.replacements(e.body, false, true);
-  e.notes.forEach(_ => _.fancy_content = this.replacements(_.content, false, true));
+  e.fancy_body = this.replacements(e.body, false, false);
+  e.notes.forEach(_ => _.fancy_content = this.replacements(_.content, false, false));
   return e;
 }
 
-methods.add_to_history = function add_to_history() {
+methods.add_to_history = function add_to_history(query) {
+  if(query)
+    this.query = query;
   if(window.history)
     window.history.replaceState('', '', '#' + this.query);
   else
@@ -497,6 +509,8 @@ module.exports = {
   mounted() {
     this.focus_search();
     globalThis.app = this;
+    window.addEventListener('hashchange', () => this.navigate(
+      decodeURIComponent(window.location.hash.substring(1))));
   },
   updated() {
     if(this.scroll_up) {
