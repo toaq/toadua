@@ -236,7 +236,7 @@ methods.replacements = function replacements(content, still_editing, plain_text)
       replacement = start + this.normalize(cont, !!end) + end;
     else if(!plain_text && !still_editing) {
       let href = "#" + encodeURIComponent(cont);
-      let style = cont.startsWith("@") ? `style=${shared.color_for(cont).css}"` : "";
+      let style = cont.startsWith("@") ? `style="${shared.color_for(cont.substring(1)).css}"` : "";
       replacement = `<a href="${href}" ${style}>${cont}</a>`;
     } else
       replacement = all;
