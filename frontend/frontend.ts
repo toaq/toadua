@@ -1,10 +1,8 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 
-{
-  let app = createApp(App);
-  app.mount('#container');
-}
+let app: any = createApp(App);
+app.mount('#container');
 
 let body = document.querySelector('body');
 window.onscroll = scrape_cache;

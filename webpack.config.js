@@ -4,7 +4,7 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   target: 'web',
-  entry: './frontend/frontend.js',
+  entry: './frontend/frontend.ts',
   mode: 'production',
   devtool: false,
   output: {
@@ -16,6 +16,11 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,

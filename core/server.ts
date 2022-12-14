@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env npx ts-node
 // server.js
 // the server, duh
 
@@ -90,7 +90,7 @@ function api_handler(r, s) {
   }
 }
 
-function static_handler(fn, mime, code) {
+function static_handler(fn: string, mime: string, code?: number) {
   let fname = `${__dirname}/../${fn}`;
   code = code || 200;
   let f = fs.readFileSync(fname);
@@ -115,7 +115,7 @@ function handler(r, s_) {
   let handler = routes.hasOwnProperty(url.pathname) ?
     routes[url.pathname] : fourohfour;
   let s = {
-    writeHead(code, headers) {
+    writeHead(code, headers?) {
       if(code !== 200)
         console.log(`responding with code ${code} (${
                      http.STATUS_CODES[code]})`);
@@ -130,7 +130,7 @@ function handler(r, s_) {
     end(...args) {
       s_.end(...args);
       if(handler !== api_handler)
-        console.log(`request handled in ${new Date - time} ms`);
+        console.log(`request handled in ${Date.now() - time} ms`);
     }
   };
   Object.setPrototypeOf(s, s_);
@@ -148,7 +148,7 @@ function handler(r, s_) {
   }
 }
 
-let modules = {};
+let modules: Record<string, any> = {};
 config_update(config());
 config.on('update', config_update);
 
@@ -171,7 +171,7 @@ function config_update(data) {
     let new_options = data.modules[path];
     // note that when an entry in the module table is removed,
     // `new_options === undefined`. this is all right
-    if(JSON.stringify(new_options) !== JSON.stringify(path.options)) {
+    if(JSON.stringify(new_options) !== JSON.stringify(modules[path].options)) {
       modules[path].options = new_options;
       console.log(`changing state for module '${path}'`);
       try {
