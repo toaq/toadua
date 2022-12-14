@@ -5,8 +5,9 @@
 "use strict";
 console.log('-----------');
 
-const   fs = require('fs'),
-  argparse = require('argparse');
+import * as fs from 'fs';
+import * as argparse from 'argparse';
+
 const argparser = new (argparse.ArgumentParser)({
   description: 'Toaq dictionary',
   add_help: true,
@@ -25,12 +26,12 @@ process.chdir(dir);
 import * as commons from "./commons";
 
 let config = commons.config;
-const VERSION = require('./../package.json').version;
+const VERSION = require('../package.json').version;
 
 console.log(`starting up v${VERSION}...`);
 
-const http = require('http'),
-       api = require('./api.ts');
+import * as http from 'http';
+import * as api from './api';
 
 let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =

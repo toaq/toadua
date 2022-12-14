@@ -10,8 +10,8 @@ import * as shared from "../shared/shared";
 
 let {store} = commons;
 
-const request = require('request-promise-native'),
-       config = commons.fluid_config('config/sources.yml');
+import * as request from 'request-promise-native';
+const config = commons.fluid_config('config/sources.yml');
 
 const FORMATS = {
    tsv: (data, options) => data

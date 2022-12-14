@@ -4,9 +4,9 @@
 "use strict";
 import * as commons from '../core/commons';
 
-const request = require('request-promise-native'),
-       shared = require('./../shared/shared'),
-          api = require('../core/api');
+import * as request from 'request-promise-native';
+import * as shared from '../shared/shared';
+import * as api from '../core/api';
 
 function trim(max: number, str: string): string {
   if(str.length <= max) return str;

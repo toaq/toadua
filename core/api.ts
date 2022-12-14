@@ -5,10 +5,9 @@
 import {deburr, config, store, emitter} from "./commons";
 import * as search from "./search";
 import * as shared from "../shared/shared";
-
-const shortid = require('shortid'),
-       uuidv4 = require('uuid').v4,
-       bcrypt = require('bcryptjs');
+import * as shortid from "shortid";
+import * as uuid from "uuid";
+import * as bcrypt from "bcryptjs";
 
 // `uname` is used to override the user – a kind of sudo mode
 export function call(i, ret, uname) {
@@ -180,7 +179,7 @@ actions.login = guard(false, {
   let expected = store.pass.hashes[i.name];
   if(!expected) return ret(flip('user not registered'));
   if(bcrypt.compareSync(i.pass, expected)) {
-    var token = uuidv4();
+    var token = uuid.v4();
     store.pass.tokens[token] = {name: i.name, last: +new Date};
     ret(good({token}));
   } else ret(flip('password doesn\'t match'));

@@ -5,10 +5,10 @@
 import * as commons from '../core/commons';
 let store = commons.store;
 
-const  http = require('http'),
-         fs = require('fs'),
-       zlib = require('zlib'),
-     stream = require('stream');
+import * as http from 'http';
+import * as fs from 'fs';
+import * as zlib from 'zlib';
+import * as stream from 'stream';
 
 export function read(fname, deft) {
   let gzip;
