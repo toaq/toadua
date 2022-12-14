@@ -10,7 +10,7 @@ import * as uuid from "uuid";
 import * as bcrypt from "bcryptjs";
 
 // `uname` is used to override the user – a kind of sudo mode
-export function call(i, ret, uname) {
+export function call(i, ret, uname?: string) {
   let time = +new Date;
   ret = ret instanceof Function ? ret : (() => {});
   let action = actions.hasOwnProperty(i.action) && actions[i.action];

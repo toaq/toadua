@@ -73,7 +73,7 @@ function api_handler(r, s) {
         return;
       }
       try {
-        api(json, data => {
+        api.call(json, data => {
           data = {version: VERSION, ...data};
           s.writeHead(200,
             {'content-type': 'application/json; charset=utf-8'});
