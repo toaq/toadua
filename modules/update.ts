@@ -2,16 +2,16 @@
 // download word definitions from remote sources
 
 "use strict";
-const commons = require('./../core/commons.js')(__filename);
+import * as commons from '../core/commons';
+import * as search from '../core/search';
+import * as api from '../core/api';
+import * as announce from './announce';
+import * as shared from "../shared/shared";
+
 let {store} = commons;
-module.exports = {state_change, sync_resources};
 
 const request = require('request-promise-native'),
-          api = commons.require('./api.js'),
-       search = commons.require('./search.js'),
-     announce = require('./announce.js'),
-       config = commons.fluid_config('config/sources.yml'),
-       shared = require('../shared/shared.js');
+       config = commons.fluid_config('config/sources.yml');
 
 const FORMATS = {
    tsv: (data, options) => data
@@ -19,12 +19,12 @@ const FORMATS = {
           .map(line => line.split(/\t/))
           .map(cols => options.patterns.map(p => Object.fromEntries(
             Object.entries(p).map(([k, v]) =>
-              [k, v.replace(/%\(([0-9]+)\)/g, (_, n) => cols[n])]))))
+              [k, (v as string).replace(/%\(([0-9]+)\)/g, (_, n) => cols[n])]))))
           .flat(),
   json: (data, options) => JSON.parse(data)
           .map(e => options.patterns.map(p => Object.fromEntries(
             Object.entries(p).map(([k, v]) =>
-              [k, v.replace(/%\((.*?)\)/g, (_, id) => e[id])]))))
+              [k, (v as string).replace(/%\((.*?)\)/g, (_, id) => e[id])]))))
           .flat()
 };
 
@@ -33,8 +33,8 @@ let word_lists = {};
 
 // poll for new entries at remote TSV spreadsheets and add them to the
 // dictionary every now and then
-async function sync_resources() {
-  let time = +new Date, cf = config(), changed = false;
+export async function sync_resources() {
+  let time = Date.now(), cf: Record<string, any> = config(), changed = false;
   await Promise.all(
     Object.entries(cf).map(
       async ([name, {source, user, format, ...rest}]) => {
@@ -49,7 +49,7 @@ async function sync_resources() {
                          api.replacements(_.body)]));
           console.log(`'${name}': entry count was ${
                        word_lists[name]
-                       ? Object.keys(word_lists[name]).length 
+                       ? Object.keys(word_lists[name]).length
                        : 0}, is ${
                        Object.keys(word_list).length}`);
           if(JSON.stringify(word_lists[name]) !==
@@ -59,21 +59,21 @@ async function sync_resources() {
           console.log(`on resource '${name}': ${err.stack}`);
         }
       }));
-  
+
   if(!changed) {
-    console.log(`nothing to update (${new Date - time} ms)`);
+    console.log(`nothing to update (${Date.now() - time} ms)`);
     return;
   }
   console.log('adding...');
   for(let [name, words] of Object.entries(word_lists)) {
     let user = cf[name].user;
     for(let [head, body] of Object.entries(words)) {
-      let s = search(['and', ['user_raw', user],
+      let s = search.search(['and', ['user_raw', user],
                              ['head_raw', head],
                              ['body_raw', body]]).length;
       if(!s) {
-        api({action: 'create', head, body,
-             scope: 'en'}, (res = {}) => {
+        api.call({action: 'create', head, body,
+             scope: 'en'}, (res: any = {}) => {
           if(!res.success)
                console.log(`!! '${head}' caused error: ${
                             res.error}`);
@@ -83,7 +83,7 @@ async function sync_resources() {
     }
   }
 
-  let messages = {};
+  let messages: Record<string, any> = {};
   if(Object.keys(word_lists).length === Object.keys(cf).length) {
     console.log('obsoleting...');
     let unames = new Set(Object.values(cf).map(_ => _.user));
@@ -128,11 +128,11 @@ async function sync_resources() {
       announce.message({title, description, url});
   }
 
-  console.log(`updating done (${new Date - time} ms)`);
+  console.log(`updating done (${Date.now() - time} ms)`);
 }
 
 var interval, options;
-function state_change() {
+export function state_change() {
   if(interval) {
     commons.clearInterval(interval);
     interval = null;

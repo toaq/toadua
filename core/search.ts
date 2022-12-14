@@ -1,9 +1,8 @@
-// search.js
+// search.ts
 // perform searches of the database
 
 "use strict";
-const {deburr, deburrMatch, emitter, config, store} =
-  require('./commons.js')(__filename);
+import {deburr, deburrMatch, emitter, config, store} from "./commons";
 
 // keep an own cache for entries
 var cache = [];
@@ -13,8 +12,7 @@ const empty_re_cache = () => Object.fromEntries(RE_TRAITS.map(trait => [trait, {
 var re_cache = empty_re_cache();
 
 // compute a few fields for faster processing
-search.cacheify = cacheify;
-function cacheify(e) {
+export function cacheify(e) {
   let deburredHead = deburr(e.head);
   let deburredBody = deburr(e.body);
   let deburredNotes = e.notes.flatMap(({content}) => deburr(content));
@@ -36,17 +34,16 @@ function cached_by_id(id) {
   return cache[cached_index(id)];
 }
 
-search.present = present;
-function present(e, uname, relevance) {
+export function present(e, uname: string | undefined, relevance) {
   let original = {...e.$, relevance, content: e.content};
   original.vote = uname ? original.votes[uname] || 0 : undefined;
   delete original.votes;
   return original;
 }
 
-search.score = score;
-function score(entry) {
-  return Object.entries(entry.votes).reduce((a, b) => a + b[1], 0);
+export function score(entry) {
+  const votes: [string, number][] = Object.entries(entry.votes);
+  return votes.reduce((a, b) => a + b[1], 0);
 }
 
 emitter.on('remove', (_, entry) =>
@@ -55,17 +52,16 @@ emitter.on('create', (_, entry) =>
   cache.push(cacheify(entry)));
 for(let k of ['vote', 'note'])
   emitter.on(k, (_, entry) =>
-    cache.splice(cached_index(entry.id), 1, 
+    cache.splice(cached_index(entry.id), 1,
       cacheify(entry)));
 
-search.recache = recache;
-function recache() {
+export function recache() {
   cache = store.db.entries.map(cacheify);
   re_cache = empty_re_cache();
 }
 
 let all_funcs = args => args.every(_ => _ instanceof Function),
-   one_string = args => args.length === 1 && 
+   one_string = args => args.length === 1 &&
                           typeof args[0] === 'string';
 const OTHER = 0, TEXTUAL = 1, FUNCTOR = 2;
 let operations = search.operations = {
@@ -78,12 +74,12 @@ let operations = search.operations = {
                  }},
      or: { type: FUNCTOR,
           check: all_funcs,
-          build: args => entry => { 
+          build: args => entry => {
                    for(let a of args)
                      if(a(entry)) return true;
                    return false;
                  }},
-    not: { type: FUNCTOR,  
+    not: { type: FUNCTOR,
           check: args => args.length === 1 &&
                            args[0] instanceof Function,
           build: ([f]) => entry => !f(entry)},
@@ -100,7 +96,7 @@ let operations = search.operations = {
           build: ([s]) => {
                    let deburred = deburr(s);
                    return entry => deburrMatch(deburred,
-                                               entry.content, 
+                                               entry.content,
                                                deburrMatch.CONTAINING)
                                      == deburred.length;
                  }}
@@ -195,23 +191,23 @@ function bare_terms(o) {
 }
 
 function default_ordering(e, deburrs) {
-  return Math.sqrt((1 + Math.max(0, e.score) + (e.$.user === 'official')) / (1 + Math.max(0, -e.score))) * (
+  const official = e.$.user === 'official' ? 1 : 0;
+  return Math.sqrt((1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score))) * (
     // full keyword match
-    +  1 * (deburrMatch(deburrs, e.notes, deburrMatch.CONTAINING) > 0)
+    +  1 * +(deburrMatch(deburrs, e.notes, deburrMatch.CONTAINING) > 0)
     // header/body substring/superstring match
-    +  3 * (deburrMatch(deburrs, e.body, deburrMatch.CONTAINED) > 0)
-    +  6 * (deburrMatch(deburrs, e.head, deburrMatch.CONTAINED) > 0)
-    + 10 * (deburrMatch(deburrs, e.body, deburrMatch.CONTAINING) > 0)
-    + 15 * (deburrMatch(deburrs, e.head, deburrMatch.CONTAINING) > 0)
-    // exact match. 
-    + 30 * (deburrMatch(deburrs, e.body, deburrMatch.EXACT) > 0)
+    +  3 * +(deburrMatch(deburrs, e.body, deburrMatch.CONTAINED) > 0)
+    +  6 * +(deburrMatch(deburrs, e.head, deburrMatch.CONTAINED) > 0)
+    + 10 * +(deburrMatch(deburrs, e.body, deburrMatch.CONTAINING) > 0)
+    + 15 * +(deburrMatch(deburrs, e.head, deburrMatch.CONTAINING) > 0)
+    // exact match.
+    + 30 * +(deburrMatch(deburrs, e.body, deburrMatch.EXACT) > 0)
     // the number is very exact too, as you can see
-    + 69.4201337 * (deburrMatch(deburrs, e.head, deburrMatch.EXACT) == e.head.length)
+    + 69.4201337 * +(deburrMatch(deburrs, e.head, deburrMatch.EXACT) == e.head.length)
   );
 }
 
-module.exports = search;
-function search(i, uname) {
+export function search(i, uname?: string) {
   let {query, ordering: requested_ordering,
        preferred_scope, preferred_scope_bias} = i;
   let filter = parse_query(query);
@@ -229,7 +225,7 @@ function search(i, uname) {
     case 'random':  ordering = e => Math.random(); break;
   }
   let sorted = filtered.map(e => [e, ordering(e, deburrs)
-                                     + (e.$.scope === preferred_scope)
+                                     + +(e.$.scope === preferred_scope)
                                        * (preferred_scope_bias || 0)])
                        .sort((e1, e2) => e2[1] - e1[1]);
   let presented = sorted.map(_ => present(_[0], uname, _[1]));

@@ -2,19 +2,18 @@
 // send a prepared rich content message to a Discord webhook
 
 "use strict";
-const commons = require('./../core/commons.js')(__filename);
-module.exports = {state_change, message, entry};
+import * as commons from '../core/commons';
 
 const request = require('request-promise-native'),
-       shared = require('./../shared/shared.js'),
-          api = commons.require('./api.js');
+       shared = require('./../shared/shared'),
+          api = require('../core/api');
 
-function trim(max, str) {
+function trim(max: number, str: string): string {
   if(str.length <= max) return str;
   return str.substring(0, max - 1) + '…';
 }
 
-function entry(ev, entry, note) {
+export function entry(ev: string, entry, note) {
   let action = (() => {
     switch(ev) {
       case 'create':
@@ -40,9 +39,10 @@ function entry(ev, entry, note) {
   message(payload);
 }
 
-function message(what) {
-  let url;
-  if(!enabled || !(url = options.hook)) return;
+export function message(what) {
+  if(!enabled) return;
+  const url: string = options.hook;
+  if(!url) return;
   let color = what.color || 0,
        epnt = what.url || commons.config().entry_point;
   let req = {url, method: 'POST', json: true,
@@ -70,7 +70,7 @@ function send_off() {
 }
 
 var enabled, options, queue = [];
-function state_change() {
+export function state_change() {
   if(enabled !== (options = this || {}).enabled)
     for(let ev of ['create', 'note', 'remove'])
       commons.emitter[options.enabled ? 'on' : 'off'](ev, entry);

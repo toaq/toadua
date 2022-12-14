@@ -2,22 +2,21 @@
 // tamper with the database store
 
 "use strict";
-const commons = require('./../core/commons.js')(__filename);
+import * as commons from '../core/commons';
+import * as search from '../core/search';
+import * as shared from '../shared/shared';
 let {store, config} = commons;
-module.exports = {state_change};
-
-const search = commons.require('./search.js');
-const shared = require('../shared/shared.js');
 
 let first_go = true;
-function state_change() {
+export function state_change() {
   if(!first_go) return;
   first_go = false;
 
   store.db.count = store.db.entries.length;
 
   let now = +new Date;
-  for(let [k, {last}] of Object.entries(store.pass.tokens))
+  const entries: [string, {last: number}][] = Object.entries(store.pass.tokens);
+  for(let [k, {last}] of entries)
     if(now > last + config().token_expiry)
       delete store.pass.tokens[k];
 
@@ -32,12 +31,12 @@ function state_change() {
     // update to modern Toaq
     let didReform = reform(entry, 'head', shared.normalize);
     if(entry.scope === 'toa')
-      didReform += reform(entry, 'body', shared.normalize);
+      didReform ||= reform(entry, 'body', shared.normalize);
 
     const normalizePlaceholders = s => s.replace(/___|◌/g, '▯');
-    didReform += reform(entry, 'body', normalizePlaceholders);
+    didReform ||= reform(entry, 'body', normalizePlaceholders);
     for(let note of entry.notes)
-      didReform += reform(note, 'content', normalizePlaceholders);
+      didReform ||= reform(note, 'content', normalizePlaceholders);
 
     if(didReform) reformed++;
   }

@@ -158,7 +158,7 @@
 
 <script>
 const debounce = require('lodash/debounce');
-const shared = require('../shared/shared.js');
+const shared = require('../shared/shared');
 let methods = { setTimeout };
 
 methods.score_color  = s => shared.score_color(s).css;
@@ -170,7 +170,7 @@ const character_operators = {'/': 'arity', '@': 'user', '#': 'id', '=': 'head'};
 
 methods.focus_body = function focus_body() {
   setTimeout(() => {
-    let body = document.getElementById('create_body'); 
+    let body = document.getElementById('create_body');
     body.focus();
   }, 0);
 }
@@ -360,7 +360,7 @@ methods.remove = function remove(whom) {
 }
 
 methods.vote = function vote(whom, no) {
-  this.apisend({action: 'vote', id: whom.id, vote: no}, 
+  this.apisend({action: 'vote', id: whom.id, vote: no},
     data => this.update_entry(whom, data.entry));
 }
 

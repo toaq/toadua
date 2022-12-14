@@ -1,20 +1,17 @@
-// api.js
+// api.ts
 // implementation for the API
 
 "use strict";
-const {deburr, config, store, emitter} =
-  require('./commons.js')(__filename);
-
-module.exports = call;
+import {deburr, config, store, emitter} from "./commons";
+import * as search from "./search";
+import * as shared from "../shared/shared";
 
 const shortid = require('shortid'),
        uuidv4 = require('uuid').v4,
-       bcrypt = require('bcryptjs'),
-       search = require('./search.js'),
-       shared = require('../shared/shared.js');
+       bcrypt = require('bcryptjs');
 
 // `uname` is used to override the user – a kind of sudo mode
-function call(i, ret, uname) {
+export function call(i, ret, uname) {
   let time = +new Date;
   ret = ret instanceof Function ? ret : (() => {});
   let action = actions.hasOwnProperty(i.action) && actions[i.action];
@@ -45,7 +42,7 @@ function call(i, ret, uname) {
   console.log(`%% ${i.action}(${entries})`);
   try {
     ret = (old_ret => data => {
-      console.log(`${i.action} returned in ${new Date - time} ms`);
+      console.log(`${i.action} returned in ${Date.now() - time} ms`);
       old_ret(data);
     })(ret);
     action(ret, i, uname);
@@ -58,13 +55,13 @@ function call(i, ret, uname) {
 if(!store.db)   store.db   = {entries: [], count: 0};
 if(!store.pass) store.pass = { hashes: {}, tokens: {}};
 
-let actions = {};
+let actions: any = {};
 
-const flip = e => ({success: false, error: e});
-const good = d => ({success: true,  ...d});
+const flip = (e: string) => ({success: false, error: e});
+const good = (d?: any) => ({success: true,  ...d});
 
-function guard(logged_in, conds, f) {
-  let res = (ret, i, uname) => {
+function guard(logged_in, conds: Record<string, (x: any) => any>, f) {
+  let res: any = (ret, i, uname) => {
     if(logged_in && ! uname)
       return ret(flip('must be logged in'));
     if(conds) for(let [k, v] of Object.entries(conds)) {
@@ -79,7 +76,7 @@ function guard(logged_in, conds, f) {
   return res;
 }
 
-const checks = {
+const checks: Record<string, (i: any) => any> = {
   present: i => !!i || 'absent',
     scope: i => !(i && typeof i === 'string')
                   ? 'scope is not string'
@@ -91,20 +88,18 @@ const checks = {
   shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
    goodid: i => (checks.shortid(i) && (index_of(i) !== -1)) ||
                   'not a recognised ID',
-    limit: lim => i => (!i || !typeof i === 'string') ? 'absent' :
+    limit: lim => i => (!i || typeof i !== 'string') ? 'absent' :
                          (i.length <= lim ||
                           `too long (max. ${lim} characters)`),
 };
 checks.nobomb = checks.limit(2048);
 checks.optional = f => s => !s || f(s);
 
-module.exports.index_of = index_of;
-function index_of(id) {
+export function index_of(id) {
   return store.db.entries.findIndex(_ => _.id == id);
 }
 
-module.exports.by_id = by_id;
-function by_id(id) {
+export function by_id(id) {
   return store.db.entries[index_of(id)];
 }
 
@@ -123,7 +118,7 @@ actions.search = guard(false, {
   preferred_scope_bias: checks.optional(checks.number),
 },
 (ret, i, uname) => {
-  let data = search(i, uname);
+  let data = search.search(i, uname);
   if(typeof data === 'string') ret(flip(data));
   else                         ret(good({results: data}));
 });
@@ -153,7 +148,7 @@ actions.note = guard(true, {
   emitter.emit('note', word, this_note);
 });
 
-const replacements = module.exports.replacements =
+export const replacements =
   s => s.replace(/___/g, '▯')
     .replace(/\s+$/g, '')
     .normalize('NFC');

@@ -2,16 +2,15 @@
 // load from disk, save to disk, do backups
 
 "use strict";
-const commons = require('./../core/commons.js')(__filename);
+import * as commons from '../core/commons';
 let store = commons.store;
-module.exports = {state_change, read, write, using, backup, save};
 
 const  http = require('http'),
          fs = require('fs'),
        zlib = require('zlib'),
      stream = require('stream');
 
-function read(fname, deft) {
+export function read(fname, deft) {
   let gzip;
   try {
     gzip = fs.readFileSync(fname);
@@ -76,9 +75,9 @@ function write_(fname, data, guard_override) {
   return true;
 }
 
-var using = {};
+export var using: any = {};
 
-function write(fname, data, guard_override) {
+export function write(fname, data, guard_override?: any) {
   if(using[fname]) console.log(`warning: '${fname
     }' is already being written to`);
   using[fname] = true;
@@ -94,17 +93,17 @@ function write(fname, data, guard_override) {
   return res;
 }
 
-function backup() {
+export function backup() {
   try {
     fs.mkdirSync('backup')
   } catch(e) {
-    if(e.code !== 'EEXIST') throw e; 
+    if(e.code !== 'EEXIST') throw e;
   } if(!write(`backup/${new Date().toISOString().split(':')[0]
       .replace(/T/, '-')}.json.gz`, store))
     console.log(`note: backup failed`);
 }
 
-function save() {
+export function save() {
   return ((a, b) => a && b)(
     write('data/dict.json.gz',     store.db),
     write('data/accounts.json.gz', store.pass));
@@ -112,7 +111,7 @@ function save() {
 
 const acts = {save_interval: save, backup_interval: backup};
 let first_go = true, intervals = {};
-function state_change() {
+export function state_change() {
   for(let k of Object.keys(acts)) {
     if(intervals[k]) commons.clearInterval(intervals[k]);
     if(this && this.enabled && this[k])
@@ -120,7 +119,7 @@ function state_change() {
   }
   if(first_go) {
     store.db   = read('data/dict.json.gz',     {entries: [],  count: 0 }),
-    store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {}}); 
+    store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {}});
     first_go = false;
   } else if(!this) {
     console.log(`trying to save data...`);

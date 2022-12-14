@@ -1,5 +1,5 @@
 #!/usr/bin/env npx ts-node
-// server.js
+// server.ts
 // the server, duh
 
 "use strict";
@@ -22,7 +22,7 @@ argparser.add_argument('-p', '--port', {
 let args = argparser.parse_args();
 let dir = args.data_directory ? fs.realpathSync(args.data_directory) : `${__dirname}/..`;
 process.chdir(dir);
-const commons = require('./commons.js')(__filename, args);
+import * as commons from "./commons";
 
 let config = commons.config;
 const VERSION = require('./../package.json').version;
@@ -30,7 +30,7 @@ const VERSION = require('./../package.json').version;
 console.log(`starting up v${VERSION}...`);
 
 const http = require('http'),
-       api = require('./api.js');
+       api = require('./api.ts');
 
 let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =
