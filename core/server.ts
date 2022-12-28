@@ -216,5 +216,6 @@ function bye(error) {
 
 process.on('exit', code => console.log(`exiting with code ${code}`));
 
-server.listen(config().port);
-console.log(`server started on :${config().port}!`);
+const port = Number(args.port ?? config().port ?? 29138);
+server.listen(port);
+console.log(`server started on :${port}!`);

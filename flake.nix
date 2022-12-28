@@ -59,11 +59,11 @@
               wantedBy = [ "multi-user.target" ];
               wants = [ "network-online.target" ];
               script = strings.concatStringsSep " " ([
-                "${pkgs.nodejs_latest}/bin/node"
-                "${package}/core/server.js"
-                "--data-directory ${dataDir}"
-              ] ++ (lib.optionals (port != null)
-                [ "--port ${toString port}" ]));
+                "${package}/bin/toadua"
+                "--data-directory" "${dataDir}"
+              ] ++ (lib.optionals (port != null) [
+                "--port" (toString port)
+              ]));
               serviceConfig.WorkingDirectory = dataDir;
             };
           };
