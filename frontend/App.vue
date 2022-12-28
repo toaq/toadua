@@ -69,7 +69,7 @@
             :disabled="result.vote == -1">
         </li><li v-if="username == result.user && !result.hesitating">
           <input type=button value="remove"
-            @click="result.hesitating = true; setTimeout(() => result.hesitating = false, 2000)">
+            @click="confirm_removal(result)">
         </li><li v-if="result.hesitating">
           <input type=button value="sure?"
             @click="remove(result)">
@@ -156,15 +156,16 @@
   </footer>
 </template>
 
-<script>
-const debounce = require('lodash/debounce');
-const shared = require('../shared/shared');
-let methods = { setTimeout };
+<script lang="ts">
+import { debounce } from 'lodash';
+import { score_color, color_for, score_number, normalize } from './shared';
+import { version } from './package';
+let methods = {};
 
-methods.score_color  = s => shared.score_color(s).css;
-methods.color_for    = s => shared.color_for  (s).css;
-methods.score_number = shared.score_number;
-methods.normalize    = shared.normalize;
+methods.score_color  = s => score_color(s).css;
+methods.color_for    = s => color_for  (s).css;
+methods.score_number = score_number;
+methods.normalize    = normalize;
 
 const character_operators = {'/': 'arity', '@': 'user', '#': 'id', '=': 'head'};
 
@@ -236,7 +237,7 @@ methods.replacements = function replacements(content, still_editing, plain_text)
       replacement = start + this.normalize(cont, !!end) + end;
     else if(!plain_text && !still_editing) {
       let href = "#" + encodeURIComponent(cont);
-      let style = cont.startsWith("@") ? `style="${shared.color_for(cont.substring(1)).css}"` : "";
+      let style = cont.startsWith("@") ? `style="${color_for(cont.substring(1)).css}"` : "";
       replacement = `<a href="${href}" ${style}>${cont}</a>`;
     } else
       replacement = all;
@@ -357,6 +358,11 @@ methods.perform_search = function perform_search() {
 methods.remove = function remove(whom) {
   this.apisend({action: 'remove', id: whom.id}, () =>
     this.results.splice(this.results.indexOf(whom), 1));
+}
+
+methods.confirm_removal = function confirm_removal(whom) {
+  whom.hesitating = true;
+  setTimeout(() => whom.hesitating = false, 2000);
 }
 
 methods.vote = function vote(whom, no) {
@@ -480,7 +486,7 @@ module.exports = {
               "Please consider updating."), null),
       token: null,
       username: null,
-      version: require('../package.json').version || null,
+      version,
     };
   },
   computed: {

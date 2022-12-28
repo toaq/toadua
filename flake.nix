@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-22.11";
     flake-utils.url = "github:numtide/flake-utils";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
     nix-npm-buildpackage.inputs.nixpkgs.follows = "nixpkgs";
@@ -10,25 +10,34 @@
     (flake-utils.lib.eachDefaultSystem (system:
       (let
         pkgs = import nixpkgs { inherit system; };
-        package = { dev }:
-          (pkgs.callPackage nix-npm-buildpackage {
-            nodejs = pkgs.nodejs_latest;
-          }).buildNpmPackage {
-            src = ./.;
-            installPhase = ''
-              ${if dev then "npm run dev" else "npm run prod"}
-              cp -r . $out
-              mkdir $out/bin
-              tee >> $out/bin/toadua <<EOF
-                ${pkgs.nodejs_latest}/bin/node $out/core/server.js \$@
-              EOF
-              chmod +x $out/bin/toadua
-            '';
-          };
-        toadua = package { dev = false; };
-        toaduaDev = package { dev = true; };
+        buildNpmPackage = (pkgs.callPackage nix-npm-buildpackage {
+          nodejs = pkgs.nodejs_latest;
+        }).buildNpmPackage;
+        frontend = buildNpmPackage {
+          src = ./frontend;
+          npmBuild = "npm run build";
+        };
+        backend = buildNpmPackage {
+          pname = "toadua-backend";
+          src = ./.;
+          npmBuild = "npm run build";
+          installPhase = ''
+            mkdir $out
+            cp -r dist $out
+            cp -r node_modules $out
+          '';
+        };
+        toadua = pkgs.runCommand "toadua" {} ''
+          mkdir -p $out/{bin,libexec/toadua}
+          cp -r ${backend}/* ${self}/{config,package.json} $out/libexec/toadua
+          cp -r ${frontend} $out/libexec/toadua/frontend
+          tee >> $out/bin/toadua <<EOF
+            ${pkgs.nodejs_latest}/bin/node $out/libexec/toadua/dist/core/server.js \$@
+          EOF
+          chmod +x $out/bin/toadua
+        '';
       in {
-        packages = { inherit toadua toaduaDev; };
+        packages = { inherit frontend backend toadua; };
         defaultPackage = toadua;
         devShell = pkgs.mkShell { buildInputs = [ pkgs.nodejs_latest ]; };
       }) // {

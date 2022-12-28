@@ -5,7 +5,7 @@
 import * as commons from '../core/commons';
 
 import * as request from 'request-promise-native';
-import * as shared from '../shared/shared';
+import * as shared from '../frontend/shared';
 import * as api from '../core/api';
 
 function trim(max: number, str: string): string {

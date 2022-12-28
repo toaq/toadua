@@ -8,9 +8,8 @@
     "moduleResolution": "node"
   },
   "include": [
-    "core/**/*",
-    "modules/**/*",
-    "frontend/shared/**/*"
+    "./*.ts",
+    "./shared/*.ts"
   ]
 }
 

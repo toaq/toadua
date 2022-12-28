@@ -4,7 +4,7 @@
 "use strict";
 import {deburr, config, store, emitter} from "./commons";
 import * as search from "./search";
-import * as shared from "../shared/shared";
+import * as shared from "../frontend/shared";
 import * as shortid from "shortid";
 import * as uuid from "uuid";
 import * as bcrypt from "bcryptjs";

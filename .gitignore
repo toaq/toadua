@@ -1,8 +1,8 @@
 /.direnv
-/dist
+dist
 /backup
 /data
-/node_modules
+node_modules
 /config/config.yml
 /config/sources.yml
 /result

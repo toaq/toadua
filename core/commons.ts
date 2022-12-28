@@ -47,8 +47,8 @@ deburrMatch.CONTAINING = 0,
 deburrMatch.CONTAINED  = 1,
 deburrMatch.EXACT      = 2;
 
-const real_setInterval = setInterval;
-const real_clearInterval = clearInterval;
+const real_setInterval = global.setInterval;
+const real_clearInterval = global.clearInterval;
 
 let interval_cache = [];
 export function setInterval(callback: (...args: any[]) => void, ms?: number) {
@@ -112,7 +112,7 @@ export function fluid_config(fname, handler?) {
 }
 
 const MAIN_CONFIG = 'config/config.yml',
-   DEFAULT_CONFIG = `${__dirname}/../config/defaults.yml`;
+   DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
 // initialise the global config file
 let  main_config = fluid_config(MAIN_CONFIG),
   default_config = yaml(readFileSync(DEFAULT_CONFIG));

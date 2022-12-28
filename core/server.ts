@@ -1,4 +1,3 @@
-#!/usr/bin/env npx ts-node
 // server.ts
 // the server, duh
 
@@ -21,12 +20,13 @@ argparser.add_argument('-p', '--port', {
   type: 'int',
 });
 let args = argparser.parse_args();
-let dir = args.data_directory ? fs.realpathSync(args.data_directory) : `${__dirname}/..`;
+const installation_dir = `${__dirname}/../..`;
+let dir = args.data_directory ? fs.realpathSync(args.data_directory) : installation_dir;
 process.chdir(dir);
 import * as commons from "./commons";
 
 let config = commons.config;
-const VERSION = require('../package.json').version;
+const VERSION = require(`${installation_dir}/package.json`).version;
 
 console.log(`starting up v${VERSION}...`);
 
@@ -35,15 +35,13 @@ import * as api from './api';
 
 let fourohfour = static_handler('frontend/404.html',   'text/html', 404),
         routes =
-  {'/api'        : api_handler,
-   '/'           : static_handler('frontend/index.html',  'text/html'),
-   '/style.css'  : static_handler('frontend/style.css',   'text/css'),
-   '/frontend.js': static_handler('dist/bundle.js',       'application/javascript'),
-   '/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
-   '/site.webmanifest':
-                   static_handler('frontend/site.webmanifest', 'application/json'),
-   '/.well-known/assetlinks.json':
-                   static_handler('frontend/assetlinks.json', 'application/json'),
+  {'/api':                         api_handler,
+   '/':                            static_handler('frontend/index.html',       'text/html'),
+   '/style.css'  :                 static_handler('frontend/style.css',        'text/css'),
+   '/frontend.js':                 static_handler('frontend/dist/bundle.js',   'application/javascript'),
+   '/favicon.png':                 static_handler('frontend/favicon.png',      'image/png'),
+   '/site.webmanifest':            static_handler('frontend/site.webmanifest', 'application/json'),
+   '/.well-known/assetlinks.json': static_handler('frontend/assetlinks.json',  'application/json'),
   };
 
 function api_handler(r, s) {
@@ -92,7 +90,7 @@ function api_handler(r, s) {
 }
 
 function static_handler(fn: string, mime: string, code?: number) {
-  let fname = `${__dirname}/../${fn}`;
+  let fname = `${installation_dir}/${fn}`;
   code = code || 200;
   let f = fs.readFileSync(fname);
   let t = fs.statSync(fname).mtimeMs;
@@ -112,7 +110,7 @@ function static_handler(fn: string, mime: string, code?: number) {
 
 function handler(r, s_) {
   let time = +new Date;
-  let url = new URL(r.url, 'https://uakci.pl');
+  let url = new URL(r.url, config().entry_point);
   let handler = routes.hasOwnProperty(url.pathname) ?
     routes[url.pathname] : fourohfour;
   let s = {

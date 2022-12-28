@@ -3,8 +3,8 @@ const { VueLoaderPlugin } = require('vue-loader');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  target: 'web',
-  entry: './frontend/frontend.ts',
+  target: 'browserslist',
+  entry: './frontend.ts',
   mode: 'production',
   devtool: false,
   output: {
@@ -14,12 +14,16 @@ module.exports = {
   optimization: {
     usedExports: true,
   },
+  resolve: {
+    extensions: ['.js', '.ts', '.tsx', '.vue', '.json'],
+  },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        loader: 'ts-loader',
         exclude: /node_modules/,
+        options: { appendTsSuffixTo: [/\.vue$/] },
       },
       {
         test: /\.m?js$/,
@@ -49,7 +53,7 @@ module.exports = {
     new HTMLWebpackPlugin({
       showErrors: true,
       cache: true,
-      template: path.resolve(__dirname, 'frontend/index.html')
+      template: path.resolve(__dirname, 'index.html')
     })
   ]
 }

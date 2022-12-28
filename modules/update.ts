@@ -6,7 +6,7 @@ import * as commons from '../core/commons';
 import * as search from '../core/search';
 import * as api from '../core/api';
 import * as announce from './announce';
-import * as shared from "../shared/shared";
+import * as shared from "../frontend/shared";
 
 let {store} = commons;
 
