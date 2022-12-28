@@ -3,10 +3,10 @@
 *Toadua* is the/an online collaborative dictionary for the
 [Toaq](http://toaq.net) constructed language. It is also currently
 being remodelled to suit general usage. You can visit the current
-instance at <https://uakci.pl/toadua/>.
+instance at <https://toadua.uakci.pl>.
 
 You can also use the public API exposed at
-<https://uakci.pl/toadua/api> (read the [docs](docs/api.md), too).
+<https://toadua.uakci.pl/api> (read the [docs](docs/api.md), too).
 
 **Please note:** Currently in the process of cleaning up, removing the
 unprofessional bits, and other groundbreaking changes. Please take the
@@ -16,16 +16,19 @@ information below with a pinch of salt. Sorry.
 
 ### Locally (good for dev env)
 
-* Install [Node.js](https://nodejs.org/en/) version ≥16 (skip this step if you use `nix` with `direnv`).
-* Run `npm install` in the cloned repository to get the dependencies.
-* Run `npm run dev` to build the frontend to `dist/`.
-* Run `./core/server.ts -d .` to start the service up.
-* Go to http://localhost:29138/ in your browser.
+* Install [Node.js](https://nodejs.org/en/) version ≥16 (skip this step if you're using `nix` with `direnv`).
+* Frontend:
+  * Cd into the `frontend` directory and run `npm install` there.
+  * `npm run build` will create a webpack build.
+* Backend:
+  * Run `npm install` in the cloned repository to get the dependencies.
+  * Run `npm run build` to compile the TypeScript sources.
+  * `npm run start` should now work out of the box. Navigate to http://localhost:29138/ in your browser.
 
 ### With Nix (good for verifying build correctness)
 
-* Run `nix build` to do a full build. You may then inspect the contents of `result/`.
 * Run `nix run . -- -d .` to build the service and run it right away.
+* Run `nix build` to do a full build. You may then inspect the contents of `result/`.
 
 ## HTTP security warning
 
