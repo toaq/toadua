@@ -9,7 +9,7 @@ import { EventEmitter } from 'events';
 
 const old_log = console.log;
 
-export function log(...args: any[]) {
+export function log(...args: any[]): void {
   let date = new Date().toISOString()
     .replace(/[:-]/g, '')
     .replace('T', '.')
@@ -22,7 +22,7 @@ export function log(...args: any[]) {
   old_log(`${date} ${message}`);
 };
 
-export function deburr(s) {
+export function deburr(s: string): string[] {
   return s.normalize('NFD')
           .replace(/\p{M}+/gu, '')
           .replace(/’/gu, '\'')
@@ -31,11 +31,17 @@ export function deburr(s) {
           .filter(_ => _);
 }
 
-export function deburrMatch(what, where, mode) {
+export enum MatchMode {
+  Containing = 0,
+  Contained = 1,
+  Exact = 2,
+}
+
+export function deburrMatch(what: string[], where: string[], mode: MatchMode): number {
   const predicate = [
-    (a, b) => b.indexOf(a) != -1,
-    (a, b) => a.indexOf(b) != -1,
-    (a, b) => a == b,
+    (a: string, b: string) => b.indexOf(a) != -1,
+    (a: string, b: string) => a.indexOf(b) != -1,
+    (a: string, b: string) => a == b,
   ][mode];
   let count = 0;
   for(let w of what)
@@ -43,27 +49,24 @@ export function deburrMatch(what, where, mode) {
       count++;
   return count;
 }
-deburrMatch.CONTAINING = 0,
-deburrMatch.CONTAINED  = 1,
-deburrMatch.EXACT      = 2;
 
 const real_setInterval = global.setInterval;
 const real_clearInterval = global.clearInterval;
 
 let interval_cache = [];
-export function setInterval(callback: (...args: any[]) => void, ms?: number) {
+export function setInterval(callback: (...args: any[]) => void, ms?: number): NodeJS.Timer {
   let this_one = real_setInterval(callback, ms).unref();
   interval_cache.push(this_one);
   return this_one;
 }
 
-export function clearInterval(i) {
+export function clearInterval(i: string | number | NodeJS.Timeout): void {
   real_clearInterval(i);
   let index = interval_cache.indexOf(i);
   if(index !== -1) interval_cache.splice(index, 1);
 }
 
-export function clearAllIntervals() {
+export function clearAllIntervals(): void {
   interval_cache.forEach(clearInterval);
   interval_cache.length = 0;
 }
@@ -79,7 +82,7 @@ emitter.emit = function(ev, ...args) {
 
 // for ever-changing configuration files, etc.
 const FluidConfig = {
-  update() {
+  update(): void {
     let file;
     try {
       file = readFileSync(this.fname)
@@ -97,13 +100,12 @@ const FluidConfig = {
   _maxListeners: Infinity
 };
 Object.setPrototypeOf(FluidConfig, new EventEmitter);
-export function fluid_config(fname, handler?) {
+export function fluid_config(fname: string) {
   let f: any = () => {
     return f.cache;
   }
   f.fname = fname;
   Object.setPrototypeOf(f, FluidConfig);
-  if(handler) f.on('update', handler);
   watchFile(fname, {persistent: false}, () => {
     f.update();
   });
@@ -123,5 +125,57 @@ Object.setPrototypeOf(config, new EventEmitter);
 config.update = () => main_config.update();
 main_config.on('update', () => config.emit('update', config()));
 
+export interface Note {
+  /// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
+  date: string;
+  /// The user who left the note.
+  user: string;
+  /// The content of the note.
+  content: string;
+}
+
+export interface Entry {
+  /// An entry ID string like `AbCdEfGhI`.
+  id: string;
+  /// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
+  date: string;
+  /// The Toaq word this entry is for.
+  head: string;
+  /// The definition of the word.
+  body: string;
+  /// The name of the user that added the entry.
+  user: string;
+  /// The scope (`en`, `toa`...) the entry is in.
+  scope: string;
+  /// Notes left on this entry.
+  notes: Note[];
+  /// Map from usernames to individual votes.
+  votes: Record<string, -1 | 0 | 1>;
+  /// Total score of the entry, aggregated from votes.
+  score: number;
+}
+
+export interface Token {
+  /// Username the token is for.
+  name: string;
+  /// Timestamp the token was created, in milliseconds since the Unix epoch.
+  last: number;
+}
+
+export interface Db {
+  entries: Entry[];
+  count: number;
+}
+
+export interface Store {
+  db?: Db;
+  pass?: {
+    // Map from usernames to `bcrypt` hashes of their passwords.
+    hashes: Record<string, string>;
+    // Map from token GUIDs to token objects.
+    tokens: Record<string, Token>;
+  };
+}
+
 // a store for stuff and things
-export var store: Record<string, any> = {};
+export var store: Store = {};

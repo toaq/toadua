@@ -72,10 +72,10 @@ function api_handler(r, s) {
       }
       try {
         api.call(json, data => {
-          data = {version: VERSION, ...data};
+          const versioned = {version: VERSION, ...data};
           s.writeHead(200,
             {'content-type': 'application/json; charset=utf-8'});
-          s.end(JSON.stringify(data));
+          s.end(JSON.stringify(versioned));
         });
       } catch(e) {
         console.log(`unexpected uncaught error: ${e.stack}`);

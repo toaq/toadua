@@ -2,17 +2,35 @@
 // perform searches of the database
 
 "use strict";
-import {deburr, deburrMatch, emitter, config, store} from "./commons";
+import {deburr, deburrMatch, emitter, config, store, MatchMode, Entry} from "./commons";
 
 // keep an own cache for entries
-var cache = [];
+var cache: CachedEntry[] = [];
 
 const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'];
 const empty_re_cache = () => Object.fromEntries(RE_TRAITS.map(trait => [trait, {}]));
 var re_cache = empty_re_cache();
 
+interface CachedEntry {
+  $: Entry;
+  id: string;
+  head: string[];
+  body: string[];
+  notes: string[];
+  date: number;
+  score: number;
+  content: string[];
+}
+
+export interface PresentedEntry extends Omit<Entry, "votes"> {
+  vote: -1 | 0 | 1 | undefined;
+  votes?: undefined;
+  relevance?: number;
+  content?: string[];
+}
+
 // compute a few fields for faster processing
-export function cacheify(e) {
+export function cacheify(e: Entry): CachedEntry {
   let deburredHead = deburr(e.head);
   let deburredBody = deburr(e.body);
   let deburredNotes = e.notes.flatMap(({content}) => deburr(content));
@@ -26,19 +44,14 @@ export function cacheify(e) {
           content: [].concat(deburredHead, deburredBody, deburredNotes)};
 }
 
-function cached_index(id) {
+function cached_index(id: string): number {
   return cache.findIndex(_ => _.id === id);
 }
 
-function cached_by_id(id) {
-  return cache[cached_index(id)];
-}
-
-export function present(e, uname: string | undefined, relevance) {
-  let original = {...e.$, relevance, content: e.content};
-  original.vote = uname ? original.votes[uname] || 0 : undefined;
-  delete original.votes;
-  return original;
+export function present(e: CachedEntry, uname: string | undefined, relevance: number): PresentedEntry {
+  const {votes, ...rest} = e.$;
+  const vote = uname ? votes[uname] || 0 : undefined;
+  return {...rest, relevance, content: e.content, vote};
 }
 
 export function score(entry) {
@@ -97,7 +110,7 @@ let operations = search.operations = {
                    let deburred = deburr(s);
                    return entry => deburrMatch(deburred,
                                                entry.content,
-                                               deburrMatch.CONTAINING)
+                                               MatchMode.Containing)
                                      == deburred.length;
                  }}
 };
@@ -190,24 +203,24 @@ function bare_terms(o) {
   }
 }
 
-function default_ordering(e, deburrs) {
+function default_ordering(e: CachedEntry, deburrs: string[]): number {
   const official = e.$.user === 'official' ? 1 : 0;
   return Math.sqrt((1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score))) * (
     // full keyword match
-    +  1 * +(deburrMatch(deburrs, e.notes, deburrMatch.CONTAINING) > 0)
+    +  1 * +(deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0)
     // header/body substring/superstring match
-    +  3 * +(deburrMatch(deburrs, e.body, deburrMatch.CONTAINED) > 0)
-    +  6 * +(deburrMatch(deburrs, e.head, deburrMatch.CONTAINED) > 0)
-    + 10 * +(deburrMatch(deburrs, e.body, deburrMatch.CONTAINING) > 0)
-    + 15 * +(deburrMatch(deburrs, e.head, deburrMatch.CONTAINING) > 0)
+    +  3 * +(deburrMatch(deburrs, e.body, MatchMode.Contained) > 0)
+    +  6 * +(deburrMatch(deburrs, e.head, MatchMode.Contained) > 0)
+    + 10 * +(deburrMatch(deburrs, e.body, MatchMode.Containing) > 0)
+    + 15 * +(deburrMatch(deburrs, e.head, MatchMode.Containing) > 0)
     // exact match.
-    + 30 * +(deburrMatch(deburrs, e.body, deburrMatch.EXACT) > 0)
+    + 30 * +(deburrMatch(deburrs, e.body, MatchMode.Exact) > 0)
     // the number is very exact too, as you can see
-    + 69.4201337 * +(deburrMatch(deburrs, e.head, deburrMatch.EXACT) == e.head.length)
+    + 69.4201337 * +(deburrMatch(deburrs, e.head, MatchMode.Exact) == e.head.length)
   );
 }
 
-export function search(i, uname?: string) {
+export function search(i, uname?: string): string | PresentedEntry[] {
   let {query, ordering: requested_ordering,
        preferred_scope, preferred_scope_bias} = i;
   let filter = parse_query(query);
@@ -226,8 +239,8 @@ export function search(i, uname?: string) {
   }
   let sorted = filtered.map(e => [e, ordering(e, deburrs)
                                      + +(e.$.scope === preferred_scope)
-                                       * (preferred_scope_bias || 0)])
+                                       * (preferred_scope_bias || 0)] as [CachedEntry, number])
                        .sort((e1, e2) => e2[1] - e1[1]);
-  let presented = sorted.map(_ => present(_[0], uname, _[1]));
+  let presented = sorted.map(([e, relevance]) => present(e, uname, relevance));
   return presented;
 }

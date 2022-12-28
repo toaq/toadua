@@ -2,23 +2,36 @@
 // implementation for the API
 
 "use strict";
-import {deburr, config, store, emitter} from "./commons";
+import { deburr, config, store, emitter, Entry } from "./commons";
 import * as search from "./search";
 import * as shared from "../frontend/shared";
 import * as shortid from "shortid";
 import * as uuid from "uuid";
 import * as bcrypt from "bcryptjs";
+import { PresentedEntry } from "./search";
+
+export type ApiBody =
+  | { name: string }
+  | { entry: PresentedEntry }
+  | { results: PresentedEntry[] }
+  | { token: string };
+
+export type ApiError = { success: false; error: string };
+export type ApiSuccess = { success: true } & ApiBody;
+export type ApiResponse = ApiError | ApiSuccess;
+
+type ActionFunction = (ret: (response: ApiResponse) => any, i: any, uname?: string) => void;
+type Action = ActionFunction & { checks: Record<string, Check> };
 
 // `uname` is used to override the user – a kind of sudo mode
-export function call(i, ret, uname?: string) {
+export function call(i: any, ret: (response: ApiResponse) => any, uname?: string) {
   let time = +new Date;
-  ret = ret instanceof Function ? ret : (() => {});
   let action = actions.hasOwnProperty(i.action) && actions[i.action];
   if(!action) {
     console.log(`%% action '${i.action}' unknown`);
     return ret(flip('unknown action'));
   }
-  if(!uname && i.token) {
+  if(!uname && "token" in i && typeof i.token === "string") {
     let token = store.pass.tokens[i.token];
     if(token) {
       uname = token.name;
@@ -26,7 +39,7 @@ export function call(i, ret, uname?: string) {
       if(now > token.last + config().token_expiry) {
         delete store.pass.tokens[i.token];
         ret = (old_ret => data => {
-          if(data && !data.success &&
+          if(data.success === false &&
              data.error === 'must be logged in')
             old_ret(flip('token has expired'));
           else old_ret(data);
@@ -54,20 +67,22 @@ export function call(i, ret, uname?: string) {
 if(!store.db)   store.db   = {entries: [], count: 0};
 if(!store.pass) store.pass = { hashes: {}, tokens: {}};
 
-let actions: any = {};
+let actions: Record<string, Action> = {};
 
-const flip = (e: string) => ({success: false, error: e});
-const good = (d?: any) => ({success: true,  ...d});
+const flip = (e: string): ApiError => ({success: false, error: e});
+const good = (d?: ApiBody): ApiResponse => ({success: true,  ...d});
 
-function guard(logged_in, conds: Record<string, (x: any) => any>, f) {
-  let res: any = (ret, i, uname) => {
+type Check = (x: any) => true | string;
+
+function guard(logged_in: boolean, conds: Record<string, Check>, f: ActionFunction): Action {
+  let res: any = (ret, i: object, uname: string | undefined) => {
     if(logged_in && ! uname)
       return ret(flip('must be logged in'));
     if(conds) for(let [k, v] of Object.entries(conds)) {
       let err = v(i[k]);
       if(err !== true)
         return ret(flip(`invalid field '${k}'${
-          err === false ? '' : `: ${err}`}`));
+          `: ${err}`}`));
     }
     f(ret, i, uname);
   };
@@ -75,7 +90,11 @@ function guard(logged_in, conds: Record<string, (x: any) => any>, f) {
   return res;
 }
 
-const checks: Record<string, (i: any) => any> = {
+const limit = (lim: number) => (i: any) =>
+  (!i || typeof i !== 'string') ? 'absent' :
+    (i.length <= lim || `too long (max. ${lim} characters)`);
+
+const checks = {
   present: i => !!i || 'absent',
     scope: i => !(i && typeof i === 'string')
                   ? 'scope is not string'
@@ -87,22 +106,20 @@ const checks: Record<string, (i: any) => any> = {
   shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
    goodid: i => (checks.shortid(i) && (index_of(i) !== -1)) ||
                   'not a recognised ID',
-    limit: lim => i => (!i || typeof i !== 'string') ? 'absent' :
-                         (i.length <= lim ||
-                          `too long (max. ${lim} characters)`),
+  limit,
+  nobomb: limit(2048),
+  optional: <S>(f: (s: S) => true | string) => (s: S) => !s || f(s),
 };
-checks.nobomb = checks.limit(2048);
-checks.optional = f => s => !s || f(s);
 
-export function index_of(id) {
+export function index_of(id: string): number {
   return store.db.entries.findIndex(_ => _.id == id);
 }
 
-export function by_id(id) {
+export function by_id(id: string): Entry {
   return store.db.entries[index_of(id)];
 }
 
-function present(e, uname) {
+function present(e: Entry, uname: string | undefined): PresentedEntry {
   return {...e, votes: undefined, vote: uname ? e.votes[uname] || 0
                                               : undefined};
 }
@@ -123,7 +140,7 @@ actions.search = guard(false, {
 });
 
 actions.vote = guard(true, {
-  id: checks.goodid, vote: _ => [-1, 0, 1].includes(_)
+  id: checks.goodid, vote: _ => [-1, 0, 1].includes(_) || 'invalid vote'
 }, (ret, i, uname) => {
   let e = by_id(i.id);
   let old_vote = e.votes[uname] || 0;
@@ -148,7 +165,7 @@ actions.note = guard(true, {
 });
 
 export const replacements =
-  s => s.replace(/___/g, '▯')
+  (s: string): string => s.replace(/___/g, '▯')
     .replace(/\s+$/g, '')
     .normalize('NFC');
 

@@ -1,13 +1,18 @@
 const { hsl: { hex: hsl_to_hex } } = require('color-convert');
 
-export function convert_hue(n: number) {
+export interface Color {
+  hex: number;
+  css: string;
+}
+
+export function convert_hue(n: number): Color {
   return {
     hex: parseInt(hsl_to_hex(n, 100, 30), 16),
     css: `color: hsl(${n}, 100%, 30%);`
   };
 }
 
-export function normalize(s, trim?: boolean) {
+export function normalize(s: string, trim?: boolean): string {
   if(trim === undefined) trim = true;
   let suffix = trim ? '' : s.match(/\s*$/)[0];
   s = s.normalize('NFD').replace(/ı/g, 'i').replace(/ȷ/g, 'j');
@@ -30,7 +35,7 @@ export function normalize(s, trim?: boolean) {
     .replace(/i/g, "ı") + suffix;
 }
 
-export function color_for(name) {
+export function color_for(name: string): Color {
   if(name === 'official')
     return {hex: 0x333333, css: '#333'};
   let n = 0;
@@ -39,7 +44,7 @@ export function color_for(name) {
   return convert_hue(n);
 }
 
-export function score_color(n) {
+export function score_color(n: number): Color {
   return convert_hue(Math.atan(n / 2) / Math.PI * 2);
 }
 

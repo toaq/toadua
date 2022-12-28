@@ -3,6 +3,7 @@
 
 "use strict";
 import * as commons from '../core/commons';
+import { Token } from '../core/commons';
 import * as search from '../core/search';
 import * as shared from '../frontend/shared';
 let {store, config} = commons;
@@ -15,7 +16,7 @@ export function state_change() {
   store.db.count = store.db.entries.length;
 
   let now = +new Date;
-  const entries: [string, {last: number}][] = Object.entries(store.pass.tokens);
+  const entries: [string, Token][] = Object.entries(store.pass.tokens);
   for(let [k, {last}] of entries)
     if(now > last + config().token_expiry)
       delete store.pass.tokens[k];
