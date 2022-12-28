@@ -7,9 +7,12 @@ import {deburr, deburrMatch, emitter, config, store, MatchMode, Entry} from "./c
 // keep an own cache for entries
 var cache: CachedEntry[] = [];
 
-const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'];
-const empty_re_cache = () => Object.fromEntries(RE_TRAITS.map(trait => [trait, {}]));
-var re_cache = empty_re_cache();
+const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'] as const;
+type Trait = (typeof RE_TRAITS)[number];
+
+type ReCache = Record<Trait, Record<string, (entry: CachedEntry) => boolean>>;
+const empty_re_cache = () => Object.fromEntries(RE_TRAITS.map(trait => [trait, {}])) as ReCache;
+var re_cache: ReCache = empty_re_cache();
 
 interface CachedEntry {
   $: Entry;
@@ -54,7 +57,7 @@ export function present(e: CachedEntry, uname: string | undefined, relevance: nu
   return {...rest, relevance, content: e.content, vote};
 }
 
-export function score(entry) {
+export function score(entry: Entry): number {
   const votes: [string, number][] = Object.entries(entry.votes);
   return votes.reduce((a, b) => a + b[1], 0);
 }
@@ -68,35 +71,46 @@ for(let k of ['vote', 'note'])
     cache.splice(cached_index(entry.id), 1,
       cacheify(entry)));
 
-export function recache() {
+export function recache(): void {
   cache = store.db.entries.map(cacheify);
   re_cache = empty_re_cache();
 }
 
-let all_funcs = args => args.every(_ => _ instanceof Function),
-   one_string = args => args.length === 1 &&
-                          typeof args[0] === 'string';
-const OTHER = 0, TEXTUAL = 1, FUNCTOR = 2;
-let operations = search.operations = {
-    and: { type: FUNCTOR,
+const all_funcs = args => args.every(_ => _ instanceof Function);
+const one_string = args => args.length === 1 && typeof args[0] === 'string';
+
+enum OperationType {
+  Other,
+  Textual,
+  Functor,
+}
+
+interface Operation {
+  type: OperationType;
+  check: (args: any[]) => boolean;
+  build: (args: any[]) => (entry: CachedEntry) => boolean;
+}
+
+let operations: Record<string, Operation> = search.operations = {
+    and: { type: OperationType.Functor,
           check: all_funcs,
           build: args => entry => {
                    for(let a of args)
                      if(!a(entry)) return false;
                    return true;
                  }},
-     or: { type: FUNCTOR,
+     or: { type: OperationType.Functor,
           check: all_funcs,
           build: args => entry => {
                    for(let a of args)
                      if(a(entry)) return true;
                    return false;
                  }},
-    not: { type: FUNCTOR,
+    not: { type: OperationType.Functor,
           check: args => args.length === 1 &&
                            args[0] instanceof Function,
           build: ([f]) => entry => !f(entry)},
-  arity: { type: OTHER,
+  arity: { type: OperationType.Other,
           check: args => args.length === 1 &&
                            typeof args[0] === 'number',
           build: ([n]) => entry =>
@@ -104,7 +118,7 @@ let operations = search.operations = {
                      let matches = _.match(/▯/g);
                      return matches ? matches.length : -1;
                    }).reduce(Math.max, -1) === n},
-   term: { type: TEXTUAL,
+   term: { type: OperationType.Textual,
           check: one_string,
           build: ([s]) => {
                    let deburred = deburr(s);
@@ -117,20 +131,20 @@ let operations = search.operations = {
 
 for(let trait of RE_TRAITS) {
   operations[trait] = {
-    type: OTHER,
+    type: OperationType.Other,
     check: one_string,
     build: ([s]) => re_cache[trait][s] || (re_cache[trait][s] = make_re(trait, s)),
   };
   operations[`${trait}_raw`] = {
-    type: OTHER,
+    type: OperationType.Other,
     check: one_string,
     build: ([s]) => query => s === query.$[trait],
   };
 }
 
-const is_morphological = trait => ['head', 'body'].includes(trait);
+const is_morphological = (trait: Trait): boolean => ['head', 'body'].includes(trait);
 
-function make_re(trait, s) {
+function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
   try {
 
     if(!(is_morphological(trait) ? /[?*CV]/
@@ -163,7 +177,7 @@ function make_re(trait, s) {
 //                ["user", "example"]]]
 // for anybody asking: yes, this is basically a kind of Lisp
 search.parse_query = parse_query;
-function parse_query(query) {
+function parse_query(query): string | false | ((entry: CachedEntry) => boolean) {
   if(!(query instanceof Array))
     return 'found non-array branch';
   if(!query.length) return 'found empty array node';
@@ -190,13 +204,13 @@ function parse_query(query) {
 }
 
 search.bare_terms = bare_terms;
-function bare_terms(o) {
+function bare_terms(o: any[]) {
   // `o` must be instanceof Array.
   let op = operations[o[0]];
   switch(op.type) {
-    case TEXTUAL:
+    case OperationType.Textual:
       return [o[1]];
-    case FUNCTOR:
+    case OperationType.Functor:
       return o.slice(1).map(bare_terms).flat();
     default:
       return [];
@@ -220,11 +234,11 @@ function default_ordering(e: CachedEntry, deburrs: string[]): number {
   );
 }
 
-export function search(i, uname?: string): string | PresentedEntry[] {
+export function search(i: any, uname?: string): string | PresentedEntry[] {
   let {query, ordering: requested_ordering,
        preferred_scope, preferred_scope_bias} = i;
   let filter = parse_query(query);
-  if(typeof filter === 'string')
+  if(typeof filter !== 'function')
     return `malformed query: ${filter}`;
   let bares = bare_terms(query),
     deburrs = bares.map(deburr).flat();
