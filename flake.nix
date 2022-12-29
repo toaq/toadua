@@ -27,7 +27,7 @@
             cp -r node_modules $out
           '';
         };
-        toadua = pkgs.runCommand "toadua" {} ''
+        toadua = pkgs.runCommand "toadua" { } ''
           mkdir -p $out/{bin,libexec/toadua}
           cp -r ${backend}/* ${self}/{config,package.json} $out/libexec/toadua
           cp -r ${frontend} $out/libexec/toadua/frontend
@@ -37,11 +37,15 @@
           chmod +x $out/bin/toadua
         '';
       in {
-        packages = { inherit frontend backend toadua; };
-        defaultPackage = toadua;
-        devShell = pkgs.mkShell { buildInputs = [ pkgs.nodejs_latest ]; };
+        packages = {
+          inherit frontend backend toadua;
+          default = toadua;
+        };
+        checks = { inherit toadua; };
+        devShells.default =
+          pkgs.mkShell { buildInputs = [ pkgs.nodejs_latest ]; };
       }) // {
-        nixosModule = { pkgs, lib, config, inputs, system, ... }:
+        nixosModules.default = { pkgs, lib, config, inputs, system, ... }:
           let inherit (config.services.toadua) enable package port dataDir;
           in with lib; {
             options.services.toadua = {
@@ -58,12 +62,12 @@
               description = "Toaq Dictionary";
               wantedBy = [ "multi-user.target" ];
               wants = [ "network-online.target" ];
-              script = strings.concatStringsSep " " ([
-                "${package}/bin/toadua"
-                "--data-directory" "${dataDir}"
-              ] ++ (lib.optionals (port != null) [
-                "--port" (toString port)
-              ]));
+              script = strings.concatStringsSep " "
+                ([ "${package}/bin/toadua" "--data-directory" "${dataDir}" ]
+                  ++ (lib.optionals (port != null) [
+                    "--port"
+                    (toString port)
+                  ]));
               serviceConfig.WorkingDirectory = dataDir;
             };
           };

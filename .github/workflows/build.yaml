@@ -1,0 +1,12 @@
+name: Check if Nix build succeeds
+on:
+  push:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nixbuild/nix-quick-install-action@v19
+        with: { nix_conf: experimental-features = nix-command flakes }
+      - run: nix flake check
