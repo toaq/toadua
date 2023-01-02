@@ -1,14 +1,13 @@
 [
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "town.robin.toadua",
-      "sha256_cert_fingerprints":
-        [
-          "7C:9E:2E:1F:B0:B9:65:98:98:F0:0A:E5:79:D9:1E:33:79:12:41:69:AC:0B:3A:8D:F9:4D:BA:32:9D:2C:00:C1",
-          "9B:53:DD:89:F2:BE:26:D1:62:A2:90:70:41:67:4F:AF:8E:5F:CC:12:A9:31:B2:69:D5:38:FC:57:96:69:0B:14"
-        ]
-    }
-  }
+	{
+		"relation": ["delegate_permission/common.handle_all_urls"],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "town.robin.toadua",
+			"sha256_cert_fingerprints": [
+				"7C:9E:2E:1F:B0:B9:65:98:98:F0:0A:E5:79:D9:1E:33:79:12:41:69:AC:0B:3A:8D:F9:4D:BA:32:9D:2C:00:C1",
+				"9B:53:DD:89:F2:BE:26:D1:62:A2:90:70:41:67:4F:AF:8E:5F:CC:12:A9:31:B2:69:D5:38:FC:57:96:69:0B:14"
+			]
+		}
+	}
 ]

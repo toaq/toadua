@@ -1,38 +1,39 @@
 {
-  "name": "toadua",
-  "version": "0.1729.0",
-  "description": "A collaborative dictionary for the Toaq language.",
-  "main": "core/server.js",
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "dependencies": {
-    "argparse": "2.0.1",
-    "bcryptjs": "^2.4.3",
-    "color-convert": "^2.0.1",
-    "js-yaml": "^4.1.0",
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.9",
-    "shortid": "^2.2.16",
-    "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "@types/argparse": "^2.0.10",
-    "@types/bcryptjs": "^2.4.2",
-    "@types/request-promise-native": "^1.0.18",
-    "@types/shortid": "^0.0.29",
-    "@types/uuid": "^9.0.0",
-    "typescript": "^4.5.5"
-  },
-  "scripts": {
-    "build": "npx -p typescript tsc --build",
-    "start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/uakci/toadua.git"
-  },
-  "author": "uakci",
-  "license": "MIT",
-  "private": true
+	"name": "toadua",
+	"version": "0.1729.0",
+	"description": "A collaborative dictionary for the Toaq language.",
+	"main": "core/server.js",
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"dependencies": {
+		"argparse": "2.0.1",
+		"bcryptjs": "^2.4.3",
+		"color-convert": "^2.0.1",
+		"js-yaml": "^4.1.0",
+		"request": "^2.88.2",
+		"request-promise-native": "^1.0.9",
+		"shortid": "^2.2.16",
+		"uuid": "^9.0.0"
+	},
+	"devDependencies": {
+		"@types/argparse": "^2.0.10",
+		"@types/bcryptjs": "^2.4.2",
+		"@types/request-promise-native": "^1.0.18",
+		"@types/shortid": "^0.0.29",
+		"@types/uuid": "^9.0.0",
+		"prettier": "^2.8.1",
+		"typescript": "^4.5.5"
+	},
+	"scripts": {
+		"build": "npx -p typescript tsc --build",
+		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/uakci/toadua.git"
+	},
+	"author": "uakci",
+	"license": "MIT",
+	"private": true
 }

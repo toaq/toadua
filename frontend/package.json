@@ -1,42 +1,42 @@
 {
-  "name": "toadua-frontend",
-  "version": "0.1729.0",
-  "description": "A collaborative dictionary for the Toaq language.",
-  "main": "./frontend.ts",
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "browserslist": [
-    "last 2 versions, not dead, > 0.2%"
-  ],
-  "devDependencies": {
-    "@babel/core": "^7.20.7",
-    "@babel/preset-env": "^7.20.2",
-    "@vue/cli": "^5.0.8",
-    "@vue/compiler-sfc": "^3.2.41",
-    "babel-loader": "^9.1.0",
-    "css-loader": "^6.7.3",
-    "html-webpack-plugin": "^5.5.0",
-    "json-loader": "^0.5.7",
-    "ts-loader": "^9.4.2",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.4",
-    "vue": "^3.2.41",
-    "vue-loader": "^17.0.1",
-    "vue-style-loader": "^4.1.3",
-    "vue-template-compiler": "^2.7.14",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^4.10.0"
-  },
-  "scripts": {
-    "build": "npx webpack"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/uakci/toadua.git",
-    "directory": "frontend"
-  },
-  "author": "uakci",
-  "license": "MIT",
-  "private": true
+	"name": "toadua-frontend",
+	"version": "0.1729.0",
+	"description": "A collaborative dictionary for the Toaq language.",
+	"main": "./frontend.ts",
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"browserslist": [
+		"last 2 versions, not dead, > 0.2%"
+	],
+	"devDependencies": {
+		"@babel/core": "^7.20.7",
+		"@babel/preset-env": "^7.20.2",
+		"@vue/cli": "^5.0.8",
+		"@vue/compiler-sfc": "^3.2.41",
+		"babel-loader": "^9.1.0",
+		"css-loader": "^6.7.3",
+		"html-webpack-plugin": "^5.5.0",
+		"json-loader": "^0.5.7",
+		"ts-loader": "^9.4.2",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.4",
+		"vue": "^3.2.41",
+		"vue-loader": "^17.0.1",
+		"vue-style-loader": "^4.1.3",
+		"vue-template-compiler": "^2.7.14",
+		"webpack": "^5.75.0",
+		"webpack-cli": "^4.10.0"
+	},
+	"scripts": {
+		"build": "npx webpack"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/uakci/toadua.git",
+		"directory": "frontend"
+	},
+	"author": "uakci",
+	"license": "MIT",
+	"private": true
 }

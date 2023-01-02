@@ -1,16 +1,11 @@
 {
-  "compilerOptions": {
-    "outDir": "./dist/",
-    "noImplicitAny": false,
-    "module": "commonjs",
-    "target": "es2015",
-    "allowJs": true,
-    "moduleResolution": "node"
-  },
-  "include": [
-    "core/**/*",
-    "modules/**/*",
-    "frontend/shared/**/*"
-  ]
+	"compilerOptions": {
+		"outDir": "./dist/",
+		"noImplicitAny": false,
+		"module": "commonjs",
+		"target": "es2015",
+		"allowJs": true,
+		"moduleResolution": "node"
+	},
+	"include": ["core/**/*", "modules/**/*", "frontend/shared/**/*"]
 }
-
