@@ -42,7 +42,7 @@ modules: {}
 #   enabled: true
 #   vote_threshold: -3
 ##### if `users` is absent, all users are subject to entry deletion
-#   users: 
+#   users:
 #     - mrbot
 #     - abbott
 ### pushing updates to Discord

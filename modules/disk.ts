@@ -1,14 +1,14 @@
 // modules/disk.js
 // load from disk, save to disk, do backups
 
-"use strict";
-import * as commons from "../core/commons";
+'use strict';
+import * as commons from '../core/commons';
 let store = commons.store;
 
-import * as http from "http";
-import * as fs from "fs";
-import * as zlib from "zlib";
-import * as stream from "stream";
+import * as http from 'http';
+import * as fs from 'fs';
+import * as zlib from 'zlib';
+import * as stream from 'stream';
 
 export function read(fname, deft) {
 	let gzip;
@@ -16,7 +16,7 @@ export function read(fname, deft) {
 		gzip = fs.readFileSync(fname);
 	} catch (e) {
 		console.log(
-			`Note: setting the default value for '${fname}' because of a file read failure (${e.code})`
+			`Note: setting the default value for '${fname}' because of a file read failure (${e.code})`,
 		);
 		write(fname, deft);
 		return deft;
@@ -29,7 +29,7 @@ export function read(fname, deft) {
 
 function write_(fname, data, guard_override) {
 	let gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
-	let backup = fname + "~",
+	let backup = fname + '~',
 		our_size = gzip.length,
 		success = false,
 		unbackup = true;
@@ -38,13 +38,13 @@ function write_(fname, data, guard_override) {
 			let { size: old_size } = fs.statSync(fname);
 			if (gzip.length / (old_size || 1) < 0.5) {
 				console.log(
-					`warning: refusing to destructively write ${our_size}b over ${old_size}b file '${fname}'`
+					`warning: refusing to destructively write ${our_size}b over ${old_size}b file '${fname}'`,
 				);
 				console.log(`will write to backup '${backup}' instead`);
 				unbackup = false;
 			}
 		} catch (e) {
-			if (e.code !== "ENOENT") throw e;
+			if (e.code !== 'ENOENT') throw e;
 		}
 	for (let _ = 0; _ < 3; ++_) {
 		try {
@@ -83,7 +83,7 @@ export function write(fname, data, guard_override?: any) {
 		res = write_(fname, data, guard_override);
 	} catch (e) {
 		console.log(
-			`unexpected error when handling write to '${fname}: ${e.stack}`
+			`unexpected error when handling write to '${fname}: ${e.stack}`,
 		);
 		res = false;
 	}
@@ -93,17 +93,17 @@ export function write(fname, data, guard_override?: any) {
 
 export function backup() {
 	try {
-		fs.mkdirSync("backup");
+		fs.mkdirSync('backup');
 	} catch (e) {
-		if (e.code !== "EEXIST") throw e;
+		if (e.code !== 'EEXIST') throw e;
 	}
 	if (
 		!write(
 			`backup/${new Date()
 				.toISOString()
-				.split(":")[0]
-				.replace(/T/, "-")}.json.gz`,
-			store
+				.split(':')[0]
+				.replace(/T/, '-')}.json.gz`,
+			store,
 		)
 	)
 		console.log(`note: backup failed`);
@@ -111,8 +111,8 @@ export function backup() {
 
 export function save() {
 	return ((a, b) => a && b)(
-		write("data/dict.json.gz", store.db),
-		write("data/accounts.json.gz", store.pass)
+		write('data/dict.json.gz', store.db),
+		write('data/accounts.json.gz', store.pass),
 	);
 }
 
@@ -126,8 +126,8 @@ export function state_change() {
 			intervals[k] = commons.setInterval(acts[k], this[k]);
 	}
 	if (first_go) {
-		(store.db = read("data/dict.json.gz", { entries: [], count: 0 })),
-			(store.pass = read("data/accounts.json.gz", { hashes: {}, tokens: {} }));
+		(store.db = read('data/dict.json.gz', { entries: [], count: 0 })),
+			(store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} }));
 		first_go = false;
 	} else if (!this) {
 		console.log(`trying to save data...`);

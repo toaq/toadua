@@ -2,15 +2,14 @@
 
 ## Overview
 
-The API, accessible through the `/api` route, accepts POST requests
-containing valid JSON data and responds with JSON. Please note that
-your query may not exceed 16 KiB in size.
+The API, accessible through the `/api` route, accepts POST requests containing
+valid JSON data and responds with JSON. Please note that your query may not
+exceed 16 KiB in size.
 
 ### Generic response format
 
-- `version` string – always contains the [semantic
-  version](https://semver.org) of the backend; use this to ensure that
-  your appli(ance|cation) is up to date
+- `version` string – always contains the [semantic version](https://semver.org)
+  of the backend; use this to ensure that your appli(ance|cation) is up to date
 - `success` bool
 - `error` string? – absent if `success === true`
 
@@ -21,8 +20,8 @@ Entries are JSON objects with the following fields:
 - `id` string – unique identifier representing the entry
 - `date` string – when the entry was created, in ISO format
 - `user` string – author of the entry
-- `scope` string – the ‘scope’ the entry resides in; currently, this
-  signifies what language `body` is supposed to be in
+- `scope` string – the ‘scope’ the entry resides in; currently, this signifies
+  what language `body` is supposed to be in
 - `head` string – the header, i.e., the Toaq word
 - `body` string – the definition
 - `notes` array of:
@@ -30,18 +29,18 @@ Entries are JSON objects with the following fields:
   - `user` string
   - `content` string
 - `score` number – as determined by the votes users cast on the entry
-- `vote` number? – your vote on the entry. One of `-1`, `0` or `1`.
-  This field will appear iff you send your token with your query
+- `vote` number? – your vote on the entry. One of `-1`, `0` or `1`. This field
+  will appear iff you send your token with your query
 
 ## Actions
 
-Queries must be JSON objects with a string `action` field,
-designating the action to be performed. The semantics of the rest of
-the fields in the input object are determined by the chosen action.
+Queries must be JSON objects with a string `action` field, designating the
+action to be performed. The semantics of the rest of the fields in the input
+object are determined by the chosen action.
 
-In addition, if an action requires the sender to be logged in – as
-marked with `(L)` – a `token` field containing a valid UUID token must
-be present in the object.
+In addition, if an action requires the sender to be logged in – as marked with
+`(L)` – a `token` field containing a valid UUID token must be present in the
+object.
 
 ### `search`
 
@@ -54,16 +53,14 @@ be present in the object.
 >
 > - `results` entry array
 
-Execute a search against the database given a Lisp-like description
-of the search. The following paragraphs describe the exact format of
-this description.
+Execute a search against the database given a Lisp-like description of the
+search. The following paragraphs describe the exact format of this description.
 
-A query is a tree-like array structure which describes constraints
-in terms of certain criteria or logical operations on such criteria.
-The interpretation of non-initial elements of an array (called
-_arguments_) is determined by the initial element, the _operator_. The
-format – or formal grammar – of the `query` field can therefore be
-described thus:
+A query is a tree-like array structure which describes constraints in terms of
+certain criteria or logical operations on such criteria. The interpretation of
+non-initial elements of an array (called _arguments_) is determined by the
+initial element, the _operator_. The format – or formal grammar – of the `query`
+field can therefore be described thus:
 
 ```
 query := ["and" | "or", ...query]
@@ -75,24 +72,20 @@ query := ["and" | "or", ...query]
 Here are listed the semantics of each operator:
 
 - **Functors**:
-  - `and`: logical conjunction of constraints (or intersection of the
-    sets of results)
-  - `or`: logical disjunction of constraints (or sum of the sets of
+  - `and`: logical conjunction of constraints (or intersection of the sets of
     results)
-  - `not`: logical negation of constraint (or complement of the result
-    set)
+  - `or`: logical disjunction of constraints (or sum of the sets of results)
+  - `not`: logical negation of constraint (or complement of the result set)
 - **Property constraints**:
-  - `id`: succeeds if entry has the given ID (without the octothorpe
-    `#`)
-  - `user`: succeeds if entry has been created under the given user
-    name (without the at sign `@`)
-  - `arity` (_Toaq-specific_): succeeds if the highest number of
-    argument places in the parts of a definition is equal to the one
-    supplied (must be a number, not a string representation thereof)
+  - `id`: succeeds if entry has the given ID (without the octothorpe `#`)
+  - `user`: succeeds if entry has been created under the given user name
+    (without the at sign `@`)
+  - `arity` (_Toaq-specific_): succeeds if the highest number of argument places
+    in the parts of a definition is equal to the one supplied (must be a number,
+    not a string representation thereof)
 - **Textual constraints**:
-  - `term`: succeeds if the supplied string, after removing special
-    characters, appears in either the head, the definition, or the
-    comments of an entry
+  - `term`: succeeds if the supplied string, after removing special characters,
+    appears in either the head, the definition, or the comments of an entry
 
 Ordering describes the metric by which entries should be sorted.
 
@@ -115,8 +108,8 @@ Ordering describes the metric by which entries should be sorted.
 >
 > - `entry` entry
 
-Adds a note to the entry with the given ID. Note that `content` may
-not be over 2048 characters long. Returns the new state of the entry.
+Adds a note to the entry with the given ID. Note that `content` may not be over
+2048 characters long. Returns the new state of the entry.
 
 ### `create` (L)
 
@@ -130,10 +123,10 @@ not be over 2048 characters long. Returns the new state of the entry.
 >
 > - `entry` entry
 
-Creates a new entry with the given Toaq word and definition in the
-given scope (which defaults to `"en"`). Note that the head–body pair
-must be unique; note also that there is a restriction of 2048
-characters on each of the head and the body. Don't go crazy.
+Creates a new entry with the given Toaq word and definition in the given scope
+(which defaults to `"en"`). Note that the head–body pair must be unique; note
+also that there is a restriction of 2048 characters on each of the head and the
+body. Don't go crazy.
 
 ### `login`
 
@@ -163,9 +156,9 @@ Invalidates the token passed as input.
 >
 > - `token` string
 
-Attempts to register with the given credentials. Note that `name`
-may only contain letters from the Latin alphabet; there is a
-restriction on the length, too.
+Attempts to register with the given credentials. Note that `name` may only
+contain letters from the Latin alphabet; there is a restriction on the length,
+too.
 
 ### `vote` (L)
 
@@ -178,9 +171,8 @@ restriction on the length, too.
 >
 > - `entry` entry
 
-Casts a vote on the entry with the given ID. Possible values of
-`vote` are `-1`, `0`, and `1`; `0` effectively cancels your previous
-vote.
+Casts a vote on the entry with the given ID. Possible values of `vote` are `-1`,
+`0`, and `1`; `0` effectively cancels your previous vote.
 
 ### `welcome`
 
@@ -192,7 +184,6 @@ vote.
 >
 > - `user` string | `null`
 
-Make `welcome` the first message you send to the server. If you send
-a valid token, you will get your username back in `user`; otherwise,
-`user` will be `null` and you will know your token is invalid or has
-expired.
+Make `welcome` the first message you send to the server. If you send a valid
+token, you will get your username back in `user`; otherwise, `user` will be
+`null` and you will know your token is invalid or has expired.

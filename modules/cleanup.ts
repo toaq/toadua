@@ -1,9 +1,9 @@
 // modules/cleanup.js
 // remove unwanted entries that satisfy certain criteria
 
-"use strict";
-import * as commons from "../core/commons";
-import * as api from "../core/api";
+'use strict';
+import * as commons from '../core/commons';
+import * as api from '../core/api';
 
 var options: any = {};
 
@@ -14,14 +14,14 @@ export function remove_obsoleted(_, { score, user, id, head }, voter) {
 		// || user == voter)
 		return;
 	api.call(
-		{ action: "remove", id },
+		{ action: 'remove', id },
 		() => console.log(`-- ${head} weeded out`),
-		user
+		user,
 	);
 }
 
 export function state_change() {
 	if (options.enabled !== (options = this || {}).enabled) {
-		commons.emitter[options.enabled ? "on" : "off"]("vote", remove_obsoleted);
+		commons.emitter[options.enabled ? 'on' : 'off']('vote', remove_obsoleted);
 	}
 }

@@ -1,7 +1,7 @@
 // search.ts
 // perform searches of the database
 
-"use strict";
+'use strict';
 import {
 	deburr,
 	deburrMatch,
@@ -10,17 +10,17 @@ import {
 	store,
 	MatchMode,
 	Entry,
-} from "./commons";
+} from './commons';
 
 // keep an own cache for entries
 var cache: CachedEntry[] = [];
 
-const RE_TRAITS = ["id", "user", "scope", "head", "body", "date"] as const;
+const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'] as const;
 type Trait = typeof RE_TRAITS[number];
 
 type ReCache = Record<Trait, Record<string, (entry: CachedEntry) => boolean>>;
 const empty_re_cache = () =>
-	Object.fromEntries(RE_TRAITS.map((trait) => [trait, {}])) as ReCache;
+	Object.fromEntries(RE_TRAITS.map(trait => [trait, {}])) as ReCache;
 var re_cache: ReCache = empty_re_cache();
 
 interface CachedEntry {
@@ -34,7 +34,7 @@ interface CachedEntry {
 	content: string[];
 }
 
-export interface PresentedEntry extends Omit<Entry, "votes"> {
+export interface PresentedEntry extends Omit<Entry, 'votes'> {
 	vote: -1 | 0 | 1 | undefined;
 	votes?: undefined;
 	relevance?: number;
@@ -59,13 +59,13 @@ export function cacheify(e: Entry): CachedEntry {
 }
 
 function cached_index(id: string): number {
-	return cache.findIndex((_) => _.id === id);
+	return cache.findIndex(_ => _.id === id);
 }
 
 export function present(
 	e: CachedEntry,
 	uname: string | undefined,
-	relevance: number
+	relevance: number,
 ): PresentedEntry {
 	const { votes, ...rest } = e.$;
 	const vote = uname ? votes[uname] || 0 : undefined;
@@ -77,11 +77,11 @@ export function score(entry: Entry): number {
 	return votes.reduce((a, b) => a + b[1], 0);
 }
 
-emitter.on("remove", (_, entry) => cache.splice(cached_index(entry.id), 1));
-emitter.on("create", (_, entry) => cache.push(cacheify(entry)));
-for (let k of ["vote", "note"])
+emitter.on('remove', (_, entry) => cache.splice(cached_index(entry.id), 1));
+emitter.on('create', (_, entry) => cache.push(cacheify(entry)));
+for (let k of ['vote', 'note'])
 	emitter.on(k, (_, entry) =>
-		cache.splice(cached_index(entry.id), 1, cacheify(entry))
+		cache.splice(cached_index(entry.id), 1, cacheify(entry)),
 	);
 
 export function recache(): void {
@@ -89,8 +89,8 @@ export function recache(): void {
 	re_cache = empty_re_cache();
 }
 
-const all_funcs = (args) => args.every((_) => _ instanceof Function);
-const one_string = (args) => args.length === 1 && typeof args[0] === "string";
+const all_funcs = args => args.every(_ => _ instanceof Function);
+const one_string = args => args.length === 1 && typeof args[0] === 'string';
 
 enum OperationType {
 	Other,
@@ -108,7 +108,7 @@ let operations: Record<string, Operation> = (search.operations = {
 	and: {
 		type: OperationType.Functor,
 		check: all_funcs,
-		build: (args) => (entry) => {
+		build: args => entry => {
 			for (let a of args) if (!a(entry)) return false;
 			return true;
 		},
@@ -116,28 +116,28 @@ let operations: Record<string, Operation> = (search.operations = {
 	or: {
 		type: OperationType.Functor,
 		check: all_funcs,
-		build: (args) => (entry) => {
+		build: args => entry => {
 			for (let a of args) if (a(entry)) return true;
 			return false;
 		},
 	},
 	not: {
 		type: OperationType.Functor,
-		check: (args) => args.length === 1 && args[0] instanceof Function,
+		check: args => args.length === 1 && args[0] instanceof Function,
 		build:
 			([f]) =>
-			(entry) =>
+			entry =>
 				!f(entry),
 	},
 	arity: {
 		type: OperationType.Other,
-		check: (args) => args.length === 1 && typeof args[0] === "number",
+		check: args => args.length === 1 && typeof args[0] === 'number',
 		build:
 			([n]) =>
-			(entry) =>
+			entry =>
 				entry.$.body
 					.split(/[;.]/)
-					.map((_) => {
+					.map(_ => {
 						let matches = _.match(/▯/g);
 						return matches ? matches.length : -1;
 					})
@@ -148,7 +148,7 @@ let operations: Record<string, Operation> = (search.operations = {
 		check: one_string,
 		build: ([s]) => {
 			let deburred = deburr(s);
-			return (entry) =>
+			return entry =>
 				deburrMatch(deburred, entry.content, MatchMode.Containing) ==
 				deburred.length;
 		},
@@ -167,34 +167,34 @@ for (let trait of RE_TRAITS) {
 		check: one_string,
 		build:
 			([s]) =>
-			(query) =>
+			query =>
 				s === query.$[trait],
 	};
 }
 
 const is_morphological = (trait: Trait): boolean =>
-	["head", "body"].includes(trait);
+	['head', 'body'].includes(trait);
 
 function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 	try {
 		if (!(is_morphological(trait) ? /[?*CV]/ : /[?*]/).test(s)) throw null;
 
 		s = s
-			.replace(/[\[\]{}()+.\\^$|]/g, "\\$&")
-			.replace(/\*+/g, ".*")
-			.replace(/\?/g, ".")
-			.replace(/i/g, "[ıi]");
+			.replace(/[\[\]{}()+.\\^$|]/g, '\\$&')
+			.replace(/\*+/g, '.*')
+			.replace(/\?/g, '.')
+			.replace(/i/g, '[ıi]');
 
 		if (is_morphological(trait))
 			s = s
 				.replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
-				.replace(/V\\\+/g, "V+")
-				.replace(/V/g, "[aeıiouy]");
+				.replace(/V\\\+/g, 'V+')
+				.replace(/V/g, '[aeıiouy]');
 
-		let regexp = new RegExp(`^${s}\$`, "iu");
-		return (entry) => regexp.test(entry.$[trait]);
+		let regexp = new RegExp(`^${s}\$`, 'iu');
+		return entry => regexp.test(entry.$[trait]);
 	} catch (_) {
-		return (entry) => s === entry.$[trait];
+		return entry => s === entry.$[trait];
 	}
 }
 
@@ -207,10 +207,10 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 // for anybody asking: yes, this is basically a kind of Lisp
 search.parse_query = parse_query;
 function parse_query(
-	query
+	query,
 ): string | false | ((entry: CachedEntry) => boolean) {
-	if (!(query instanceof Array)) return "found non-array branch";
-	if (!query.length) return "found empty array node";
+	if (!(query instanceof Array)) return 'found non-array branch';
+	if (!query.length) return 'found empty array node';
 	query = [...query];
 	let op_name = query.shift();
 	let op =
@@ -218,10 +218,10 @@ function parse_query(
 	if (!op) return `unknown operation ${op_name}`;
 	let args;
 	try {
-		args = query.map((arg) => {
-			if (typeof arg !== "object") return arg;
+		args = query.map(arg => {
+			if (typeof arg !== 'object') return arg;
 			let might_be_it = parse_query(arg);
-			if (typeof might_be_it === "string") throw might_be_it;
+			if (typeof might_be_it === 'string') throw might_be_it;
 			return might_be_it;
 		});
 	} catch (e) {
@@ -247,10 +247,10 @@ function bare_terms(o: any[]) {
 }
 
 function default_ordering(e: CachedEntry, deburrs: string[]): number {
-	const official = e.$.user === "official" ? 1 : 0;
+	const official = e.$.user === 'official' ? 1 : 0;
 	return (
 		Math.sqrt(
-			(1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score))
+			(1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score)),
 		) *
 		// full keyword match
 		(+1 * +(deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) +
@@ -275,36 +275,36 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		preferred_scope_bias,
 	} = i;
 	let filter = parse_query(query);
-	if (typeof filter !== "function") return `malformed query: ${filter}`;
+	if (typeof filter !== 'function') return `malformed query: ${filter}`;
 	let bares = bare_terms(query),
 		deburrs = bares.map(deburr).flat();
 	let filtered = cache.filter(filter);
 	let ordering = default_ordering;
 	switch (requested_ordering) {
-		case "newest":
-			ordering = (e) => +e.date;
+		case 'newest':
+			ordering = e => +e.date;
 			break;
-		case "oldest":
-			ordering = (e) => -e.date;
+		case 'oldest':
+			ordering = e => -e.date;
 			break;
-		case "highest":
-			ordering = (e) => +e.score;
+		case 'highest':
+			ordering = e => +e.score;
 			break;
-		case "lowest":
-			ordering = (e) => -e.score;
+		case 'lowest':
+			ordering = e => -e.score;
 			break;
-		case "random":
-			ordering = (e) => Math.random();
+		case 'random':
+			ordering = e => Math.random();
 			break;
 	}
 	let sorted = filtered
 		.map(
-			(e) =>
+			e =>
 				[
 					e,
 					ordering(e, deburrs) +
 						+(e.$.scope === preferred_scope) * (preferred_scope_bias || 0),
-				] as [CachedEntry, number]
+				] as [CachedEntry, number],
 		)
 		.sort((e1, e2) => e2[1] - e1[1]);
 	let presented = sorted.map(([e, relevance]) => present(e, uname, relevance));

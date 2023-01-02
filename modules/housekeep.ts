@@ -1,11 +1,11 @@
 // modules/housekeep.js
 // tamper with the database store
 
-"use strict";
-import * as commons from "../core/commons";
-import { Token } from "../core/commons";
-import * as search from "../core/search";
-import * as shared from "../frontend/shared";
+'use strict';
+import * as commons from '../core/commons';
+import { Token } from '../core/commons';
+import * as search from '../core/search';
+import * as shared from '../frontend/shared';
 let { store, config } = commons;
 
 let first_go = true;
@@ -29,14 +29,14 @@ export function state_change() {
 	};
 	for (let entry of store.db.entries) {
 		// update to modern Toaq
-		let didReform = reform(entry, "head", shared.normalize);
-		if (entry.scope === "toa")
-			didReform ||= reform(entry, "body", shared.normalize);
+		let didReform = reform(entry, 'head', shared.normalize);
+		if (entry.scope === 'toa')
+			didReform ||= reform(entry, 'body', shared.normalize);
 
-		const normalizePlaceholders = (s) => s.replace(/___|◌/g, "▯");
-		didReform ||= reform(entry, "body", normalizePlaceholders);
+		const normalizePlaceholders = s => s.replace(/___|◌/g, '▯');
+		didReform ||= reform(entry, 'body', normalizePlaceholders);
 		for (let note of entry.notes)
-			didReform ||= reform(note, "content", normalizePlaceholders);
+			didReform ||= reform(note, 'content', normalizePlaceholders);
 
 		if (didReform) reformed++;
 	}

@@ -1,23 +1,23 @@
 // server.ts
 // the server, duh
 
-"use strict";
-console.log("-----------");
+'use strict';
+console.log('-----------');
 
-import * as fs from "fs";
-import * as argparse from "argparse";
+import * as fs from 'fs';
+import * as argparse from 'argparse';
 
 const argparser = new argparse.ArgumentParser({
-	description: "Toaq dictionary",
+	description: 'Toaq dictionary',
 	add_help: true,
 });
-argparser.add_argument("-d", "--data-directory", {
-	help: "Directory containing config/ and data/ subdirectories",
-	type: "str",
+argparser.add_argument('-d', '--data-directory', {
+	help: 'Directory containing config/ and data/ subdirectories',
+	type: 'str',
 });
-argparser.add_argument("-p", "--port", {
-	help: "Bind port",
-	type: "int",
+argparser.add_argument('-p', '--port', {
+	help: 'Bind port',
+	type: 'int',
 });
 let args = argparser.parse_args();
 const installation_dir = `${__dirname}/../..`;
@@ -25,69 +25,69 @@ let dir = args.data_directory
 	? fs.realpathSync(args.data_directory)
 	: installation_dir;
 process.chdir(dir);
-import * as commons from "./commons";
+import * as commons from './commons';
 
 let config = commons.config;
 const VERSION = require(`${installation_dir}/package.json`).version;
 
 console.log(`starting up v${VERSION}...`);
 
-import * as http from "http";
-import * as api from "./api";
+import * as http from 'http';
+import * as api from './api';
 
-let fourohfour = static_handler("frontend/404.html", "text/html", 404),
+let fourohfour = static_handler('frontend/404.html', 'text/html', 404),
 	routes = {
-		"/api": api_handler,
-		"/": static_handler("frontend/index.html", "text/html"),
-		"/style.css": static_handler("frontend/style.css", "text/css"),
-		"/frontend.js": static_handler(
-			"frontend/dist/bundle.js",
-			"application/javascript"
+		'/api': api_handler,
+		'/': static_handler('frontend/index.html', 'text/html'),
+		'/style.css': static_handler('frontend/style.css', 'text/css'),
+		'/frontend.js': static_handler(
+			'frontend/dist/bundle.js',
+			'application/javascript',
 		),
-		"/favicon.png": static_handler("frontend/favicon.png", "image/png"),
-		"/site.webmanifest": static_handler(
-			"frontend/site.webmanifest",
-			"application/json"
+		'/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
+		'/site.webmanifest': static_handler(
+			'frontend/site.webmanifest',
+			'application/json',
 		),
-		"/.well-known/assetlinks.json": static_handler(
-			"frontend/assetlinks.json",
-			"application/json"
+		'/.well-known/assetlinks.json': static_handler(
+			'frontend/assetlinks.json',
+			'application/json',
 		),
 	};
 
 function api_handler(r, s) {
 	const flip = (code, message) => {
-		s.writeHead(code, { "content-type": "text/plain; charset=utf-8" }).write(
-			message
+		s.writeHead(code, { 'content-type': 'text/plain; charset=utf-8' }).write(
+			message,
 		);
 		s.end();
 	};
-	if (r.method === "POST") {
-		let body = "";
-		r.on("data", (data) => {
+	if (r.method === 'POST') {
+		let body = '';
+		r.on('data', data => {
 			body += data;
 			if (body.length > config().request_body_size_limit) {
 				body = undefined;
-				flip(413 /* Payload Too Large */, "The request was too large.");
+				flip(413 /* Payload Too Large */, 'The request was too large.');
 				r.connection.destroy();
 			}
 		});
-		r.on("end", () => {
+		r.on('end', () => {
 			let json;
 			try {
 				json = JSON.parse(body);
 			} catch (e) {
 				flip(
 					400 /* Bad Request */,
-					"The request body could not be parsed as JSON."
+					'The request body could not be parsed as JSON.',
 				);
 				return;
 			}
 			try {
-				api.call(json, (data) => {
+				api.call(json, data => {
 					const versioned = { version: VERSION, ...data };
 					s.writeHead(200, {
-						"content-type": "application/json; charset=utf-8",
+						'content-type': 'application/json; charset=utf-8',
 					});
 					s.end(JSON.stringify(versioned));
 				});
@@ -95,13 +95,13 @@ function api_handler(r, s) {
 				console.log(`unexpected uncaught error: ${e.stack}`);
 				flip(
 					500 /* Internal Server Error */,
-					"Unexpected error while processing request."
+					'Unexpected error while processing request.',
 				);
 				return;
 			}
 		});
 	} else {
-		flip(405 /* Method Not Allowed */, "Expecting a POST request.");
+		flip(405 /* Method Not Allowed */, 'Expecting a POST request.');
 	}
 }
 
@@ -114,12 +114,12 @@ function static_handler(fn: string, mime: string, code?: number) {
 		let t_ = fs.statSync(fname).mtimeMs;
 		if (t_ > t) {
 			console.log(
-				`file '${fname}' has been reloaded (${f.length}b; mtime ${t_} > ${t})`
+				`file '${fname}' has been reloaded (${f.length}b; mtime ${t_} > ${t})`,
 			);
 			f = fs.readFileSync(fname);
 		}
 		s.writeHead(code, {
-			"content-type": `${mime}; charset=utf-8`,
+			'content-type': `${mime}; charset=utf-8`,
 		}).write(f);
 		s.end();
 	};
@@ -135,7 +135,7 @@ function handler(r, s_) {
 		writeHead(code, headers?) {
 			if (code !== 200)
 				console.log(
-					`responding with code ${code} (${http.STATUS_CODES[code]})`
+					`responding with code ${code} (${http.STATUS_CODES[code]})`,
 				);
 			s_.writeHead(code, headers);
 			return this;
@@ -162,7 +162,7 @@ function handler(r, s_) {
 			s.writeHead(500 /* Internal Server Error */).end();
 		} catch (e) {
 			console.log(
-				`error while handling error. ignore and eat sock: ${e.stack}`
+				`error while handling error. ignore and eat sock: ${e.stack}`,
 			);
 		}
 	}
@@ -170,7 +170,7 @@ function handler(r, s_) {
 
 let modules: Record<string, any> = {};
 config_update(config());
-config.on("update", config_update);
+config.on('update', config_update);
 
 // this function should be idempotent
 function config_update(data) {
@@ -205,24 +205,24 @@ function config_update(data) {
 var server = http.createServer(handler),
 	connections = [];
 
-server.on("connection", (conn) => {
+server.on('connection', conn => {
 	connections.push(conn);
-	conn.on("close", () => {
+	conn.on('close', () => {
 		connections.splice(connections.indexOf(conn), 0);
 	});
 });
 
-const SIGNALS = ["SIGINT", "SIGTERM", "SIGHUP", "uncaughtException"];
+const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP', 'uncaughtException'];
 for (let s of SIGNALS) process.once(s, bye);
 
 function bye(error) {
 	if (error.stack) console.log(`uncaught exception: ${error.stack}`);
 	else console.log(`caught signal ${error}`);
 	console.log(`trying to exit gracefully`);
-	config.off("update", config_update);
+	config.off('update', config_update);
 	commons.clearAllIntervals();
 	server.close();
-	connections.forEach((_) => _.destroy());
+	connections.forEach(_ => _.destroy());
 	Object.entries(modules)
 		.reverse()
 		.forEach(([path, _]) => {
@@ -230,14 +230,14 @@ function bye(error) {
 				_.state_change.call(null);
 			} catch (e) {
 				console.log(
-					`ignoring state change error for module '${path}': ${e.stack}`
+					`ignoring state change error for module '${path}': ${e.stack}`,
 				);
 			}
 		});
 	process.exitCode = 0;
 }
 
-process.on("exit", (code) => console.log(`exiting with code ${code}`));
+process.on('exit', code => console.log(`exiting with code ${code}`));
 
 const port = Number(args.port ?? config().port ?? 29138);
 server.listen(port);

@@ -1,14 +1,14 @@
 // api.ts
 // implementation for the API
 
-"use strict";
-import { deburr, config, store, emitter, Entry } from "./commons";
-import * as search from "./search";
-import * as shared from "../frontend/shared";
-import * as shortid from "shortid";
-import * as uuid from "uuid";
-import * as bcrypt from "bcryptjs";
-import { PresentedEntry } from "./search";
+'use strict';
+import { deburr, config, store, emitter, Entry } from './commons';
+import * as search from './search';
+import * as shared from '../frontend/shared';
+import * as shortid from 'shortid';
+import * as uuid from 'uuid';
+import * as bcrypt from 'bcryptjs';
+import { PresentedEntry } from './search';
 
 export type ApiBody =
 	| { name: string }
@@ -23,7 +23,7 @@ export type ApiResponse = ApiError | ApiSuccess;
 type ActionFunction = (
 	ret: (response: ApiResponse) => any,
 	i: any,
-	uname?: string
+	uname?: string,
 ) => void;
 type Action = ActionFunction & { checks: Record<string, Check> };
 
@@ -31,24 +31,24 @@ type Action = ActionFunction & { checks: Record<string, Check> };
 export function call(
 	i: any,
 	ret: (response: ApiResponse) => any,
-	uname?: string
+	uname?: string,
 ) {
 	let time = +new Date();
 	let action = actions.hasOwnProperty(i.action) && actions[i.action];
 	if (!action) {
 		console.log(`%% action '${i.action}' unknown`);
-		return ret(flip("unknown action"));
+		return ret(flip('unknown action'));
 	}
-	if (!uname && "token" in i && typeof i.token === "string") {
+	if (!uname && 'token' in i && typeof i.token === 'string') {
 		let token = store.pass.tokens[i.token];
 		if (token) {
 			uname = token.name;
 			let now = +new Date();
 			if (now > token.last + config().token_expiry) {
 				delete store.pass.tokens[i.token];
-				ret = ((old_ret) => (data) => {
-					if (data.success === false && data.error === "must be logged in")
-						old_ret(flip("token has expired"));
+				ret = (old_ret => data => {
+					if (data.success === false && data.error === 'must be logged in')
+						old_ret(flip('token has expired'));
 					else old_ret(data);
 				})(ret);
 			} else store.pass.tokens[i.token].last = now;
@@ -58,20 +58,20 @@ export function call(
 		.filter(
 			([k, v]) =>
 				Object.keys({ ...(action.checks || {}), uname: uname }).includes(k) &&
-				k !== "pass"
+				k !== 'pass',
 		)
 		.map(([k, v]) => `${k}=${JSON.stringify(v)}`)
-		.join(", ");
+		.join(', ');
 	console.log(`%% ${i.action}(${entries})`);
 	try {
-		ret = ((old_ret) => (data) => {
+		ret = (old_ret => data => {
 			console.log(`${i.action} returned in ${Date.now() - time} ms`);
 			old_ret(data);
 		})(ret);
 		action(ret, i, uname);
 	} catch (e) {
 		console.log(`an error occurred: ${e.stack}`);
-		ret(flip("internal error"));
+		ret(flip('internal error'));
 	}
 }
 
@@ -88,10 +88,10 @@ type Check = (x: any) => true | string;
 function guard(
 	logged_in: boolean,
 	conds: Record<string, Check>,
-	f: ActionFunction
+	f: ActionFunction,
 ): Action {
 	let res: any = (ret, i: object, uname: string | undefined) => {
-		if (logged_in && !uname) return ret(flip("must be logged in"));
+		if (logged_in && !uname) return ret(flip('must be logged in'));
 		if (conds)
 			for (let [k, v] of Object.entries(conds)) {
 				let err = v(i[k]);
@@ -104,23 +104,23 @@ function guard(
 }
 
 const limit = (lim: number) => (i: any) =>
-	!i || typeof i !== "string"
-		? "absent"
+	!i || typeof i !== 'string'
+		? 'absent'
 		: i.length <= lim || `too long (max. ${lim} characters)`;
 
 const checks = {
-	present: (i) => !!i || "absent",
-	scope: (i) =>
-		!(i && typeof i === "string")
-			? "scope is not string"
-			: !!i.match(/^[a-z-]{1,24}$/) || "scope must match [a-z-]{1,24}",
-	number: (i) => (i && typeof i === "number") || "not a valid number",
-	uuid: (i) =>
+	present: i => !!i || 'absent',
+	scope: i =>
+		!(i && typeof i === 'string')
+			? 'scope is not string'
+			: !!i.match(/^[a-z-]{1,24}$/) || 'scope must match [a-z-]{1,24}',
+	number: i => (i && typeof i === 'number') || 'not a valid number',
+	uuid: i =>
 		/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/.test(i) ||
-		"not a valid token UUID",
-	shortid: (i) => (i && shortid.isValid(i)) || "not a valid ID",
-	goodid: (i) =>
-		(checks.shortid(i) && index_of(i) !== -1) || "not a recognised ID",
+		'not a valid token UUID',
+	shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
+	goodid: i =>
+		(checks.shortid(i) && index_of(i) !== -1) || 'not a recognised ID',
 	limit,
 	nobomb: limit(2048),
 	optional:
@@ -130,7 +130,7 @@ const checks = {
 };
 
 export function index_of(id: string): number {
-	return store.db.entries.findIndex((_) => _.id == id);
+	return store.db.entries.findIndex(_ => _.id == id);
 }
 
 export function by_id(id: string): Entry {
@@ -146,7 +146,7 @@ function present(e: Entry, uname: string | undefined): PresentedEntry {
 }
 
 actions.welcome = guard(false, {}, (ret, i, uname) =>
-	ret(good({ name: uname }))
+	ret(good({ name: uname })),
 );
 
 actions.search = guard(
@@ -159,16 +159,16 @@ actions.search = guard(
 	},
 	(ret, i, uname) => {
 		let data = search.search(i, uname);
-		if (typeof data === "string") ret(flip(data));
+		if (typeof data === 'string') ret(flip(data));
 		else ret(good({ results: data }));
-	}
+	},
 );
 
 actions.vote = guard(
 	true,
 	{
 		id: checks.goodid,
-		vote: (_) => [-1, 0, 1].includes(_) || "invalid vote",
+		vote: _ => [-1, 0, 1].includes(_) || 'invalid vote',
 	},
 	(ret, i, uname) => {
 		let e = by_id(i.id);
@@ -176,8 +176,8 @@ actions.vote = guard(
 		e.votes[uname] = i.vote;
 		e.score += i.vote - old_vote;
 		ret(good({ entry: present(e, uname) }));
-		emitter.emit("vote", e, uname);
-	}
+		emitter.emit('vote', e, uname);
+	},
 );
 
 actions.note = guard(
@@ -195,12 +195,12 @@ actions.note = guard(
 		};
 		word.notes.push(this_note);
 		ret(good({ entry: present(word, uname) }));
-		emitter.emit("note", word, this_note);
-	}
+		emitter.emit('note', word, this_note);
+	},
 );
 
 export const replacements = (s: string): string =>
-	s.replace(/___/g, "▯").replace(/\s+$/g, "").normalize("NFC");
+	s.replace(/___/g, '▯').replace(/\s+$/g, '').normalize('NFC');
 
 actions.create = guard(
 	true,
@@ -225,8 +225,8 @@ actions.create = guard(
 		store.db.entries.push(this_entry);
 		store.db.count++;
 		ret(good({ entry: present(this_entry, uname) }));
-		emitter.emit("create", this_entry);
-	}
+		emitter.emit('create', this_entry);
+	},
 );
 
 actions.login = guard(
@@ -237,31 +237,31 @@ actions.login = guard(
 	},
 	(ret, i) => {
 		let expected = store.pass.hashes[i.name];
-		if (!expected) return ret(flip("user not registered"));
+		if (!expected) return ret(flip('user not registered'));
 		if (bcrypt.compareSync(i.pass, expected)) {
 			var token = uuid.v4();
 			store.pass.tokens[token] = { name: i.name, last: +new Date() };
 			ret(good({ token }));
 		} else ret(flip("password doesn't match"));
-	}
+	},
 );
 
 actions.register = guard(
 	false,
 	{
-		name: (it) =>
+		name: it =>
 			(it.match(/^[a-zA-Z]{1,64}$/) && true) ||
-			"name must be 1-64 Latin characters",
+			'name must be 1-64 Latin characters',
 		pass: checks.limit(128),
 	},
 	(ret, i) => {
-		if (store.pass.hashes[i.name]) return ret(flip("already registered"));
+		if (store.pass.hashes[i.name]) return ret(flip('already registered'));
 		store.pass.hashes[i.name] = bcrypt.hashSync(
 			i.pass,
-			config().password_rounds
+			config().password_rounds,
 		);
 		actions.login(ret, { name: i.name, pass: i.pass });
-	}
+	},
 );
 
 actions.logout = guard(true, {}, (ret, i, uname) => {
@@ -278,10 +278,10 @@ actions.remove = guard(
 		let index = index_of(i.id);
 		let entry = store.db.entries[index];
 		if (entry.user !== uname)
-			return ret(flip("you are not the owner of this entry"));
+			return ret(flip('you are not the owner of this entry'));
 		store.db.entries.splice(index, 1);
 		ret(good());
 		store.db.count--;
-		emitter.emit("remove", entry);
-	}
+		emitter.emit('remove', entry);
+	},
 );

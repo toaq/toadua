@@ -1,38 +1,38 @@
 // commons.ts
 // common utilities
 
-"use strict";
+'use strict';
 
-import { readFileSync, watchFile } from "fs";
-import { load as yaml } from "js-yaml";
-import { EventEmitter } from "events";
+import { readFileSync, watchFile } from 'fs';
+import { load as yaml } from 'js-yaml';
+import { EventEmitter } from 'events';
 
 const old_log = console.log;
 
 export function log(...args: any[]): void {
 	let date = new Date()
 		.toISOString()
-		.replace(/[:-]/g, "")
-		.replace("T", ".")
+		.replace(/[:-]/g, '')
+		.replace('T', '.')
 		.substring(4, 15);
 	let message = Array.from(args)
-		.join(" ")
+		.join(' ')
 		// padding the message so that it doesn't interfere
 		// with the timestamp column:
 		//                '\nMMDD.hhmmss <message>'
-		.split("\n")
-		.join("\n            ");
+		.split('\n')
+		.join('\n            ');
 	old_log(`${date} ${message}`);
 }
 
 export function deburr(s: string): string[] {
 	return s
-		.normalize("NFD")
-		.replace(/\p{M}+/gu, "")
+		.normalize('NFD')
+		.replace(/\p{M}+/gu, '')
 		.replace(/’/gu, "'")
 		.split(/(?:(?!')\P{L})+/gu)
-		.map((_) => _.toLowerCase().replace(/ı/g, "i"))
-		.filter((_) => _);
+		.map(_ => _.toLowerCase().replace(/ı/g, 'i'))
+		.filter(_ => _);
 }
 
 export enum MatchMode {
@@ -44,7 +44,7 @@ export enum MatchMode {
 export function deburrMatch(
 	what: string[],
 	where: string[],
-	mode: MatchMode
+	mode: MatchMode,
 ): number {
 	const predicate = [
 		(a: string, b: string) => b.indexOf(a) != -1,
@@ -52,7 +52,7 @@ export function deburrMatch(
 		(a: string, b: string) => a == b,
 	][mode];
 	let count = 0;
-	for (let w of what) if (where.some((y) => predicate(w, y))) count++;
+	for (let w of what) if (where.some(y => predicate(w, y))) count++;
 	return count;
 }
 
@@ -62,7 +62,7 @@ const real_clearInterval = global.clearInterval;
 let interval_cache = [];
 export function setInterval(
 	callback: (...args: any[]) => void,
-	ms?: number
+	ms?: number,
 ): NodeJS.Timer {
 	let this_one = real_setInterval(callback, ms).unref();
 	interval_cache.push(this_one);
@@ -97,15 +97,15 @@ const FluidConfig = {
 			file = readFileSync(this.fname);
 			this.cache = yaml(file);
 		} catch (e) {
-			if (e.code == "ENOENT") {
+			if (e.code == 'ENOENT') {
 				log(
-					`fluid_config '${this.fname}' absent from disk ` + "– not updating"
+					`fluid_config '${this.fname}' absent from disk ` + '– not updating',
 				);
 				return;
 			} else throw e;
 		}
 		log(`updating fluid_config '${this.fname}' (${file.length}b read)`);
-		this.emit("update", this.cache);
+		this.emit('update', this.cache);
 	},
 	_maxListeners: Infinity,
 };
@@ -123,7 +123,7 @@ export function fluid_config(fname: string) {
 	return f;
 }
 
-const MAIN_CONFIG = "config/config.yml",
+const MAIN_CONFIG = 'config/config.yml',
 	DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
 // initialise the global config file
 let main_config = fluid_config(MAIN_CONFIG),
@@ -133,7 +133,7 @@ export const config: any = () => ({ ...default_config, ...main_config() });
 
 Object.setPrototypeOf(config, new EventEmitter());
 config.update = () => main_config.update();
-main_config.on("update", () => config.emit("update", config()));
+main_config.on('update', () => config.emit('update', config()));
 
 export interface Note {
 	/// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
