@@ -1,7 +1,6 @@
 name: Check if Nix build succeeds
-on:
-  push:
-    branches: [main]
+on: [push, pull_request, workflow_dispatch]
+
 jobs:
   check:
     runs-on: ubuntu-latest
