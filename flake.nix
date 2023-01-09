@@ -51,7 +51,7 @@
             options.services.toadua = {
               enable = mkEnableOption "toadua";
               package = mkOption {
-                default = self.defaultPackage.${system};
+                default = self.packages.${system}.default;
                 type = types.package;
               };
               port = mkOption { type = types.port; };
