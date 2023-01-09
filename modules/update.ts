@@ -89,13 +89,17 @@ export async function sync_resources() {
 	for (let [name, words] of Object.entries(word_lists)) {
 		let user = cf[name].user;
 		for (let [head, body] of Object.entries(words)) {
-			let s = search.search([
-				'and',
-				['user_raw', user],
-				['head_raw', head],
-				['body_raw', body],
-			]).length;
-			if (!s) {
+			let s = search.search({
+				query: [
+					'and',
+					['user_raw', user],
+					['head_raw', head],
+					['body_raw', body],
+				],
+			});
+			if (typeof s === 'string') {
+				console.log('!! malformed query: ' + s);
+			} else if (!s.length) {
 				api.call(
 					{ action: 'create', head, body, scope: 'en' },
 					(res: any = {}) => {
