@@ -29,9 +29,9 @@ export function deburr(s: string): string[] {
 	return s
 		.normalize('NFD')
 		.replace(/\p{M}+/gu, '')
-		.replace(/’/gu, "'")
-		.split(/(?:(?!')\P{L})+/gu)
-		.map(_ => _.toLowerCase().replace(/ı/g, 'i'))
+		.replace(/[ʼ‘’]/g, "'")
+		.split(/(?:(?!['-])\P{L})+/gu)
+		.map(_ => _.toLowerCase().replace(/ı/g, 'i').replace(/ꝡ/g, 'vy'))
 		.filter(_ => _);
 }
 

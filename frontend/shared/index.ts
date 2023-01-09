@@ -22,35 +22,40 @@ export function normalize(s: string, trim?: boolean): string {
 	return (
 		words
 			.map(w =>
-				w.replace(
-					/(['\u02bc\u2018\u2019x-]*)([^aeiouyq\u0300-\u036f'\u02bc\u2018\u20190-9x-]*)([aeiouy])([\u0300-\u036f]?)([aeiouy]*(?![\u0300-\u036f])q?)([0-8]*)/gi,
-					(_, _apo, initial, first, tone, rest, num, offset) => {
-						if (tone === '\u0304') tone = '';
-						if (num)
-							tone = [
-								'',
-								'',
-								'\u0301',
-								'\u0308',
-								'\u0309',
-								'\u0302',
-								'\u0300',
-								'\u0303',
-								'',
-							][num];
-						let abnormal = offset && tone !== '';
-						return [
-							abnormal && ' ',
-							offset && !initial && !abnormal && "'",
+				w
+					.replace(
+						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])q?)([0-8]*)(?=(-.)?)/gi,
+						(
+							_,
+							_apo,
 							initial,
 							first,
+							underdot1,
 							tone,
+							underdot2,
 							rest,
-						]
-							.filter(_ => _)
-							.join('');
-					},
-				),
+							num,
+							hyphen,
+							offset,
+						) => {
+							if (tone === '\u0304' || tone === '\u0309') tone = '';
+							if (num !== '' && num >= 2 && num <= 4)
+								tone = ['\u0301', '\u0308', '\u0302'][num - 2];
+							let abnormal = offset && tone !== '';
+							return [
+								abnormal && ' ',
+								offset && !initial && !abnormal && "'",
+								initial.replace(/V[Yy]?|[WY]/, 'Ꝡ').replace(/vy?|[wy]/, 'ꝡ'),
+								first,
+								underdot1 || underdot2 || hyphen ? '\u0323' : '',
+								tone,
+								rest,
+							]
+								.filter(_ => _)
+								.join('');
+						},
+					)
+					.replace(/\u0323(?=.*?\u0323)/g, ''),
 			)
 			.join(' ')
 			.normalize('NFC')
