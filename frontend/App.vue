@@ -670,6 +670,17 @@ methods.focus_search = function focus_search() {
 	document.getElementById('search').focus();
 };
 
+methods.scrape_cache = function scrape_cache() {
+	let screens =
+		(document.body.scrollHeight - window.scrollY + document.body.scrollTop) /
+			window.innerHeight -
+		1;
+	if (screens > 5) return;
+	this.results = this.results.concat(
+		this.result_cache.splice(0, this.results.length),
+	);
+};
+
 module.exports = {
 	methods,
 	data() {
@@ -732,11 +743,12 @@ module.exports = {
 		window.addEventListener('hashchange', () =>
 			this.navigate(decodeURIComponent(window.location.hash.substring(1))),
 		);
+		document.body.onscroll = () => this.scrape_cache();
 	},
 	updated() {
 		if (this.scroll_up) {
 			this.scroll_up = false;
-			document.querySelector('body').scrollTop = 0;
+			document.body.scrollTop = 0;
 		}
 		// This one has to be called dynamically because of Vue hiding it
 		// every now and then
