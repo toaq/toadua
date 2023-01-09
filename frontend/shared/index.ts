@@ -45,7 +45,9 @@ export function normalize(s: string, trim?: boolean): string {
 							return [
 								abnormal && ' ',
 								offset && !initial && !abnormal && "'",
-								initial.replace(/(V[Yy]?|[WY])(?=[AEIOU])/, 'Ꝡ').replace(/(vy?|[wy])(?=[aeiou])/, 'ꝡ'),
+								initial
+									.replace(/(V[Yy]?|[WY])(?=[AEIOU])/, 'Ꝡ')
+									.replace(/(vy?|[wy])(?=[aeiou])/, 'ꝡ'),
 								first,
 								underdot1 || underdot2 || hyphen ? '\u0323' : '',
 								tone,
