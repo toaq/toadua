@@ -217,7 +217,7 @@
 				type="text"
 				id="create_name"
 				class="name"
-				placeholder="Create new entry"
+				placeholder="Enter a new Toaq word"
 				@input="
 					$event.target.value = new_head = normalize($event.target.value, false)
 				"
@@ -233,7 +233,7 @@
 			class="body"
 			id="create_body"
 			rows="1"
-			placeholder="Type in the Toaq word above and the definition here"
+			placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
 			@input="
 				$event.target.value = new_body = replacements(
 					$event.target.value,
@@ -298,7 +298,16 @@
 		action="javascript:void('login')"
 		autocomplete="on"
 	>
-		<h2>Access</h2>
+		<h2>Shadı! / Welcome!</h2>
+		<p>
+			Toadua is a collaborative dictionary for the conlang
+			<a href="https://toaq.net">Toaq</a>.
+		</p>
+		<p>
+			You can browse the dictionary using the search bar above. If you make an
+			account, you can add new words and vote on existing definitions.
+			<a href="https://toaq.me/Toadua">More info</a>
+		</p>
 		<div id="login_username">
 			<input
 				id="input_username"
