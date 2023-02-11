@@ -217,7 +217,7 @@
 				type="text"
 				id="create_name"
 				class="name"
-				placeholder="Create new entry"
+				placeholder="Enter a new Toaq word"
 				@input="
 					$event.target.value = new_head = normalize($event.target.value, false)
 				"
@@ -233,7 +233,7 @@
 			class="body"
 			id="create_body"
 			rows="1"
-			placeholder="Type in the Toaq word above and the definition here"
+			placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
 			@input="
 				$event.target.value = new_body = replacements(
 					$event.target.value,
