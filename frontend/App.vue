@@ -298,7 +298,16 @@
 		action="javascript:void('login')"
 		autocomplete="on"
 	>
-		<h2>Access</h2>
+		<h2>Shadı! / Welcome!</h2>
+		<p>
+			Toadua is a collaborative dictionary for the
+			conlang <a href="https://toaq.net">Toaq</a>.
+		</p>
+		<p>
+			You can browse the dictionary using the search bar above.
+			If you make an account, you can add new words and
+			vote on existing definitions. <a href="https://toaq.me/Toadua">More info</a>
+		</p>
 		<div id="login_username">
 			<input
 				id="input_username"
