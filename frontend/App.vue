@@ -60,7 +60,7 @@
 		</div>
 	</nav>
 	<div id="results">
-		<div class="card" v-for="result in results">
+		<div class="card" v-for="result in results" :lang="result.scope">
 			<div class="title">
 				<h2>
 					<a
