@@ -9,7 +9,7 @@
 production: true
 # the address to display in links, etc.
 # note: the slash is significant
-entry_point: 'localhost:29138/'
+entry_point: 'http://localhost:29138/'
 port: 29138
 request_body_size_limit: 16384 # 1 << 14
 token_expiry: 604_800_000 # ms = 7 days
