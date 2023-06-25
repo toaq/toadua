@@ -1,8 +1,7 @@
 // modules/disk.js
 // load from disk, save to disk, do backups
 
-'use strict';
-import * as commons from '../core/commons';
+import * as commons from '../core/commons.js';
 let store = commons.store;
 
 import * as http from 'http';

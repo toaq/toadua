@@ -3,6 +3,7 @@
 	"version": "0.1729.0",
 	"description": "A collaborative dictionary for the Toaq language.",
 	"main": "core/server.js",
+	"type": "module",
 	"engines": {
 		"node": ">=16.0.0"
 	},

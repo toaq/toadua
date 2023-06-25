@@ -1,14 +1,18 @@
 // api.ts
 // implementation for the API
 
-'use strict';
-import { deburr, config, store, emitter, Entry } from './commons';
-import * as search from './search';
-import * as shared from '../frontend/shared';
+import { deburr, config, store, emitter, Entry } from './commons.js';
+import * as search from './search.js';
+import * as shared from '../frontend/shared/index.js';
 import * as shortid from 'shortid';
 import * as uuid from 'uuid';
-import * as bcrypt from 'bcryptjs';
-import { PresentedEntry } from './search';
+// @ts-ignore the types incorrectly claim bcryptjs to be an ES Module
+import bcryptjs from 'bcryptjs';
+import type * as bcryptjs_types from 'bcryptjs';
+import { PresentedEntry } from './search.js';
+
+// Workaround for bcryptjs' broken types
+const bcrypt = bcryptjs as typeof bcryptjs_types;
 
 export type ApiBody =
 	| { name: string }

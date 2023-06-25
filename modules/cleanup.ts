@@ -1,9 +1,8 @@
 // modules/cleanup.js
 // remove unwanted entries that satisfy certain criteria
 
-'use strict';
-import * as commons from '../core/commons';
-import * as api from '../core/api';
+import * as commons from '../core/commons.js';
+import * as api from '../core/api.js';
 
 var options: any = {};
 

@@ -1,6 +1,6 @@
-const {
-	hsl: { hex: hsl_to_hex },
-} = require('color-convert');
+import color_convert from 'color-convert';
+
+const hsl_to_hex = color_convert.hsl.hex;
 
 export interface Color {
 	hex: number;

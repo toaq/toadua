@@ -1,12 +1,11 @@
 // modules/update.js
 // download word definitions from remote sources
 
-'use strict';
-import * as commons from '../core/commons';
-import * as search from '../core/search';
-import * as api from '../core/api';
-import * as announce from './announce';
-import * as shared from '../frontend/shared';
+import * as commons from '../core/commons.js';
+import * as search from '../core/search.js';
+import * as api from '../core/api.js';
+import * as announce from './announce.js';
+import * as shared from '../frontend/shared/index.js';
 
 let { store } = commons;
 

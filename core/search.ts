@@ -1,7 +1,6 @@
 // search.ts
 // perform searches of the database
 
-'use strict';
 import {
 	deburr,
 	deburrMatch,
@@ -10,7 +9,7 @@ import {
 	store,
 	MatchMode,
 	Entry,
-} from './commons';
+} from './commons.js';
 
 // keep an own cache for entries
 var cache: CachedEntry[] = [];

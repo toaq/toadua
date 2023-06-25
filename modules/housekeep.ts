@@ -1,11 +1,10 @@
 // modules/housekeep.js
 // tamper with the database store
 
-'use strict';
-import * as commons from '../core/commons';
-import { Token } from '../core/commons';
-import * as search from '../core/search';
-import * as shared from '../frontend/shared';
+import * as commons from '../core/commons.js';
+import { Token } from '../core/commons.js';
+import * as search from '../core/search.js';
+import * as shared from '../frontend/shared/index.js';
 let { store, config } = commons;
 
 let first_go = true;

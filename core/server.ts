@@ -1,7 +1,9 @@
 // server.ts
 // the server, duh
 
-'use strict';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
 console.log('-----------');
 
 import * as fs from 'fs';
@@ -20,20 +22,24 @@ argparser.add_argument('-p', '--port', {
 	type: 'int',
 });
 let args = argparser.parse_args();
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const installation_dir = `${__dirname}/../..`;
 let dir = args.data_directory
 	? fs.realpathSync(args.data_directory)
 	: installation_dir;
 process.chdir(dir);
-import * as commons from './commons';
+import * as commons from './commons.js';
 
 let config = commons.config;
-const VERSION = require(`${installation_dir}/package.json`).version;
+
+const VERSION = (
+	await import(`${installation_dir}/package.json`, { assert: { type: 'json' } })
+).default.version;
 
 console.log(`starting up v${VERSION}...`);
 
 import * as http from 'http';
-import * as api from './api';
+import * as api from './api.js';
 
 let fourohfour = static_handler('frontend/404.html', 'text/html', 404),
 	routes = {
@@ -169,23 +175,22 @@ function handler(r, s_) {
 }
 
 let modules: Record<string, any> = {};
-config_update(config());
+await config_update(config());
 config.on('update', config_update);
 
 // this function should be idempotent
-function config_update(data) {
-	Object.entries(data.modules).forEach(([path, opts]) => {
+async function config_update(data) {
+	for (const path of Object.keys(data.modules)) {
 		if (!modules[path]) {
 			try {
-				modules[path] = require(`./../${path}`);
-				modules[path].path = path;
+				modules[path] = { ...(await import(`./../${path}`)), path };
 			} catch (e) {
 				if (config().exit_on_module_load_error) throw e;
 				console.log(`error when loading module '${path}': ${e.stack}`);
 				delete modules[path];
 			}
 		}
-	});
+	}
 	for (let path in modules) {
 		let new_options = data.modules[path];
 		// note that when an entry in the module table is removed,
