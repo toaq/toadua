@@ -130,7 +130,7 @@ const checks = {
 	optional:
 		<S>(f: (s: S) => true | string) =>
 		(s: S) =>
-			!s || f(s),
+			s === undefined || f(s),
 };
 
 export function index_of(id: string): number {
@@ -158,6 +158,7 @@ actions.search = guard(
 	{
 		query: checks.present,
 		ordering: checks.optional(checks.nobomb),
+		limit: checks.optional(checks.number),
 		preferred_scope: checks.optional(checks.scope),
 		preferred_scope_bias: checks.optional(checks.number),
 	},

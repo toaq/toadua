@@ -1,6 +1,7 @@
 // search.ts
 // perform searches of the database
 
+import PriorityQueue from 'priority-queue';
 import {
 	deburr,
 	deburrMatch,
@@ -245,7 +246,9 @@ function bare_terms(o: any[]) {
 	}
 }
 
-function default_ordering(e: CachedEntry, deburrs: string[]): number {
+type Order = (e: CachedEntry, deburrs: string[]) => number;
+
+const default_ordering: Order = (e, deburrs) => {
 	const official = e.$.user === 'official' ? 1 : 0;
 	return (
 		Math.sqrt(
@@ -264,12 +267,32 @@ function default_ordering(e: CachedEntry, deburrs: string[]): number {
 			69.4201337 *
 				+(deburrMatch(deburrs, e.head, MatchMode.Exact) == e.head.length))
 	);
+};
+
+const base_orders = new Map<string, Order>([
+	['newest', e => +e.date],
+	['oldest', e => -e.date],
+	['highest', e => +e.score],
+	['lowest', e => -e.score],
+	['random', Math.random],
+]);
+
+function interpret_ordering(
+	ordering: string,
+	preferred_scope: string | undefined,
+	preferred_scope_bias: number | undefined,
+): Order {
+	const base_order = base_orders.get(ordering) ?? default_ordering;
+	return (e, deburrs) =>
+		base_order(e, deburrs) +
+		+(e.$.scope === preferred_scope) * (preferred_scope_bias || 0);
 }
 
 export function search(i: any, uname?: string): string | PresentedEntry[] {
 	let {
 		query,
 		ordering: requested_ordering,
+		limit,
 		preferred_scope,
 		preferred_scope_bias,
 	} = i;
@@ -277,35 +300,34 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
 	let bares = bare_terms(query),
 		deburrs = bares.map(deburr).flat();
-	let filtered = cache.filter(filter);
-	let ordering = default_ordering;
-	switch (requested_ordering) {
-		case 'newest':
-			ordering = e => +e.date;
-			break;
-		case 'oldest':
-			ordering = e => -e.date;
-			break;
-		case 'highest':
-			ordering = e => +e.score;
-			break;
-		case 'lowest':
-			ordering = e => -e.score;
-			break;
-		case 'random':
-			ordering = e => Math.random();
-			break;
+
+	const ordering = interpret_ordering(
+		requested_ordering,
+		preferred_scope,
+		preferred_scope_bias,
+	);
+
+	let results: [CachedEntry, number][];
+	if (limit === undefined) {
+		// No limit: in this case it's best to filter everything, then sort
+		results = cache
+			.filter(filter)
+			.map(e => [e, ordering(e, deburrs)] as [CachedEntry, number])
+			.sort((e1, e2) => e2[1] - e1[1]);
+	} else {
+		// In case a limit is given, use a heap to extract the first n matching
+		// entries rather than sorting what would often be the entire dictionary
+		const heap = PriorityQueue.create(cache.length);
+		for (const e of cache) PriorityQueue.queue(heap, e, ordering(e, deburrs));
+
+		results = [];
+		while (results.length < limit && !PriorityQueue.isEmpty(heap)) {
+			const relevance = heap.arr[0].priority;
+			const maybe_result = PriorityQueue.dequeue(heap);
+			if (filter(maybe_result)) results.push([maybe_result, relevance]);
+		}
 	}
-	let sorted = filtered
-		.map(
-			e =>
-				[
-					e,
-					ordering(e, deburrs) +
-						+(e.$.scope === preferred_scope) * (preferred_scope_bias || 0),
-				] as [CachedEntry, number],
-		)
-		.sort((e1, e2) => e2[1] - e1[1]);
-	let presented = sorted.map(([e, relevance]) => present(e, uname, relevance));
+
+	let presented = results.map(([e, relevance]) => present(e, uname, relevance));
 	return presented;
 }
