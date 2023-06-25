@@ -43,7 +43,13 @@
         };
         checks = { inherit toadua; };
         devShells.default =
-          pkgs.mkShell { buildInputs = [ pkgs.nodejs_latest ]; };
+          pkgs.mkShell {
+            buildInputs = with pkgs; [
+              nodejs_latest
+              nodePackages.typescript-language-server
+              nodePackages.vscode-langservers-extracted # For HTML, CSS, JSON
+            ];
+          };
       }) // {
         nixosModules.default = { pkgs, lib, config, inputs, system, ... }:
           let inherit (config.services.toadua) enable package port dataDir;
