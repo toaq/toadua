@@ -8,5 +8,5 @@ indent_style = tab
 trim_trailing_whitespace = true
 
 [*.nix]
-indent_style = spacn
+indent_style = space
 indent_size = 2
