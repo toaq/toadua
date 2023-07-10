@@ -3,7 +3,7 @@
 
 import * as commons from '../core/commons.js';
 
-import * as request from 'request-promise-native';
+import request from 'request-promise-native';
 import * as shared from '../frontend/shared/index.js';
 
 function trim(max: number, str: string): string {

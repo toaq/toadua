@@ -9,7 +9,7 @@ import * as shared from '../frontend/shared/index.js';
 
 let { store } = commons;
 
-import * as request from 'request-promise-native';
+import request from 'request-promise-native';
 const config = commons.fluid_config('config/sources.yml');
 
 const FORMATS = {
