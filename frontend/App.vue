@@ -359,8 +359,14 @@
 
 <script lang="ts">
 import { debounce } from 'lodash';
-import { score_color, color_for, score_number, normalize } from './shared';
-import { version } from './package';
+import {
+	score_color,
+	color_for,
+	score_number,
+	normalize,
+} from './shared/index';
+import package_info from './package.json';
+const version = package_info.version;
 let methods = {};
 
 methods.score_color = s => score_color(s).css;
@@ -690,7 +696,7 @@ methods.scrape_cache = function scrape_cache() {
 	);
 };
 
-module.exports = {
+export default {
 	methods,
 	data() {
 		return {

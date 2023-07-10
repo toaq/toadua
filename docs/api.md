@@ -48,6 +48,7 @@ object.
 >
 > - `query` array of
 > - `ordering` string?
+> - `limit` number?
 >
 > **Outputs:**
 >
@@ -87,7 +88,7 @@ Here are listed the semantics of each operator:
   - `term`: succeeds if the supplied string, after removing special characters,
     appears in either the head, the definition, or the comments of an entry
 
-Ordering describes the metric by which entries should be sorted.
+`ordering` describes the metric by which entries should be sorted.
 
 - empty/null/undefined or `default`: a nuanced metric based on vote count,
   officiality. Only metric that takes exact matches into account.
@@ -96,6 +97,8 @@ Ordering describes the metric by which entries should be sorted.
 - `newest`: by date, descending.
 - `oldest`: by date, ascending.
 - `random`: take a guess silly
+
+`limit` describes the maximum number of entries that should be returned.
 
 ### `note` (L)
 

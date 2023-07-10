@@ -1,12 +1,10 @@
 // modules/announce.js
 // send a prepared rich content message to a Discord webhook
 
-'use strict';
-import * as commons from '../core/commons';
+import * as commons from '../core/commons.js';
 
 import * as request from 'request-promise-native';
-import * as shared from '../frontend/shared';
-import * as api from '../core/api';
+import * as shared from '../frontend/shared/index.js';
 
 function trim(max: number, str: string): string {
 	if (str.length <= max) return str;

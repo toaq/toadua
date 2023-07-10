@@ -1,8 +1,8 @@
 // commons.ts
 // common utilities
 
-'use strict';
-
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { readFileSync, watchFile } from 'fs';
 import { load as yaml } from 'js-yaml';
 import { EventEmitter } from 'events';
@@ -124,6 +124,7 @@ export function fluid_config(fname: string) {
 }
 
 const MAIN_CONFIG = 'config/config.yml',
+	__dirname = dirname(fileURLToPath(import.meta.url)),
 	DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
 // initialise the global config file
 let main_config = fluid_config(MAIN_CONFIG),

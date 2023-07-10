@@ -3,6 +3,7 @@
 	"version": "0.1729.0",
 	"description": "A collaborative dictionary for the Toaq language.",
 	"main": "core/server.js",
+	"type": "module",
 	"engines": {
 		"node": ">=16.0.0"
 	},
@@ -14,6 +15,7 @@
 		"request": "^2.88.2",
 		"request-promise-native": "^1.0.9",
 		"shortid": "^2.2.16",
+		"tinyqueue": "^2.0.3",
 		"uuid": "^9.0.0"
 	},
 	"devDependencies": {
@@ -27,7 +29,9 @@
 	},
 	"scripts": {
 		"build": "npx -p typescript tsc --build",
-		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js"
+		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js",
+		"prettier:check": "npx -p prettier prettier -c .",
+		"prettier:format": "npx -p prettier prettier -w ."
 	},
 	"repository": {
 		"type": "git",

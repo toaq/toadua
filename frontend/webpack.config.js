@@ -1,8 +1,11 @@
-const path = require('path');
-const { VueLoaderPlugin } = require('vue-loader');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { VueLoaderPlugin } from 'vue-loader';
+import HTMLWebpackPlugin from 'html-webpack-plugin';
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
 	target: 'browserslist',
 	entry: './frontend.ts',
 	mode: 'production',
