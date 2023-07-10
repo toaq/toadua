@@ -136,12 +136,9 @@ let operations: Record<string, Operation> = (search.operations = {
 			([n]) =>
 			entry =>
 				entry.$.body
-					.split(/[;.]/)
-					.map(_ => {
-						let matches = _.match(/▯/g);
-						return matches ? matches.length : -1;
-					})
-					.reduce(Math.max, -1) === n,
+					.split(/[;.!?；。]/)
+					.map(sentence => sentence.match(/▯/g)?.length ?? 0)
+					.reduce((a, b) => Math.max(a, b)) === n,
 	},
 	term: {
 		type: OperationType.Textual,
