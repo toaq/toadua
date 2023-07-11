@@ -315,17 +315,14 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		// In case a limit is given, use a heap to extract the first n matching
 		// entries rather than sorting what would often be the entire dictionary
 		const heap = new Heap(
-			[...cache],
-			(e1, e2) => ordering(e2, deburrs) - ordering(e1, deburrs),
+			cache.map(e => [e, ordering(e, deburrs)] as [CachedEntry, number]),
+			(e1, e2) => e2[1] - e1[1],
 		);
 
 		results = [];
 		while (results.length < limit && heap.peek() !== undefined) {
 			const maybe_result = heap.pop();
-			if (filter(maybe_result)) {
-				const relevance = ordering(maybe_result, deburrs);
-				results.push([maybe_result, relevance]);
-			}
+			if (filter(maybe_result[0])) results.push(maybe_result);
 		}
 	}
 
