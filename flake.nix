@@ -10,17 +10,18 @@
     (flake-utils.lib.eachDefaultSystem (system:
       (let
         pkgs = import nixpkgs { inherit system; };
-        buildNpmPackage = (pkgs.callPackage nix-npm-buildpackage {
-          nodejs = pkgs.nodejs_latest;
-        }).buildNpmPackage;
-        frontend = buildNpmPackage {
-          src = ./frontend;
-          npmBuild = "npm run build";
-        };
+        buildNpmPackage = args:
+          (pkgs.callPackage nix-npm-buildpackage {
+            nodejs = pkgs.nodejs_latest;
+          }).buildNpmPackage ({
+            npmBuild = "npm run build";
+            doCheck = true;
+            checkPhase = "npm run check";
+          } // args);
+        frontend = buildNpmPackage { src = ./frontend; };
         backend = buildNpmPackage {
           pname = "toadua-backend";
           src = ./.;
-          npmBuild = "npm run build";
           installPhase = ''
             mkdir $out
             cp -r dist $out
@@ -42,14 +43,13 @@
           default = toadua;
         };
         checks = { inherit toadua; };
-        devShells.default =
-          pkgs.mkShell {
-            buildInputs = with pkgs; [
-              nodejs_latest
-              nodePackages.typescript-language-server
-              nodePackages.vscode-langservers-extracted # For HTML, CSS, JSON
-            ];
-          };
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nodejs_latest
+            nodePackages.typescript-language-server
+            nodePackages.vscode-langservers-extracted # For HTML, CSS, JSON
+          ];
+        };
       }) // {
         nixosModules.default = { pkgs, lib, config, inputs, system, ... }:
           let inherit (config.services.toadua) enable package port dataDir;

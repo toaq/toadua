@@ -30,6 +30,7 @@
 	"scripts": {
 		"build": "npx -p typescript tsc --build",
 		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js",
+		"check": "npm run prettier:check",
 		"prettier:check": "npx -p prettier prettier -c .",
 		"prettier:format": "npx -p prettier prettier -w ."
 	},

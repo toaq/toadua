@@ -3,19 +3,10 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    name: Verify that Nix flake builds successfully
+    name: Build Nix flake
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: nixbuild/nix-quick-install-action@v19
         with: { nix_conf: experimental-features = nix-command flakes }
       - run: nix flake check
-
-  lint:
-    name: Check formatting with prettier
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm clean-install
-      - run: npx prettier --check --ignore-unknown "."
