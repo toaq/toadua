@@ -35,9 +35,9 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/uakci/toadua.git"
+		"url": "https://github.com/toaq/toadua.git"
 	},
-	"author": "uakci",
+	"author": "uakci on behalf of the Toaq Coders Group",
 	"license": "MIT",
 	"private": true
 }
