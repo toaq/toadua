@@ -241,8 +241,7 @@
 					true,
 				)
 			"
-			@keypress.exact.13="create"
-			@keypress.shift.13=""
+			@keypress.enter.exact.prevent="create"
 			:value.sync="new_body"
 			autocomplete="off"
 			autocorrect="on"
