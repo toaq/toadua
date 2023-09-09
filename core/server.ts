@@ -2,7 +2,7 @@
 // the server, duh
 
 import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 console.log('-----------');
 
@@ -33,7 +33,9 @@ import * as commons from './commons.js';
 let config = commons.config;
 
 const VERSION = (
-	await import(`${installation_dir}/package.json`, { assert: { type: 'json' } })
+	await import(pathToFileURL(`${installation_dir}/package.json`).href, {
+		assert: { type: 'json' },
+	})
 ).default.version;
 
 console.log(`starting up v${VERSION}...`);
