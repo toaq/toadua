@@ -428,7 +428,7 @@ methods.make_link = function make_link(href, text) {
 	el.innerText = text;
 	el.setAttribute('href', href);
 	return el.outerHTML;
-}
+};
 
 methods.replacements = function replacements(
 	content,
