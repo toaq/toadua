@@ -423,6 +423,13 @@ methods.escape = function escape(s) {
 	return el.innerHTML;
 };
 
+methods.make_link = function make_link(href, text) {
+	let el = document.createElement('a');
+	el.innerText = text;
+	el.setAttribute('href', href);
+	return el.outerHTML;
+}
+
 methods.replacements = function replacements(
 	content,
 	still_editing,
@@ -437,6 +444,7 @@ methods.replacements = function replacements(
 		still_editing && /([*]{2})(?!.*?[*]{2})(.*)()/g,
 		/([*]{2})(.*?)([*]{2})/g,
 		/()([@#][0-9a-zA-Z_-]*)()/g,
+		/(https?:\/\/)(\S+)()/g,
 	].filter(_ => _);
 	let matches = STARTERS.flatMap(starter => [
 		...content.matchAll(starter),
@@ -447,15 +455,19 @@ methods.replacements = function replacements(
 		accum.push(content.substring(i, nearestMatch.index));
 		i = nearestMatch.index + all.length;
 		let replacement;
-		if (start == '**' && still_editing)
+		if (start == '**' && still_editing) {
 			replacement = start + this.normalize(cont, !!end) + end;
-		else if (!plain_text && !still_editing) {
+		} else if (start.startsWith('http') && !still_editing) {
+			replacement = this.make_link(all, cont.replace(/^www\.|\/$/g, ''));
+		} else if (!plain_text && !still_editing) {
 			let href = '#' + encodeURIComponent(cont);
 			let style = cont.startsWith('@')
 				? `style="${color_for(cont.substring(1)).css}"`
 				: '';
 			replacement = `<a href="${href}" ${style}>${cont}</a>`;
-		} else replacement = all;
+		} else {
+			replacement = all;
+		}
 		accum.push(replacement);
 		let catchUp;
 		while ((catchUp = matches.shift())) {
