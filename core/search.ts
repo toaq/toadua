@@ -16,7 +16,7 @@ import {
 var cache: CachedEntry[] = [];
 
 const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'] as const;
-type Trait = (typeof RE_TRAITS)[number];
+type Trait = typeof RE_TRAITS[number];
 
 type ReCache = Record<Trait, Record<string, (entry: CachedEntry) => boolean>>;
 const empty_re_cache = () =>
