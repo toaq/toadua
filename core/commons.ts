@@ -31,7 +31,7 @@ export function deburr(s: string): string[] {
 		.replace(/\p{M}+/gu, '')
 		.replace(/[ʼ‘’]/g, "'")
 		.split(/(?:(?!['-])\P{L})+/gu)
-		.map(_ => _.toLowerCase().replace(/ı/g, 'i').replace(/ꝡ/g, 'vy'))
+		.map(_ => _.toLowerCase().replace(/ı/g, 'i'))
 		.filter(_ => _);
 }
 

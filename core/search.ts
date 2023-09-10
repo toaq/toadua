@@ -27,6 +27,7 @@ interface CachedEntry {
 	$: Entry;
 	id: string;
 	head: string[];
+	headSpellings: string[];
 	body: string[];
 	notes: string[];
 	date: number;
@@ -41,20 +42,39 @@ export interface PresentedEntry extends Omit<Entry, 'votes'> {
 	content?: string[];
 }
 
+function alternateSpellings(deburredHead: string[]): string[] {
+	let spellings = [];
+	for (const word of deburredHead) {
+		if (word.includes('ꝡ')) {
+			for (const alt of ['v', 'vy', 'w', 'y']) {
+				spellings.push(word.replaceAll('ꝡ', alt));
+			}
+		}
+	}
+	return spellings;
+}
+
 // compute a few fields for faster processing
 export function cacheify(e: Entry): CachedEntry {
 	let deburredHead = deburr(e.head);
 	let deburredBody = deburr(e.body);
 	let deburredNotes = e.notes.flatMap(({ content }) => deburr(content));
+	let headSpellings = alternateSpellings(deburredHead);
 	return {
 		$: e,
 		id: e.id,
 		head: deburredHead,
+		headSpellings,
 		body: deburredBody,
 		notes: deburredNotes,
 		date: +new Date(e.date),
 		score: e.score,
-		content: [].concat(deburredHead, deburredBody, deburredNotes),
+		content: [].concat(
+			deburredHead,
+			headSpellings,
+			deburredBody,
+			deburredNotes,
+		),
 	};
 }
 
@@ -258,6 +278,7 @@ const default_ordering: Order = (e, deburrs) => {
 			6 * +(deburrMatch(deburrs, e.head, MatchMode.Contained) > 0) +
 			10 * +(deburrMatch(deburrs, e.body, MatchMode.Containing) > 0) +
 			15 * +(deburrMatch(deburrs, e.head, MatchMode.Containing) > 0) +
+			15 * +(deburrMatch(deburrs, e.headSpellings, MatchMode.Containing) > 0) +
 			// exact match.
 			30 * +(deburrMatch(deburrs, e.body, MatchMode.Exact) > 0) +
 			// the number is very exact too, as you can see
