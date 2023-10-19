@@ -5,7 +5,7 @@ html {
 }
 
 html.dark {
-	--pink: hsl(330deg, 100%, 70%);
+	--pink: hsl(330deg, 100%, 73%);
 }
 
 #container {
@@ -30,7 +30,8 @@ textarea {
 	font-size: inherit;
 }
 
-.dark input, .dark textarea {
+.dark input,
+.dark textarea {
 	color: hsl(330deg, 25%, 90%);
 }
 
@@ -122,7 +123,8 @@ footer .controls {
 }
 
 .dark .card {
-	background-color: hsl(330deg, 8%, 40%);
+	border: 2px solid hsl(330deg, 50%, 60%);
+	background-color: hsl(330deg, 15%, 35%);
 }
 
 #container > .card:last-child {
@@ -301,7 +303,10 @@ h2,
 	padding-top: 0;
 }
 
-.dark h2, .dark .name, .dark .word_id, .dark .note {
+.dark h2,
+.dark .name,
+.dark .word_id,
+.dark .note {
 	color: hsl(0deg, 0%, 90%);
 }
 
@@ -335,7 +340,8 @@ h2,
 }
 
 .dark #menu {
-	background-color: hsl(210deg, 8%, 40%);
+	border: 2px solid hsl(210deg, 30%, 60%);
+	background-color: hsl(210deg, 15%, 35%);
 }
 
 #search {
@@ -457,7 +463,8 @@ a {
 		width: calc(512px - 2 * 16px);
 	}
 
-	#menu {
+	#menu,
+	.dark #menu {
 		left: calc((100% - 512px) / 2 - 2px);
 		width: 516px; /* 512px + 4px */
 		border-top-width: 0;
@@ -469,7 +476,8 @@ a {
 		width: calc(100% - 2 * 16px);
 	}
 
-	#menu {
+	#menu,
+	.dark #menu {
 		width: 100%;
 		border-width: 0px 0px 2px 0px;
 		border-radius: 0;
