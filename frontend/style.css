@@ -25,6 +25,10 @@ textarea {
 	font-size: inherit;
 }
 
+.dark input, .dark textarea {
+	color: hsl(330deg, 25%, 90%);
+}
+
 input[type='button'],
 input[type='submit'] {
 	border: 0;
@@ -39,23 +43,31 @@ input[type='submit'] {
 	color: hsl(210deg, 87.5%, 50%);
 }
 
-input[type='button']:active,
-input[type='button']:hover,
-input[type='button']:focus,
-input[type='submit']:active,
-input[type='submit']:hover,
-input[type='submit']:focus {
-	color: hsl(330deg, 25%, 25%);
+.dark #cancel {
+	color: inherit;
+}
+
+input[type='button']:enabled:active,
+input[type='button']:enabled:hover,
+input[type='button']:enabled:focus,
+input[type='submit']:enabled:active,
+input[type='submit']:enabled:hover,
+input[type='submit']:enabled:focus {
+	text-decoration: underline;
 }
 
 input[type='button']:disabled,
 input[type='submit']:disabled {
-	color: hsl(330deg, 25%, 75%); /* peachy */
+	opacity: 0.5;
 	cursor: not-allowed;
 }
 
 ::placeholder {
 	color: hsl(330deg, 50%, 75%);
+}
+
+.dark ::placeholder {
+	color: hsl(330deg, 0%, 65%);
 }
 
 html {
@@ -74,8 +86,14 @@ body {
 	font-family: var(--body-font);
 	font-size: 16px;
 	background-color: hsl(330deg, 50%, 97%);
+	transition: background-color 0.2s;
 	overflow-y: scroll;
 	caret-color: hsl(330deg, 75%, 50%);
+}
+
+.dark body {
+	color: hsl(0deg, 0%, 90%);
+	background-color: hsl(0deg, 0%, 20%);
 }
 
 footer .controls {
@@ -90,10 +108,15 @@ footer .controls {
 	margin: 16px;
 	margin-top: 0px;
 	padding: 16px;
-	background: white;
+	background-color: white;
+	transition: background-color 0.2s;
 	border: 2px solid hsl(330deg, 50%, 80%);
 	border-radius: 4px;
 	overflow-x: auto;
+}
+
+.dark .card {
+	background-color: hsl(330deg, 8%, 40%);
 }
 
 #container > .card:last-child {
@@ -115,7 +138,8 @@ footer .controls {
 }
 
 .card .scope {
-	color: #777;
+	color: inherit;
+	opacity: 0.5;
 }
 
 .card .body {
@@ -271,6 +295,10 @@ h2,
 	padding-top: 0;
 }
 
+.dark h2, .dark .name, .dark .word_id, .dark .note {
+	color: hsl(0deg, 0%, 90%);
+}
+
 .hl {
 	color: #fff;
 	background-color: #333;
@@ -295,8 +323,13 @@ h2,
 	padding: 0;
 	margin: 0;
 	background-color: hsl(210deg, 50%, 97%);
+	transition: background-color 0.2s;
 	border: 2px solid hsl(210deg, 50%, 80%);
 	border-radius: 0px 0px 4px 4px;
+}
+
+.dark #menu {
+	background-color: hsl(210deg, 8%, 40%);
 }
 
 #search {
@@ -313,6 +346,10 @@ h2,
 	color: hsl(210deg, 50%, 25%);
 	padding: 10px 0 15px 0;
 	vertical-align: top;
+}
+
+.dark #search {
+	color: hsl(210deg, 50%, 90%);
 }
 
 #search::placeholder {
@@ -355,6 +392,10 @@ h2,
 	color: hsl(210deg, 25%, 50%);
 }
 
+.dark #top-controls {
+	color: hsl(210deg, 20%, 80%);
+}
+
 #top-controls li:first-child::before {
 	display: none;
 }
@@ -363,13 +404,26 @@ h2,
 	color: hsl(210deg, 75%, 25%);
 }
 
-#top-controls input[type='button']:active,
-#top-controls input[type='button']:hover,
-#top-controls input[type='button']:focus,
-#top-controls input[type='submit']:active,
-#top-controls input[type='submit']:hover,
-#top-controls input[type='submit']:focus {
-	color: black;
+.dark #top-controls input {
+	color: hsl(0deg, 0%, 90%);
+}
+
+#top-controls input[type='button']:enabled:active,
+#top-controls input[type='button']:enabled:hover,
+#top-controls input[type='button']:enabled:focus,
+#top-controls input[type='submit']:enabled:active,
+#top-controls input[type='submit']:enabled:hover,
+#top-controls input[type='submit']:enabled:focus {
+	text-decoration: underline;
+}
+
+.scope-name {
+	font-family: var(--heading-font);
+	color: hsl(210deg, 75%, 25%);
+}
+
+.dark .scope-name {
+	color: hsl(210deg, 75%, 75%);
 }
 
 h1,

@@ -8,10 +8,7 @@
 				<li>
 					<label for="limit-search"
 						>search scope ‘<span
-							style="
-								font-family: var(--heading-font);
-								color: hsl(210deg, 75%, 25%);
-							"
+							class="scope-name"
 							>{{ scope }}</span
 						>’ only:</label
 					>&thinsp;<input
@@ -191,7 +188,7 @@
 		</div>
 	</div>
 	<div class="card" v-if="query || results.length">
-		<h2 class="name" style="color: #333">{{ what_should_i_say }}</h2>
+		<h2 class="name">{{ what_should_i_say }}</h2>
 		<ul
 			class="controls"
 			v-if="done_searching && username && !query.startsWith('#')"
@@ -352,6 +349,7 @@
 		<ul class="controls">
 			<li><a href="https://toaq.me/Toadua">help</a></li>
 			<li><a href="https://github.com/uakci/toadua">github</a></li>
+			<li><a href="javascript:void(0)" @click="toggle_theme()">theme</a></li>
 		</ul>
 	</footer>
 </template>
@@ -359,8 +357,8 @@
 <script lang="ts">
 import { debounce } from 'lodash';
 import {
-	score_color,
-	color_for,
+	score_color as compute_score_color,
+	color_for as compute_color_for,
 	score_number,
 	normalize,
 } from './shared/index';
@@ -368,8 +366,14 @@ import package_info from './package.json';
 const version = package_info.version;
 let methods = {};
 
-methods.score_color = s => score_color(s).css;
-methods.color_for = s => color_for(s).css;
+methods.score_color = function score_color(s) {
+	return compute_score_color(s, this.theme).css;
+}
+
+methods.color_for = function color_for(s) {
+	return compute_color_for(s, this.theme).css;
+}
+
 methods.score_number = score_number;
 methods.normalize = normalize;
 
@@ -452,7 +456,7 @@ methods.replacements = function replacements(
 		else if (!plain_text && !still_editing) {
 			let href = '#' + encodeURIComponent(cont);
 			let style = cont.startsWith('@')
-				? `style="${color_for(cont.substring(1)).css}"`
+				? `style="${this.color_for(cont.substring(1))}"`
 				: '';
 			replacement = `<a href="${href}" ${style}>${cont}</a>`;
 		} else replacement = all;
@@ -695,6 +699,14 @@ methods.scrape_cache = function scrape_cache() {
 	);
 };
 
+methods.toggle_theme = function toggle_theme() {
+	this.theme = this.theme === "light" ? "dark" : "light";
+	try {
+		localStorage.setItem("theme", theme);
+	} catch (e) {}
+	document.documentElement.className = this.theme;
+}
+
 export default {
 	methods,
 	data() {
@@ -721,6 +733,9 @@ export default {
 						'Please consider updating.',
 				),
 				null),
+			theme:
+				window.localStorage.getItem("user-theme") ??
+				(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
 			token: null,
 			username: null,
 			version,
