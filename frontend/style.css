@@ -5,7 +5,7 @@ html {
 }
 
 html.dark {
-	--pink: hsl(330deg, 100%, 65%);
+	--pink: hsl(330deg, 100%, 70%);
 }
 
 #container {
