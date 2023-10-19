@@ -7,9 +7,7 @@
 				</li>
 				<li>
 					<label for="limit-search"
-						>search scope ‘<span
-							class="scope-name"
-							>{{ scope }}</span
+						>search scope ‘<span class="scope-name">{{ scope }}</span
 						>’ only:</label
 					>&thinsp;<input
 						id="limit-search"
@@ -367,11 +365,11 @@ let methods = {};
 
 methods.score_color = function score_color(s) {
 	return compute_score_color(s, this.theme).css;
-}
+};
 
 methods.color_for = function color_for(s) {
 	return compute_color_for(s, this.theme).css;
-}
+};
 
 methods.score_number = score_number;
 methods.normalize = normalize;
@@ -699,12 +697,12 @@ methods.scrape_cache = function scrape_cache() {
 };
 
 methods.toggle_theme = function toggle_theme() {
-	this.theme = this.theme === "light" ? "dark" : "light";
+	this.theme = this.theme === 'light' ? 'dark' : 'light';
 	try {
-		localStorage.setItem("theme", theme);
+		localStorage.setItem('theme', theme);
 	} catch (e) {}
 	document.documentElement.className = this.theme;
-}
+};
 
 export default {
 	methods,
@@ -733,8 +731,10 @@ export default {
 				),
 				null),
 			theme:
-				window.localStorage.getItem("user-theme") ??
-				(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
+				window.localStorage.getItem('user-theme') ??
+				(window.matchMedia('(prefers-color-scheme: dark)').matches
+					? 'dark'
+					: 'light'),
 			token: null,
 			username: null,
 			version,
