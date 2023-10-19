@@ -1,6 +1,11 @@
 html {
 	--body-font: 'Noto Sans', sans-serif;
 	--heading-font: 'Inter', sans-serif;
+	--pink: hsl(330deg, 87.5%, 50%);
+}
+
+html.dark {
+	--pink: hsl(330deg, 100%, 65%);
 }
 
 #container {
@@ -35,7 +40,7 @@ input[type='submit'] {
 	padding: 0;
 	font-family: var(--heading-font);
 	font-weight: 600;
-	color: hsl(330deg, 87.5%, 50%);
+	color: var(--pink);
 	cursor: pointer;
 }
 
@@ -94,6 +99,7 @@ body {
 .dark body {
 	color: hsl(0deg, 0%, 90%);
 	background-color: hsl(0deg, 0%, 20%);
+	caret-color: hsl(330deg, 75%, 75%);
 }
 
 footer .controls {
@@ -192,7 +198,7 @@ footer .controls {
 	max-width: unset;
 	line-height: 12px;
 	display: inline;
-	color: hsl(330deg, 87.5%, 50%);
+	color: var(--pink);
 	font-family: var(--heading-font);
 }
 
@@ -439,7 +445,7 @@ h2 {
 
 a {
 	text-decoration: none;
-	color: hsl(330deg, 87.5%, 50%);
+	color: var(--pink);
 }
 
 /* 512px + 2 * 16px + (scrollbar) 17px */
