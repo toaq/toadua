@@ -32,7 +32,6 @@
 			</ul>
 		</div>
 		<div id="search-row">
-			<input type="button" value=" " />
 			<input
 				type="text"
 				id="search"
