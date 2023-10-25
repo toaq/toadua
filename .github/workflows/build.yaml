@@ -7,6 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: nixbuild/nix-quick-install-action@v19
-        with: { nix_conf: experimental-features = nix-command flakes }
+      - uses: cachix/install-nix-action@v20
+      - uses: cachix/cachix-action@v12
+        with:
+          name: toaq
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
       - run: nix flake check
