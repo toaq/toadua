@@ -32,7 +32,7 @@ export function state_change() {
 		if (entry.scope === 'toa')
 			didReform ||= reform(entry, 'body', shared.normalize);
 
-		const normalizePlaceholders = s => s.replace(/___|◌/g, '▯');
+		const normalizePlaceholders = s => s.replace(/___|◌(?!\p{Diacritic})/gu, '▯');
 		didReform ||= reform(entry, 'body', normalizePlaceholders);
 		for (let note of entry.notes)
 			didReform ||= reform(note, 'content', normalizePlaceholders);
