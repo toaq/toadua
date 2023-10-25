@@ -7,10 +7,11 @@ export interface Color {
 	css: string;
 }
 
-export function convert_hue(n: number): Color {
+export function convert_hue(n: number, theme?: string): Color {
+	const l = theme === 'dark' ? 70 : 30;
 	return {
-		hex: parseInt(hsl_to_hex(n, 100, 30), 16),
-		css: `color: hsl(${n}, 100%, 30%);`,
+		hex: parseInt(hsl_to_hex(n, 100, l), 16),
+		css: `color: hsl(${n}, 100%, ${l}%);`,
 	};
 }
 
@@ -65,16 +66,22 @@ export function normalize(s: string, trim?: boolean): string {
 	);
 }
 
-export function color_for(name: string): Color {
-	if (name === 'official') return { hex: 0x333333, css: '#333' };
+export function color_for(name: string, theme?: string): Color {
+	if (name === 'official') {
+		if (theme === 'dark') {
+			return { hex: 0xdddddd, css: '#ddd' };
+		} else {
+			return { hex: 0x333333, css: '#333' };
+		}
+	}
 	let n = 0;
 	for (let i = 0, l = name.length; i < l; ++i)
 		n = ((n << 5) - n + name.charCodeAt(i)) % 360;
-	return convert_hue(n);
+	return convert_hue(n, theme);
 }
 
-export function score_color(n: number): Color {
-	return convert_hue((Math.atan(n / 2) / Math.PI) * 2);
+export function score_color(n: number, theme?: string): Color {
+	return convert_hue((Math.atan(n / 2) / Math.PI) * 2, theme);
 }
 
 export function score_number(n: number): string {
