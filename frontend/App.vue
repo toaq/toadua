@@ -711,7 +711,7 @@ methods.scrape_cache = function scrape_cache() {
 methods.toggle_theme = function toggle_theme() {
 	this.theme = this.theme === 'light' ? 'dark' : 'light';
 	try {
-		localStorage.setItem('theme', theme);
+		window.localStorage.setItem('user-theme', theme);
 	} catch (e) {}
 	document.documentElement.className = this.theme;
 };
