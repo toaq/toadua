@@ -4,28 +4,33 @@
 import * as commons from '../core/commons.js';
 
 import request from 'request-promise-native';
+import { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
+
+type AnnounceEvent = 'create' | 'note' | 'remove';
+
+interface WebhookEmbed {
+	color?: number,
+	title?: string,
+	fields?: {name: string, value: string}[],
+	description: string,
+	url?: string,
+}
 
 function trim(max: number, str: string): string {
 	if (str.length <= max) return str;
 	return str.substring(0, max - 1) + '…';
 }
 
-export function entry(ev: string, entry, note) {
-	let action = (() => {
-		switch (ev) {
-			case 'create':
-			case 'remove':
-				return `${ev}d`;
-			case 'note':
-				return 'noted on';
-			default:
-				return null;
-		}
-	})();
-	if (!action) message(entry);
+export function entry(ev: AnnounceEvent, entry: Entry, note?: Note) {
+	let action = { create: 'created', note: 'noted on', remove: 'removed' }[ev];
+	if (!action) {
+		console.log(`!! unexpected action ${action} in announce.entry`);
+		return;
+	}
+
 	let sköp = entry.scope === 'en' ? '' : ` in scope __${entry.scope}__`;
-	let payload = {
+	let payload: WebhookEmbed = {
 		color: shared.color_for((note && note.user) || entry.user).hex,
 		title: trim(
 			256,
@@ -34,12 +39,12 @@ export function entry(ev: string, entry, note) {
 			}`,
 		),
 		fields:
-			(note && [
+			note ? [
 				{
 					name: trim(256, `(definition by *${entry.user}*${sköp})`),
 					value: trim(1024, entry.body),
 				},
-			]) ||
+			]:
 			undefined,
 		description: trim(4096, note ? note.content : entry.body),
 		url:
@@ -50,13 +55,13 @@ export function entry(ev: string, entry, note) {
 	message(payload);
 }
 
-export function message(what) {
+export function message(what: WebhookEmbed) {
 	if (!enabled) return;
 	const url: string = options.hook;
 	if (!url) return;
 	let color = what.color || 0,
 		epnt = what.url || commons.config().entry_point;
-	let req = {
+	let req: request.Options = {
 		url,
 		method: 'POST',
 		json: true,
@@ -84,9 +89,9 @@ function send_off() {
 	);
 }
 
-var enabled,
-	options,
-	queue = [];
+var enabled: boolean;
+var options: {enabled: boolean};
+var queue: request.Options[] = [];
 export function state_change() {
 	if (enabled !== (options = this || {}).enabled)
 		for (let ev of ['create', 'note', 'remove'])
