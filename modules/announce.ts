@@ -10,11 +10,11 @@ import * as shared from '../frontend/shared/index.js';
 type AnnounceEvent = 'create' | 'note' | 'remove';
 
 interface WebhookEmbed {
-	color?: number,
-	title?: string,
-	fields?: {name: string, value: string}[],
-	description: string,
-	url?: string,
+	color?: number;
+	title?: string;
+	fields?: { name: string; value: string }[];
+	description: string;
+	url?: string;
 }
 
 function trim(max: number, str: string): string {
@@ -22,7 +22,7 @@ function trim(max: number, str: string): string {
 	return str.substring(0, max - 1) + '…';
 }
 
-export function entry(ev: AnnounceEvent, entry: Entry, note?: Note) {
+export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
 	let action = { create: 'created', note: 'noted on', remove: 'removed' }[ev];
 	if (!action) {
 		console.log(`!! unexpected action ${action} in announce.entry`);
@@ -34,18 +34,18 @@ export function entry(ev: AnnounceEvent, entry: Entry, note?: Note) {
 		color: shared.color_for((note && note.user) || entry.user).hex,
 		title: trim(
 			256,
-			`*${(note && note.user) || entry.user}* ${action} **${entry.head}**${
-				ev === 'note' ? '' : sköp
-			}`,
+			note
+				? `*${note.user}* ${action} **${entry.head}**`
+				: `*${entry.user}* ${action} **${entry.head}**${sköp}`,
 		),
-		fields:
-			note ? [
-				{
-					name: trim(256, `(definition by *${entry.user}*${sköp})`),
-					value: trim(1024, entry.body),
-				},
-			]:
-			undefined,
+		fields: note
+			? [
+					{
+						name: trim(256, `(definition by *${entry.user}*${sköp})`),
+						value: trim(1024, entry.body),
+					},
+			  ]
+			: undefined,
 		description: trim(4096, note ? note.content : entry.body),
 		url:
 			ev === 'remove'
@@ -90,12 +90,12 @@ function send_off() {
 }
 
 var enabled: boolean;
-var options: {enabled: boolean};
+var options: { enabled: boolean; hook: string };
 var queue: request.Options[] = [];
 export function state_change() {
 	if (enabled !== (options = this || {}).enabled)
 		for (let ev of ['create', 'note', 'remove'])
-			commons.emitter[options.enabled ? 'on' : 'off'](ev, entry);
+			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
 	enabled = options.enabled;
 	if (!enabled) queue.splice(0, queue.length);
 }
