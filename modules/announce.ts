@@ -23,34 +23,29 @@ function trim(max: number, str: string): string {
 }
 
 export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
-	let action = { create: 'created', note: 'noted on', remove: 'removed' }[ev];
+	const action = { create: 'created', note: 'noted on', remove: 'removed' }[ev];
 	if (!action) {
 		console.log(`!! unexpected action ${action} in announce.entry`);
 		return;
 	}
 
-	let sköp = entry.scope === 'en' ? '' : ` in scope __${entry.scope}__`;
-	let payload: WebhookEmbed = {
-		color: shared.color_for((note && note.user) || entry.user).hex,
-		title: trim(
-			256,
-			note
-				? `*${note.user}* ${action} **${entry.head}**`
-				: `*${entry.user}* ${action} **${entry.head}**${sköp}`,
-		),
-		fields: note
-			? [
-					{
-						name: trim(256, `(definition by *${entry.user}*${sköp})`),
-						value: trim(1024, entry.body),
-					},
-			  ]
-			: undefined,
+	const scope = entry.scope !== 'en' ? ` in scope __${entry.scope}__` : '';
+	const title = note
+		? `*${note.user}* ${action} **${entry.head}**`
+		: `*${entry.user}* ${action} **${entry.head}**${scope}`;
+
+	const noteField = () => ({
+		name: trim(256, `(definition by *${entry.user}*${scope})`),
+		value: trim(1024, entry.body),
+	});
+	const backlink = `${commons.config().entry_point}#%23${entry.id}`;
+
+	const payload: WebhookEmbed = {
+		color: shared.color_for(note?.user ?? entry.user).hex,
+		title: trim(256, title),
+		fields: note ? [noteField()] : undefined,
 		description: trim(4096, note ? note.content : entry.body),
-		url:
-			ev === 'remove'
-				? undefined
-				: `${commons.config().entry_point}#%23${entry.id}`,
+		url: ev !== 'remove' ? backlink : undefined,
 	};
 	message(payload);
 }
@@ -59,13 +54,13 @@ export function message(what: WebhookEmbed) {
 	if (!enabled) return;
 	const url: string = options.hook;
 	if (!url) return;
-	let color = what.color || 0,
-		epnt = what.url || commons.config().entry_point;
-	let req: request.Options = {
+	const color = what.color ?? 0;
+	const entrypoint = what.url ?? commons.config().entry_point;
+	const req: request.Options = {
 		url,
 		method: 'POST',
 		json: true,
-		body: { embeds: [{ color, url: epnt, ...what }] },
+		body: { embeds: [{ color, url: entrypoint, ...what }] },
 	};
 	if (queue.push(req) === 1) setTimeout(send_off, 0);
 }
@@ -77,7 +72,7 @@ function send_off() {
 		message({ title: `${queue.length} events omitted` });
 		return;
 	}
-	let m = queue.shift();
+	const m = queue.shift();
 	request(m).then(
 		() => {
 			console.log(`-> '${m.body.embeds[0].title}' announced`);
@@ -98,8 +93,8 @@ var enabled: boolean;
 var options: { enabled: boolean; hook: string };
 var queue: request.Options[] = [];
 export function state_change() {
-	if (enabled !== (options = this || {}).enabled)
-		for (let ev of ['create', 'note', 'remove'])
+	if (enabled !== (options = this ?? {}).enabled)
+		for (const ev of ['create', 'note', 'remove'])
 			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
 	enabled = options.enabled;
 	if (!enabled) queue.splice(0, queue.length);
