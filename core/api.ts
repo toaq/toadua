@@ -216,7 +216,7 @@ actions.create = guard(
 	},
 	(ret, i, uname) => {
 		let id = shortid.generate();
-		let this_entry = {
+		let this_entry: Entry = {
 			id,
 			date: new Date().toISOString(),
 			head: shared.normalize(i.head),
