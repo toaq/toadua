@@ -13,7 +13,7 @@ interface WebhookEmbed {
 	color?: number;
 	title?: string;
 	fields?: { name: string; value: string }[];
-	description: string;
+	description?: string;
 	url?: string;
 }
 
@@ -72,7 +72,12 @@ export function message(what: WebhookEmbed) {
 
 function send_off() {
 	if (!queue.length) return;
-	let m = queue.pop();
+	if (queue.length > 10) {
+		queue.splice(0, queue.length);
+		message({ title: `${queue.length} events omitted` });
+		return;
+	}
+	let m = queue.shift();
 	request(m).then(
 		() => {
 			console.log(`-> '${m.body.embeds[0].title}' announced`);
