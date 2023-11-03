@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npm run prettier:check
+
+if which nix; then
+	nix flake check
+fi
