@@ -448,6 +448,12 @@ h2,
 	color: hsl(210deg, 75%, 75%);
 }
 
+.error-line {
+	text-align: center;
+	margin: -8px 0 8px 0;
+	color: var(--pink);
+}
+
 h1,
 h2,
 h3 {

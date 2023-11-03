@@ -54,6 +54,9 @@
 		</div>
 	</nav>
 	<div id="results">
+		<div class="error-line" v-if="error_line">
+			{{ error_line }}
+		</div>
 		<div class="card" v-for="result in results" :lang="result.scope">
 			<div class="title">
 				<h2>
@@ -391,8 +394,9 @@ methods.focus_body = function focus_body() {
 methods.apisend = function apisend(what, or, and) {
 	if (!and) {
 		and = or;
-		or = window.alert;
+		or = e => (this.error_line = e);
 	}
+	this.error_line = '';
 	let req = this.queue[what.action];
 	if (req) req.abort();
 	this.queue[what.action] = req = new XMLHttpRequest();
@@ -404,8 +408,9 @@ methods.apisend = function apisend(what, or, and) {
 		if (this.readyState === 4 && this.status === 200) {
 			try {
 				let data = JSON.parse(this.responseText);
-				if (data.success) setTimeout(() => and(data), 0);
-				else {
+				if (data.success) {
+					setTimeout(() => and(data), 0);
+				} else {
 					if (data.error === 'token has expired') app.clear_account();
 					setTimeout(() => or(data.error), 0);
 				}
@@ -556,6 +561,7 @@ methods.parse_query = function parse_query() {
 
 methods.perform_search = function perform_search() {
 	this.done_searching = false;
+	this.error_line = '';
 	if (this.queue.search) this.queue.search.abort();
 	this.results = this.result_cache = [];
 	if (!this.query) {
@@ -722,6 +728,7 @@ export default {
 		return {
 			dismissed: false,
 			done_searching: false,
+			error_line: '',
 			limit_search: false,
 			login_name: '',
 			login_pass: '',
