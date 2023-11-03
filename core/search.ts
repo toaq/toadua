@@ -190,7 +190,7 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 
 		if (is_morphological(trait))
 			s = s
-				.replace(/C/g, "(?:[bcdfghjklnprstz']|ch|sh|nh)")
+				.replace(/C/g, "(?:[bcdfghjklmnprstꝡz']|ch|sh|nh)")
 				.replace(/V\\\+/g, 'V+')
 				.replace(/V/g, '[aeıiouy]');
 
