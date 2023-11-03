@@ -10,6 +10,9 @@
 	"browserslist": [
 		"last 2 versions, not dead, > 0.2%"
 	],
+	"dependencies": {
+		"lodash": "^4.17.21"
+	},
 	"devDependencies": {
 		"@babel/core": "^7.20.7",
 		"@babel/preset-env": "^7.20.2",
