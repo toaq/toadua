@@ -6,7 +6,7 @@ esbuild
 	.build({
 		entryPoints: ['frontend.ts'],
 		bundle: true,
-		outfile: 'dist/build.js',
+		outfile: 'dist/bundle.js',
 		plugins: [vuePlugin()],
 	})
 	.then(() => {
