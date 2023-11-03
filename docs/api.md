@@ -100,6 +100,18 @@ Here are listed the semantics of each operator:
 
 `limit` describes the maximum number of entries that should be returned.
 
+### `count`
+
+> **Inputs:**
+>
+> None
+>
+> **Outputs:**
+>
+> - `count` number
+
+Returns the total number of entries in Toadua's database.
+
 ### `note` (L)
 
 > **Inputs:**

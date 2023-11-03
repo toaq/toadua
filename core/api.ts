@@ -18,7 +18,8 @@ export type ApiBody =
 	| { name: string }
 	| { entry: PresentedEntry }
 	| { results: PresentedEntry[] }
-	| { token: string };
+	| { token: string }
+	| { count: number };
 
 export type ApiError = { success: false; error: string };
 export type ApiSuccess = { success: true } & ApiBody;
@@ -168,6 +169,10 @@ actions.search = guard(
 		else ret(good({ results: data }));
 	},
 );
+
+actions.count = guard(false, {}, (ret, i, uname) => {
+	ret(good({ count: store.db.entries.length }));
+});
 
 actions.vote = guard(
 	true,
