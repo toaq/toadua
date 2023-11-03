@@ -175,7 +175,6 @@ export interface Token {
 
 export interface Db {
 	entries: Entry[];
-	count: number;
 }
 
 export interface Store {

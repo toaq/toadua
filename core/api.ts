@@ -79,7 +79,7 @@ export function call(
 	}
 }
 
-if (!store.db) store.db = { entries: [], count: 0 };
+if (!store.db) store.db = { entries: [] };
 if (!store.pass) store.pass = { hashes: {}, tokens: {} };
 
 let actions: Record<string, Action> = {};
@@ -228,7 +228,6 @@ actions.create = guard(
 			score: 0,
 		};
 		store.db.entries.push(this_entry);
-		store.db.count++;
 		ret(good({ entry: present(this_entry, uname) }));
 		emitter.emit('create', this_entry);
 	},
@@ -286,7 +285,6 @@ actions.remove = guard(
 			return ret(flip('you are not the owner of this entry'));
 		store.db.entries.splice(index, 1);
 		ret(good());
-		store.db.count--;
 		emitter.emit('remove', entry);
 	},
 );

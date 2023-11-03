@@ -12,8 +12,6 @@ export function state_change() {
 	if (!first_go) return;
 	first_go = false;
 
-	store.db.count = store.db.entries.length;
-
 	let now = +new Date();
 	const entries: [string, Token][] = Object.entries(store.pass.tokens);
 	for (let [k, { last }] of entries)

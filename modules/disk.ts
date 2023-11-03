@@ -125,7 +125,7 @@ export function state_change() {
 			intervals[k] = commons.setInterval(acts[k], this[k]);
 	}
 	if (first_go) {
-		(store.db = read('data/dict.json.gz', { entries: [], count: 0 })),
+		(store.db = read('data/dict.json.gz', { entries: [] })),
 			(store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} }));
 		first_go = false;
 	} else if (!this) {
