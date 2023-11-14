@@ -449,7 +449,8 @@ methods.replacements = function replacements(
 		plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
 		still_editing && /([*]{2})(?!.*?[*]{2})(.*)()/g,
 		/([*]{2})(.*?)([*]{2})/g,
-		/()([@#][0-9a-zA-Z_-]*)()/g,
+		/()(@[a-zA-Z]+)()/g,
+		/()(#[0-9a-zA-Z_-]+)()/g,
 		/(https?:\/\/)(\S+)()/g,
 	].filter(_ => _);
 	let matches = STARTERS.flatMap(starter => [
