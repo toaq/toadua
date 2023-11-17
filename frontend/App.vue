@@ -84,11 +84,7 @@
 						score_number(result.score)
 					}}</span>
 					<a :href="'##' + result.id" @click="navigate('#' + result.id)">{{
-						new Date(result.date).toLocaleDateString('en-US', {
-							year: 'numeric',
-							month: 'short',
-							day: 'numeric',
-						})
+						pretty_date(new Date(result.date))
 					}}</a>
 				</span>
 			</div>
@@ -380,6 +376,14 @@ methods.color_for = function color_for(s) {
 
 methods.score_number = score_number;
 methods.normalize = normalize;
+
+methods.pretty_date = date =>
+	date.toLocaleDateString('en-US', {
+		year:
+			date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
 
 const character_operators = {
 	'/': 'arity',
