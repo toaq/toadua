@@ -66,30 +66,31 @@
 						@click="navigate(result.head)"
 						>{{ result.head }}</a
 					>
-					<span class="info">
-						<a
-							:href="'#scope:' + result.scope"
-							class="scope"
-							@click="navigate('scope:' + result.scope)"
-							>{{ result.scope }}</a
-						>
-						<a
-							:href="'#@' + result.user"
-							:style="color_for(result.user)"
-							@click="navigate('@' + result.user)"
-							>{{ result.user }}</a
-						>
-						<a
-							class="entry-date"
-							:href="'##' + result.id"
-							@click="navigate('#' + result.id)"
-							>{{ result.date.substring(0, 10) }}</a
-						>
-						<span :style="score_color(result.score)">{{
-							score_number(result.score)
-						}}</span>
-					</span>
 				</h2>
+				<span class="info">
+					<a
+						:href="'#scope:' + result.scope"
+						class="scope"
+						@click="navigate('scope:' + result.scope)"
+						>{{ result.scope }}</a
+					>
+					<a
+						:href="'#@' + result.user"
+						:style="color_for(result.user)"
+						@click="navigate('@' + result.user)"
+						>{{ result.user }}</a
+					>
+					<span :style="score_color(result.score)">{{
+						score_number(result.score)
+					}}</span>
+					<a :href="'##' + result.id" @click="navigate('#' + result.id)">{{
+						new Date(result.date).toLocaleDateString('en-US', {
+							year: 'numeric',
+							month: 'short',
+							day: 'numeric',
+						})
+					}}</a>
+				</span>
 			</div>
 			<p class="body" v-html="result.fancy_body"></p>
 			<div class="notes">
