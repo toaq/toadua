@@ -144,15 +144,16 @@ footer .controls {
 	align-items: baseline;
 	width: 100%;
 	position: relative;
+	margin-top: -4px;
 }
 
 .card .info {
-	margin-left: 0.25em;
+	flex: 1;
 	font-size: 16px;
 }
 
-.card .info > *::before {
-	content: ' ';
+.card .info > * {
+	margin-left: 0.25em;
 }
 
 .card .scope {
@@ -163,6 +164,12 @@ footer .controls {
 .card .body {
 	line-height: 24px;
 	margin: 0;
+}
+
+.card .date {
+	color: inherit;
+	opacity: 0.5;
+	float: right;
 }
 
 .notes {
@@ -471,6 +478,10 @@ h2 {
 a {
 	text-decoration: none;
 	color: var(--pink);
+}
+
+a:hover {
+	text-decoration: underline;
 }
 
 /* 512px + 2 * 16px + (scrollbar) 17px */
