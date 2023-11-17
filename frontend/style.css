@@ -162,6 +162,11 @@ footer .controls {
 	margin: 0;
 }
 
+.card .entry-date {
+	font-variant: tabular-nums;
+	letter-spacing: -1px;
+}
+
 .notes {
 	padding-top: 16px;
 }

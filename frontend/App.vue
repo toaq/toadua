@@ -79,8 +79,11 @@
 							@click="navigate('@' + result.user)"
 							>{{ result.user }}</a
 						>
-						<a :href="'##' + result.id" @click="navigate('#' + result.id)"
-							>#{{ result.id }}</a
+						<a
+							class="entry-date"
+							:href="'##' + result.id"
+							@click="navigate('#' + result.id)"
+							>{{ result.date.substring(0, 10) }}</a
 						>
 						<span :style="score_color(result.score)">{{
 							score_number(result.score)
