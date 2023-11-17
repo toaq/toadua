@@ -139,12 +139,15 @@ footer .controls {
 }
 
 .card .title {
-	display: block;
+	font-family: var(--heading-font);
+	display: flex;
+	align-items: baseline;
 	width: 100%;
 	position: relative;
 }
 
 .card .info {
+	margin-left: 0.25em;
 	font-size: 16px;
 }
 

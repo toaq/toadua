@@ -66,27 +66,27 @@
 						@click="navigate(result.head)"
 						>{{ result.head }}</a
 					>
-					<span class="info">
-						<a
-							:href="'#scope:' + result.scope"
-							class="scope"
-							@click="navigate('scope:' + result.scope)"
-							>{{ result.scope }}</a
-						>
-						<a
-							:href="'#@' + result.user"
-							:style="color_for(result.user)"
-							@click="navigate('@' + result.user)"
-							>{{ result.user }}</a
-						>
-						<a :href="'##' + result.id" @click="navigate('#' + result.id)"
-							>#{{ result.id }}</a
-						>
-						<span :style="score_color(result.score)">{{
-							score_number(result.score)
-						}}</span>
-					</span>
 				</h2>
+				<span class="info">
+					<a
+						:href="'#scope:' + result.scope"
+						class="scope"
+						@click="navigate('scope:' + result.scope)"
+						>{{ result.scope }}</a
+					>
+					<a
+						:href="'#@' + result.user"
+						:style="color_for(result.user)"
+						@click="navigate('@' + result.user)"
+						>{{ result.user }}</a
+					>
+					<span :style="score_color(result.score)">{{
+						score_number(result.score)
+					}}</span>
+					<a :href="'##' + result.id" @click="navigate('#' + result.id)">{{
+						pretty_date(new Date(result.date))
+					}}</a>
+				</span>
 			</div>
 			<p class="body" v-html="result.fancy_body"></p>
 			<div class="notes">
@@ -376,6 +376,14 @@ methods.color_for = function color_for(s) {
 
 methods.score_number = score_number;
 methods.normalize = normalize;
+
+methods.pretty_date = date =>
+	date.toLocaleDateString('en-US', {
+		year:
+			date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
 
 const character_operators = {
 	'/': 'arity',
