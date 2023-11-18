@@ -59,6 +59,13 @@
 		</div>
 		<div class="card" v-for="result in results" :lang="result.scope">
 			<div class="title">
+				<a
+					class="date"
+					:title="full_date(new Date(result.date))"
+					:href="'##' + result.id"
+					@click="navigate('#' + result.id)"
+					>{{ pretty_date(new Date(result.date)) }}</a
+				>
 				<h2>
 					<a
 						:href="'#' + result.head"
@@ -83,13 +90,6 @@
 					<span :style="score_color(result.score)">{{
 						score_number(result.score)
 					}}</span>
-					<a
-						class="date"
-						:title="full_date(new Date(result.date))"
-						:href="'##' + result.id"
-						@click="navigate('#' + result.id)"
-						>{{ pretty_date(new Date(result.date)) }}</a
-					>
 				</span>
 			</div>
 			<p class="body" v-html="result.fancy_body"></p>

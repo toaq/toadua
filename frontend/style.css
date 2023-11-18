@@ -140,15 +140,18 @@ footer .controls {
 
 .card .title {
 	font-family: var(--heading-font);
-	display: flex;
 	align-items: baseline;
 	width: 100%;
 	position: relative;
 	margin-top: -4px;
 }
 
+.card h2,
+.card .name {
+	display: inline;
+}
+
 .card .info {
-	flex: 1;
 	font-size: 16px;
 }
 
