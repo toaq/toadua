@@ -358,6 +358,31 @@ import {
 } from './shared/index';
 const version = package_info.version;
 
+export interface Note {
+	date: string;
+	user: string;
+	content: string;
+
+	fancy_content?: string;
+}
+
+export interface Entry {
+	id: string;
+	date: string;
+	head: string;
+	body: string;
+	user: string;
+	scope: string;
+	notes: Note[];
+	score: number;
+
+	fancy_body?: string;
+	uncollapsed?: boolean;
+	vote?: number;
+	hesitating?: boolean;
+	input?: string;
+}
+
 const character_operators = {
 	'/': 'arity',
 	'@': 'user',
@@ -367,24 +392,24 @@ const character_operators = {
 
 export default defineComponent({
 	methods: {
-		score_color(score: number) {
+		score_color(score: number): string {
 			return compute_score_color(score, this.theme).css;
 		},
-		color_for(name: string) {
+		color_for(name: string): string {
 			return compute_color_for(name, this.theme).css;
 		},
 
 		score_number,
 		normalize,
 
-		pretty_date(date: Date) {
+		pretty_date(date: Date): string {
 			return date.toLocaleDateString('en-US', {
 				year: 'numeric',
 				month: 'short',
 			});
 		},
 
-		full_date(date: Date) {
+		full_date(date: Date): string {
 			return date.toLocaleDateString('en-US', {
 				year: 'numeric',
 				month: 'long',
@@ -392,7 +417,7 @@ export default defineComponent({
 			});
 		},
 
-		focus_body() {
+		focus_body(): void {
 			setTimeout(() => {
 				let body = document.getElementById('create_body')!;
 				body.focus();
@@ -431,40 +456,44 @@ export default defineComponent({
 			return req;
 		},
 
-		escape(s) {
+		escape(s: string): string {
 			let el = document.createElement('p');
 			el.innerText = s;
 			return el.innerHTML;
 		},
 
-		make_link(href, text) {
+		make_link(href: string, text: string): string {
 			let el = document.createElement('a');
 			el.innerText = text;
 			el.setAttribute('href', href);
 			return el.outerHTML;
 		},
 
-		replacements(content, still_editing, plain_text) {
+		replacements(
+			content: string,
+			still_editing: boolean,
+			plain_text: boolean,
+		): string {
 			content = plain_text ? content : this.escape(content);
 			content = content.replace(/___/g, '▯');
 			let i = 0;
 			let accum: string[] = [];
-			const STARTERS = [
+			const starters: RegExp[] = [
 				plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
-				still_editing && /([*]{2})(?!.*?[*]{2})(.*)()/g,
+				...(still_editing ? [/([*]{2})(?!.*?[*]{2})(.*)()/g] : []),
 				/([*]{2})(.*?)([*]{2})/g,
 				/()(@[a-zA-Z]+)()/g,
 				/()(#[0-9a-zA-Z_-]+)()/g,
 				/(https?:\/\/)(\S+)()/g,
-			].filter(_ => _);
-			let matches = STARTERS.flatMap(starter => [
-				...content.matchAll(starter),
-			]).sort((a, b) => a.index - b.index);
+			];
+			let matches = starters
+				.flatMap(starter => [...content.matchAll(starter)])
+				.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 			while (i < content.length && matches.length) {
 				let nearestMatch = matches[0];
 				let [all, start, cont, end] = nearestMatch;
 				accum.push(content.substring(i, nearestMatch.index));
-				i = nearestMatch.index + all.length;
+				i = (nearestMatch.index ?? 0) + all.length;
 				let replacement;
 				if (start == '**' && still_editing) {
 					replacement = start + this.normalize(cont, !!end) + end;
@@ -494,33 +523,32 @@ export default defineComponent({
 			else return accum.join('');
 		},
 
-		set_result_input(result, event) {
-			event.target.value = result.input = this.replacements(
-				event.target.value,
+		set_result_input(result: Entry, event: Event): void {
+			const target = event.target as HTMLInputElement;
+			target.value = result.input = this.replacements(target.value, true, true);
+		},
+
+		set_new_head(event: Event): void {
+			const target = event.target as HTMLInputElement;
+			target.value = this.new_head = normalize(target.value, false);
+		},
+
+		set_new_body(event: Event): void {
+			const target = event.target as HTMLTextAreaElement;
+			target.value = this.new_body = this.replacements(
+				target.value,
 				true,
 				true,
 			);
 		},
 
-		set_new_head(event) {
-			event.target.value = this.new_head = normalize(event.target.value, false);
-		},
-
-		set_new_body(event) {
-			event.target.value = this.new_body = this.replacements(
-				event.target.value,
-				true,
-				true,
-			);
-		},
-
-		navigate(where) {
+		navigate(where: string): void {
 			this.dismissed = true;
 			this.query = where;
 			this.perform_search();
 		},
 
-		process_entry(e) {
+		process_entry(e: Entry): Entry {
 			if (e.uncollapsed === undefined) e.uncollapsed = false;
 			e.hesitating = false;
 			e.fancy_body = this.replacements(e.body, false, false);
@@ -530,20 +558,20 @@ export default defineComponent({
 			return e;
 		},
 
-		add_to_history(query) {
+		add_to_history(query: string): void {
 			if (query) this.query = query;
 			if (window.history) window.history.replaceState('', '', '#' + this.query);
 			else window.location.hash = this.query;
 		},
 
-		search() {
+		search(): void {
 			if (this.current_search_request) this.current_search_request.abort();
 			this.current_search_request = undefined;
 			this.debounced_perform();
 		},
 
-		parse_query() {
-			let ordering;
+		parse_query(): { query: any; ordering: string | undefined } {
+			let ordering: string | undefined;
 			let parts = this.query.split(/ /).map(a => {
 				let parts = a.split(/\|/).map(b => {
 					let negative, what;
@@ -584,7 +612,7 @@ export default defineComponent({
 			return { query, ordering };
 		},
 
-		perform_search() {
+		perform_search(): void {
 			this.done_searching = false;
 			this.error_line = '';
 			if (this.queue.search) this.queue.search.abort();
@@ -608,24 +636,24 @@ export default defineComponent({
 			});
 		},
 
-		remove(whom) {
+		remove(whom: Entry): void {
 			this.apisend({ action: 'remove', id: whom.id }, () =>
 				this.results.splice(this.results.indexOf(whom), 1),
 			);
 		},
 
-		confirm_removal(whom) {
+		confirm_removal(whom: Entry): void {
 			whom.hesitating = true;
 			setTimeout(() => (whom.hesitating = false), 2000);
 		},
 
-		vote(whom, no) {
+		vote(whom: Entry, no: number): void {
 			this.apisend({ action: 'vote', id: whom.id, vote: no }, data =>
 				this.update_entry(whom, data.entry),
 			);
 		},
 
-		note(whom) {
+		note(whom: Entry): void {
 			this.apisend(
 				{ action: 'note', id: whom.id, content: whom.input },
 				data => {
@@ -636,7 +664,7 @@ export default defineComponent({
 			);
 		},
 
-		create() {
+		create(): void {
 			this.apisend(
 				{
 					action: 'create',
@@ -656,7 +684,7 @@ export default defineComponent({
 			);
 		},
 
-		update_limit_search() {
+		update_limit_search(): void {
 			this.limit_search = !this.limit_search;
 			this.store.setItem(
 				'limit_search',
@@ -665,26 +693,26 @@ export default defineComponent({
 			this.perform_search();
 		},
 
-		update_entry(whom, what_with) {
+		update_entry(whom: Entry, what_with: Partial<Entry>): void {
 			for (let p in what_with)
 				if (Object.hasOwnProperty.call(what_with, p)) whom[p] = what_with[p];
 			this.process_entry(whom);
 		},
 
-		new_word() {
+		new_word(): void {
 			this.new_head = this.normalize(this.query, true);
 			this.navigate('');
 			this.focus_body();
 		},
 
-		fork(whom) {
+		fork(whom: Entry): void {
 			this.new_head = whom.head;
 			this.new_body = whom.body;
 			this.navigate('');
 			this.focus_body();
 		},
 
-		account(func) {
+		account(func: string): void {
 			this.apisend(
 				{ action: func, name: this.login_name, pass: this.login_pass },
 				data => {
@@ -696,12 +724,12 @@ export default defineComponent({
 			);
 		},
 
-		clear_account() {
+		clear_account(): void {
 			this.token = this.username = undefined;
 			this.store.removeItem('token');
 		},
 
-		logout() {
+		logout(): void {
 			this.apisend(
 				{ action: 'logout' },
 				this.clear_account,
@@ -709,7 +737,7 @@ export default defineComponent({
 			);
 		},
 
-		welcome() {
+		welcome(): void {
 			this.apisend({ action: 'welcome', token: this.token }, data => {
 				this.username = data.name;
 				if (!data.name) this.token = null;
@@ -717,7 +745,7 @@ export default defineComponent({
 			});
 		},
 
-		resize() {
+		resize(): void {
 			let create = document.getElementById(
 				'create_body',
 			) as HTMLTextAreaElement;
@@ -735,11 +763,11 @@ export default defineComponent({
 			clone.parentNode!.removeChild(clone);
 		},
 
-		focus_search() {
+		focus_search(): void {
 			document.getElementById('search')?.focus();
 		},
 
-		scrape_cache() {
+		scrape_cache(): void {
 			let screens =
 				(document.body.scrollHeight -
 					window.scrollY +
@@ -752,7 +780,7 @@ export default defineComponent({
 			);
 		},
 
-		toggle_theme() {
+		toggle_theme(): void {
 			this.theme = this.theme === 'light' ? 'dark' : 'light';
 			try {
 				window.localStorage.setItem('user-theme', this.theme);
@@ -773,9 +801,9 @@ export default defineComponent({
 			new_body: '',
 			query: decodeURIComponent(window.location.hash.replace(/^#/, '')),
 			queue: {},
-			result_cache: [] as any[],
+			result_cache: [] as Entry[],
 			initial_result_count: 25,
-			results: [] as any[],
+			results: [] as Entry[],
 			scope: 'en',
 			scroll_up: false,
 			store:
@@ -791,8 +819,8 @@ export default defineComponent({
 				(window.matchMedia('(prefers-color-scheme: dark)').matches
 					? 'dark'
 					: 'light'),
-			token: null,
-			username: null,
+			token: null as string | null,
+			username: null as string | null,
 			version,
 		};
 	},
@@ -808,7 +836,7 @@ export default defineComponent({
 		},
 	},
 	watch: {
-		scope(scope) {
+		scope(scope: string) {
 			this.store.setItem('scope', scope);
 		},
 	},
