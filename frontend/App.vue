@@ -317,7 +317,6 @@ export default defineComponent({
 
 		process_entry(e: Entry): Entry {
 			if (e.uncollapsed === undefined) e.uncollapsed = false;
-			e.fancy_body = shared.replacements(e.body, false, false);
 			e.notes.forEach(
 				_ => (_.fancy_content = shared.replacements(_.content, false, false)),
 			);

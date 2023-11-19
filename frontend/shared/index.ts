@@ -20,7 +20,6 @@ export interface Entry {
 	notes: Note[];
 	score: number;
 
-	fancy_body?: string;
 	uncollapsed?: boolean;
 	vote?: number;
 }

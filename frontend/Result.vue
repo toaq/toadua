@@ -46,7 +46,7 @@ defineProps<{
 				}}</span>
 			</span>
 		</div>
-		<p class="body" v-html="result.fancy_body"></p>
+		<p class="body" v-html="fancy_body"></p>
 		<div class="notes">
 			<p class="note" v-for="note in result.notes">
 				<span
@@ -183,6 +183,11 @@ export default defineComponent({
 			hesitating: false,
 			input: '',
 		};
+	},
+	computed: {
+		fancy_body() {
+			return shared.replacements(this.result.body, false, false);
+		},
 	},
 });
 </script>
