@@ -57,135 +57,21 @@
 		<div class="error-line" v-if="error_line">
 			{{ error_line }}
 		</div>
-		<div class="card" v-for="result in results" :lang="result.scope">
-			<div class="title">
-				<a
-					class="date"
-					:title="full_date(new Date(result.date))"
-					:href="'##' + result.id"
-					@click="navigate('#' + result.id)"
-				>
-					<span style="font-size: 24px">&ZeroWidthSpace;</span>
-					{{ pretty_date(new Date(result.date)) }}</a
-				>
-				<h2>
-					<a
-						:href="'#' + result.head"
-						class="name"
-						@click="navigate(result.head)"
-						>{{ result.head }}</a
-					>
-				</h2>
-				<span class="info">
-					<a
-						:href="'#scope:' + result.scope"
-						class="scope"
-						@click="navigate('scope:' + result.scope)"
-						>{{ result.scope }}</a
-					>
-					<a
-						:href="'#@' + result.user"
-						:style="color_for(result.user)"
-						@click="navigate('@' + result.user)"
-						>{{ result.user }}</a
-					>
-					<span :style="score_color(result.score)">{{
-						score_number(result.score)
-					}}</span>
-				</span>
-			</div>
-			<p class="body" v-html="result.fancy_body"></p>
-			<div class="notes">
-				<p class="note" v-for="note in result.notes">
-					<span
-						:style="color_for(note.user)"
-						class="note-author"
-						@click="navigate('@' + note.user)"
-						>{{ note.user }}</span
-					><span v-html="note.fancy_content"></span>
-				</p>
-				<form
-					style="display: contents"
-					action="javascript:void('note')"
-					v-if="result.uncollapsed"
-					@keypress.13.prevent="note(result)"
-					autocomplete="off"
-				>
-					<div class="note">
-						<span :style="color_for(username ?? '')" class="note-author">{{
-							username
-						}}</span>
-						<input
-							type="submit"
-							value="submit"
-							class="note-submit"
-							@click="note(result)"
-							:disabled="!result.input"
-						/>
-					</div>
-					<p class="note new_note">
-						<input
-							type="text"
-							autofocus
-							autocomplete="off"
-							placeholder="comment here"
-							v-model="result.input"
-							@input="event => set_result_input(result, event)"
-						/>
-					</p>
-				</form>
-			</div>
-			<ul class="controls" v-if="username">
-				<li v-if="!result.uncollapsed">
-					<input
-						type="button"
-						value="add note"
-						@click="
-							results.forEach(r => (r.uncollapsed = false));
-							result.uncollapsed = true;
-						"
-					/>
-					<!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
-				</li>
-				<li>
-					<input
-						type="button"
-						value="+"
-						@click="vote(result, +1)"
-						:disabled="result.vote == +1"
-					/>
-				</li>
-				<li>
-					<input
-						type="button"
-						value="±"
-						@click="vote(result, 0)"
-						:disabled="result.vote == 0"
-					/>
-				</li>
-				<li>
-					<input
-						type="button"
-						value="−"
-						@click="vote(result, -1)"
-						:disabled="result.vote == -1"
-					/>
-				</li>
-				<li v-if="username == result.user && !result.hesitating">
-					<input
-						type="button"
-						value="remove"
-						@click="confirm_removal(result)"
-					/>
-				</li>
-				<li v-if="result.hesitating">
-					<input type="button" value="sure?" @click="remove(result)" />
-				</li>
-				<li>
-					<input type="button" value="fork" @click="fork(result)" />
-				</li>
-			</ul>
-		</div>
+		<Result
+			v-for="result in results"
+			:result="result"
+			:username="username"
+			:theme="theme"
+			@note="s => note(result, s)"
+			@uncollapse="
+				results.forEach(r => (r.uncollapsed = false));
+				result.uncollapsed = true;
+			"
+			@vote="n => vote(result, n)"
+			@navigate="s => navigate(s)"
+			@remove="remove(result)"
+			@fork="fork(result)"
+		/>
 	</div>
 	<div class="card" v-if="query || results.length">
 		<h2 class="name">{{ what_should_i_say }}</h2>
@@ -349,39 +235,11 @@
 <script lang="ts">
 import { debounce } from 'lodash';
 import { defineComponent } from 'vue';
+import Result from './Result.vue';
 import package_info from './package.json';
-import {
-	color_for as compute_color_for,
-	score_color as compute_score_color,
-	normalize,
-	score_number,
-} from './shared/index';
+import * as shared from './shared/index';
+import { Entry } from './shared/index';
 const version = package_info.version;
-
-export interface Note {
-	date: string;
-	user: string;
-	content: string;
-
-	fancy_content?: string;
-}
-
-export interface Entry {
-	id: string;
-	date: string;
-	head: string;
-	body: string;
-	user: string;
-	scope: string;
-	notes: Note[];
-	score: number;
-
-	fancy_body?: string;
-	uncollapsed?: boolean;
-	vote?: number;
-	hesitating?: boolean;
-	input?: string;
-}
 
 const character_operators = {
 	'/': 'arity',
@@ -392,30 +250,11 @@ const character_operators = {
 
 export default defineComponent({
 	methods: {
-		score_color(score: number): string {
-			return compute_score_color(score, this.theme).css;
-		},
 		color_for(name: string): string {
-			return compute_color_for(name, this.theme).css;
+			return shared.color_for(name, this.theme).css;
 		},
 
-		score_number,
-		normalize,
-
-		pretty_date(date: Date): string {
-			return date.toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'short',
-			});
-		},
-
-		full_date(date: Date): string {
-			return date.toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-			});
-		},
+		normalize: shared.normalize,
 
 		focus_body(): void {
 			setTimeout(() => {
@@ -456,86 +295,14 @@ export default defineComponent({
 			return req;
 		},
 
-		escape(s: string): string {
-			let el = document.createElement('p');
-			el.innerText = s;
-			return el.innerHTML;
-		},
-
-		make_link(href: string, text: string): string {
-			let el = document.createElement('a');
-			el.innerText = text;
-			el.setAttribute('href', href);
-			return el.outerHTML;
-		},
-
-		replacements(
-			content: string,
-			still_editing: boolean,
-			plain_text: boolean,
-		): string {
-			content = plain_text ? content : this.escape(content);
-			content = content.replace(/___/g, '▯');
-			let i = 0;
-			let accum: string[] = [];
-			const starters: RegExp[] = [
-				plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
-				...(still_editing ? [/([*]{2})(?!.*?[*]{2})(.*)()/g] : []),
-				/([*]{2})(.*?)([*]{2})/g,
-				/()(@[a-zA-Z]+)()/g,
-				/()(#[0-9a-zA-Z_-]+)()/g,
-				/(https?:\/\/)(\S+)()/g,
-			];
-			let matches = starters
-				.flatMap(starter => [...content.matchAll(starter)])
-				.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-			while (i < content.length && matches.length) {
-				let nearestMatch = matches[0];
-				let [all, start, cont, end] = nearestMatch;
-				accum.push(content.substring(i, nearestMatch.index));
-				i = (nearestMatch.index ?? 0) + all.length;
-				let replacement;
-				if (start == '**' && still_editing) {
-					replacement = start + this.normalize(cont, !!end) + end;
-				} else if (start.startsWith('http') && !still_editing) {
-					replacement = this.make_link(all, cont.replace(/^www\.|\/$/g, ''));
-				} else if (!plain_text && !still_editing) {
-					let href = '#' + encodeURIComponent(cont);
-					let style = cont.startsWith('@')
-						? `style="${this.color_for(cont.substring(1))}"`
-						: '';
-					replacement = `<a href="${href}" ${style}>${cont}</a>`;
-				} else {
-					replacement = all;
-				}
-				accum.push(replacement);
-				let catchUp;
-				while ((catchUp = matches.shift())) {
-					if (catchUp.index >= i) {
-						matches.unshift(catchUp);
-						break;
-					}
-				}
-			}
-			if (i < content.length) accum.push(content.substring(i));
-			if (!plain_text && !still_editing)
-				return accum.join('').replace(/\\(.)/g, '$1');
-			else return accum.join('');
-		},
-
-		set_result_input(result: Entry, event: Event): void {
-			const target = event.target as HTMLInputElement;
-			target.value = result.input = this.replacements(target.value, true, true);
-		},
-
 		set_new_head(event: Event): void {
 			const target = event.target as HTMLInputElement;
-			target.value = this.new_head = normalize(target.value, false);
+			target.value = this.new_head = shared.normalize(target.value, false);
 		},
 
 		set_new_body(event: Event): void {
 			const target = event.target as HTMLTextAreaElement;
-			target.value = this.new_body = this.replacements(
+			target.value = this.new_body = shared.replacements(
 				target.value,
 				true,
 				true,
@@ -550,10 +317,9 @@ export default defineComponent({
 
 		process_entry(e: Entry): Entry {
 			if (e.uncollapsed === undefined) e.uncollapsed = false;
-			e.hesitating = false;
-			e.fancy_body = this.replacements(e.body, false, false);
+			e.fancy_body = shared.replacements(e.body, false, false);
 			e.notes.forEach(
-				_ => (_.fancy_content = this.replacements(_.content, false, false)),
+				_ => (_.fancy_content = shared.replacements(_.content, false, false)),
 			);
 			return e;
 		},
@@ -642,26 +408,17 @@ export default defineComponent({
 			);
 		},
 
-		confirm_removal(whom: Entry): void {
-			whom.hesitating = true;
-			setTimeout(() => (whom.hesitating = false), 2000);
-		},
-
 		vote(whom: Entry, no: number): void {
 			this.apisend({ action: 'vote', id: whom.id, vote: no }, data =>
 				this.update_entry(whom, data.entry),
 			);
 		},
 
-		note(whom: Entry): void {
-			this.apisend(
-				{ action: 'note', id: whom.id, content: whom.input },
-				data => {
-					whom.uncollapsed = false;
-					whom.input = '';
-					this.update_entry(whom, data.entry);
-				},
-			);
+		note(whom: Entry, input: string): void {
+			this.apisend({ action: 'note', id: whom.id, content: input }, data => {
+				whom.uncollapsed = false;
+				this.update_entry(whom, data.entry);
+			});
 		},
 
 		create(): void {
@@ -839,6 +596,9 @@ export default defineComponent({
 		scope(scope: string) {
 			this.store.setItem('scope', scope);
 		},
+	},
+	components: {
+		Result,
 	},
 	created() {
 		this.debounced_perform = debounce(() => this.perform_search(), 250, {

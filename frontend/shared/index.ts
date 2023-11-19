@@ -2,6 +2,29 @@ import color_convert from 'color-convert';
 
 const hsl_to_hex = color_convert.hsl.hex;
 
+export interface Note {
+	date: string;
+	user: string;
+	content: string;
+
+	fancy_content?: string;
+}
+
+export interface Entry {
+	id: string;
+	date: string;
+	head: string;
+	body: string;
+	user: string;
+	scope: string;
+	notes: Note[];
+	score: number;
+
+	fancy_body?: string;
+	uncollapsed?: boolean;
+	vote?: number;
+}
+
 export interface Color {
 	hex: number;
 	css: string;
@@ -86,4 +109,72 @@ export function score_color(n: number, theme?: string): Color {
 
 export function score_number(n: number): string {
 	return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±';
+}
+
+function escape(s: string): string {
+	let el = document.createElement('p');
+	el.innerText = s;
+	return el.innerHTML;
+}
+
+function make_link(href: string, text: string): string {
+	let el = document.createElement('a');
+	el.innerText = text;
+	el.setAttribute('href', href);
+	return el.outerHTML;
+}
+
+export function replacements(
+	content: string,
+	still_editing: boolean,
+	plain_text: boolean,
+	theme?: string,
+): string {
+	content = plain_text ? content : escape(content);
+	content = content.replace(/___/g, '▯');
+	let i = 0;
+	let accum: string[] = [];
+	const starters: RegExp[] = [
+		plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
+		...(still_editing ? [/([*]{2})(?!.*?[*]{2})(.*)()/g] : []),
+		/([*]{2})(.*?)([*]{2})/g,
+		/()(@[a-zA-Z]+)()/g,
+		/()(#[0-9a-zA-Z_-]+)()/g,
+		/(https?:\/\/)(\S+)()/g,
+	];
+	let matches = starters
+		.flatMap(starter => [...content.matchAll(starter)])
+		.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+	while (i < content.length && matches.length) {
+		let nearestMatch = matches[0];
+		let [all, start, cont, end] = nearestMatch;
+		accum.push(content.substring(i, nearestMatch.index));
+		i = (nearestMatch.index ?? 0) + all.length;
+		let replacement;
+		if (start == '**' && still_editing) {
+			replacement = start + normalize(cont, !!end) + end;
+		} else if (start.startsWith('http') && !still_editing) {
+			replacement = make_link(all, cont.replace(/^www\.|\/$/g, ''));
+		} else if (!plain_text && !still_editing) {
+			let href = '#' + encodeURIComponent(cont);
+			let style = cont.startsWith('@')
+				? `style="${color_for(cont.substring(1), theme).css}"`
+				: '';
+			replacement = `<a href="${href}" ${style}>${cont}</a>`;
+		} else {
+			replacement = all;
+		}
+		accum.push(replacement);
+		let catchUp: RegExpMatchArray;
+		while ((catchUp = matches.shift())) {
+			if (catchUp.index >= i) {
+				matches.unshift(catchUp);
+				break;
+			}
+		}
+	}
+	if (i < content.length) accum.push(content.substring(i));
+	if (!plain_text && !still_editing)
+		return accum.join('').replace(/\\(.)/g, '$1');
+	else return accum.join('');
 }
