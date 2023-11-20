@@ -6,8 +6,6 @@ export interface Note {
 	date: string;
 	user: string;
 	content: string;
-
-	fancy_content?: string;
 }
 
 export interface Entry {

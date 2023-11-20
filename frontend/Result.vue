@@ -48,7 +48,7 @@ defineProps<{
 		</div>
 		<p class="body" v-html="fancy_body"></p>
 		<div class="notes">
-			<p class="note" v-for="note in result.notes">
+			<p class="note" v-for="note in fancy_notes">
 				<span
 					:style="color_for(note.user)"
 					class="note-author"
@@ -185,8 +185,15 @@ export default defineComponent({
 		};
 	},
 	computed: {
-		fancy_body() {
+		fancy_body(): string {
 			return shared.replacements(this.result.body, false, false);
+		},
+		fancy_notes(): { user: string; fancy_content: string }[] {
+			const result = this.result as Entry;
+			return result.notes.map(({ user, content }) => ({
+				user,
+				fancy_content: shared.replacements(content, false, false),
+			}));
 		},
 	},
 });

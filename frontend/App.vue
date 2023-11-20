@@ -315,14 +315,6 @@ export default defineComponent({
 			this.perform_search();
 		},
 
-		process_entry(e: Entry): Entry {
-			if (e.uncollapsed === undefined) e.uncollapsed = false;
-			e.notes.forEach(
-				_ => (_.fancy_content = shared.replacements(_.content, false, false)),
-			);
-			return e;
-		},
-
 		add_to_history(query: string): void {
 			if (query) this.query = query;
 			if (window.history) window.history.replaceState('', '', '#' + this.query);
@@ -393,7 +385,7 @@ export default defineComponent({
 			parsed_query.action = 'search';
 			this.current_search_request = this.apisend(parsed_query, data => {
 				this.scroll_up = true;
-				this.result_cache = data.results.map(this.process_entry);
+				this.result_cache = data.results;
 				this.results = this.result_cache.splice(0, this.initial_result_count);
 				this.add_to_history(this.query);
 				this.done_searching = true;
@@ -435,7 +427,7 @@ export default defineComponent({
 					).style.height = '24';
 					this.done_searching = this.dismissed = true;
 					this.add_to_history((this.query = '#' + data.entry.id));
-					this.results = [this.process_entry(data.entry)];
+					this.results = [data.entry];
 				},
 			);
 		},
@@ -452,7 +444,6 @@ export default defineComponent({
 		update_entry(whom: Entry, what_with: Partial<Entry>): void {
 			for (let p in what_with)
 				if (Object.hasOwnProperty.call(what_with, p)) whom[p] = what_with[p];
-			this.process_entry(whom);
 		},
 
 		new_word(): void {
