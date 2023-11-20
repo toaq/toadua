@@ -17,8 +17,8 @@ defineProps<{
 				:href="'##' + result.id"
 				@click="navigate('#' + result.id)"
 			>
-				<span style="font-size: 24px">&ZeroWidthSpace;</span>
-				{{ pretty_date(new Date(result.date)) }}</a
+				<span style="font-size: 24px">&ZeroWidthSpace;</span
+				>{{ pretty_date(new Date(result.date)) }}</a
 			>
 			<h2>
 				<a
