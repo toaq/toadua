@@ -45,7 +45,7 @@ export function normalize(s: string, trim?: boolean): string {
 			.map(w =>
 				w
 					.replace(
-						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])q?)([0-8]*)(?=(-.)?)/gi,
+						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])[qm]?)([0-8]*)(?=(-.)?)/gi,
 						(
 							_,
 							_apo,
