@@ -82,6 +82,7 @@ export function normalize(s: string, trim?: boolean): string {
 			)
 			.join(' ')
 			.normalize('NFC')
+			.replace(/m'/g, 'm') // temporarily undo disaster
 			.replace(/i/g, 'ı') + suffix
 	);
 }
