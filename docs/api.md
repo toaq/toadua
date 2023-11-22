@@ -88,6 +88,10 @@ Here are listed the semantics of each operator:
   - `term`: succeeds if the supplied string, after removing special characters,
     appears in either the head, the definition, or the comments of an entry
 
+Alternatively, `query` may be a string like `"hello scope:en user:official"`
+which is then interpreted as in the Toadua frontend. See
+<https://toaq.me/Toadua#Search> for more information.
+
 `ordering` describes the metric by which entries should be sorted.
 
 - empty/null/undefined or `default`: a nuanced metric based on vote count,

@@ -175,3 +175,54 @@ export function replacements(
 		return accum.join('').replace(/\\(.)/g, '$1');
 	else return accum.join('');
 }
+
+const character_operators = {
+	'/': 'arity',
+	'@': 'user',
+	'#': 'id',
+	'=': 'head',
+};
+
+export function parse_query(query_string: string): {
+	query: any;
+	ordering: string | undefined;
+} {
+	let ordering: string | undefined;
+	let parts = query_string.split(/ /).map(a => {
+		let parts = a.split(/\|/).map(b => {
+			let negative, what;
+			if ((negative = b[0] === '!')) b = b.substring(1);
+			let parts = b.split(':');
+			if (parts.length === 2) {
+				if (parts[0] == 'order') {
+					ordering = parts[1];
+					return ['and'];
+				} else
+					what = [
+						parts[0],
+						parts[0] === 'arity' ? parseInt(parts[1], 10) || 0 : parts[1],
+					];
+			} else {
+				parts = b.split(/(?=[\/@#=])/);
+				let operations: [string, string | number][] = [];
+				if (!parts[0].match(/^[\/@#=]/))
+					operations.push(['term', parts.shift()]);
+				for (let i = 0; i < parts.length; ++i) {
+					let rest = parts[i].substring(1);
+					operations.push([
+						character_operators[parts[i][0]],
+						parts[i][0] === '/' ? parseInt(rest, 10) || 0 : rest,
+					]);
+				}
+				what = operations.length > 1 ? ['and', ...operations] : operations[0];
+			}
+			return negative ? ['not', what] : what;
+		});
+		if (parts.length > 1) return ['or'].concat(parts);
+		else return parts[0];
+	});
+	let query;
+	if (parts.length > 1) query = ['and'].concat(parts);
+	else query = parts[0];
+	return { query, ordering };
+}

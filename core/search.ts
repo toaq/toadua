@@ -2,6 +2,7 @@
 // perform searches of the database
 
 import Heap from 'tinyqueue';
+import * as shared from '../frontend/shared/index.js';
 import {
 	deburr,
 	deburrMatch,
@@ -299,6 +300,11 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		preferred_scope,
 		preferred_scope_bias,
 	} = i;
+	if (typeof query === 'string') {
+		const parsed = shared.parse_query(query);
+		query = parsed.query;
+		requested_ordering ??= parsed.ordering;
+	}
 	let filter = parse_query(query);
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
 	let bares = bare_terms(query),
