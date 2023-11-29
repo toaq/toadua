@@ -259,7 +259,8 @@ const default_ordering: Order = (e, deburrs) => {
 			(1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score)),
 		) *
 		// full keyword match
-		(+1 * +(deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) +
+		(1 +
+			1 * +(deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) +
 			// header/body substring/superstring match
 			3 * +(deburrMatch(deburrs, e.body, MatchMode.Contained) > 0) +
 			6 * +(deburrMatch(deburrs, e.head, MatchMode.Contained) > 0) +
