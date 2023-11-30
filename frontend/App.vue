@@ -58,7 +58,9 @@
 			{{ error_line }}
 		</div>
 		<div class="result-count" v-if="result_count">
-			{{ result_count }} result{{ result_count === 1 ? '' : 's' }}
+			{{ result_count.toLocaleString('en-US') }} result{{
+				result_count === 1 ? '' : 's'
+			}}
 		</div>
 		<Result
 			v-for="result in results"
