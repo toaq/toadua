@@ -4,7 +4,7 @@ import { Entry } from './shared/index';
 defineProps<{
 	result: Entry;
 	theme: string;
-	username: string;
+	username: string | null;
 }>();
 </script>
 

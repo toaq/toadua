@@ -57,6 +57,9 @@
 		<div class="error-line" v-if="error_line">
 			{{ error_line }}
 		</div>
+		<div class="result-count" v-if="result_count">
+			{{ result_count }} result{{ result_count === 1 ? '' : 's' }}
+		</div>
 		<Result
 			v-for="result in results"
 			:result="result"
@@ -527,6 +530,9 @@ export default defineComponent({
 		};
 	},
 	computed: {
+		result_count() {
+			return this.results.length + this.result_cache.length;
+		},
 		what_should_i_say() {
 			return this.done_searching
 				? this.results.length

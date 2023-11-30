@@ -467,6 +467,12 @@ h2,
 	color: var(--pink);
 }
 
+.result-count {
+	text-align: center;
+	margin: -8px 0 8px 0;
+	font-size: 12px;
+}
+
 h1,
 h2,
 h3 {
