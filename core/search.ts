@@ -254,24 +254,26 @@ type Order = (e: CachedEntry, deburrs: string[]) => number;
 
 const default_ordering: Order = (e, deburrs) => {
 	const official = e.$.user === 'official' ? 1 : 0;
-	return (
-		Math.sqrt(
-			(1 + Math.max(0, e.score) + official) / (1 + Math.max(0, -e.score)),
-		) *
-		// full keyword match
-		(1 +
-			1 * +(deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) +
-			// header/body substring/superstring match
-			3 * +(deburrMatch(deburrs, e.body, MatchMode.Contained) > 0) +
-			6 * +(deburrMatch(deburrs, e.head, MatchMode.Contained) > 0) +
-			10 * +(deburrMatch(deburrs, e.body, MatchMode.Containing) > 0) +
-			15 * +(deburrMatch(deburrs, e.head, MatchMode.Containing) > 0) +
-			// exact match.
-			30 * +(deburrMatch(deburrs, e.body, MatchMode.Exact) > 0) +
-			// the number is very exact too, as you can see
-			69.4201337 *
-				+(deburrMatch(deburrs, e.head, MatchMode.Exact) == e.head.length))
-	);
+	const pos = Math.max(0, e.score);
+	const neg = Math.max(0, -e.score);
+	const voteMultiplier = Math.sqrt((1 + pos + official) / (1 + neg));
+
+	let points = 0.1;
+
+	// full keyword match
+	if (deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) points += 1;
+	// header/body substring/superstring match
+	if (deburrMatch(deburrs, e.body, MatchMode.Contained) > 0) points += 3;
+	if (deburrMatch(deburrs, e.head, MatchMode.Contained) > 0) points += 6;
+	if (deburrMatch(deburrs, e.body, MatchMode.Containing) > 0) points += 10;
+	if (deburrMatch(deburrs, e.head, MatchMode.Containing) > 0) points += 15;
+	// exact match.
+	if (deburrMatch(deburrs, e.body, MatchMode.Exact) > 0) points += 30;
+	// the number is very exact too, as you can see
+	const exact = deburrMatch(deburrs, e.head, MatchMode.Exact);
+	if (exact > 0 && exact === e.head.length) points += 69.4201337;
+
+	return voteMultiplier * points;
 };
 
 const base_orders = new Map<string, Order>([
