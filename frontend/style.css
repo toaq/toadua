@@ -49,7 +49,7 @@ input[type='button'].vote-button {
 	/**
 	 * Ubaı! Noto Sans has a horribly narrow MINUS SIGN:
 	 * https://github.com/notofonts/latin-greek-cyrillic/issues/396
-     *
+	 *
 	 * It's probably not worth loading a second web font just for the minus
 	 * sign, though. Replacing it with an en dash also looks bad. Let's just
 	 * switch to the user's favorite monospace font and hope it does a better
