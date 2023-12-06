@@ -95,7 +95,10 @@ defineProps<{
 			<li>
 				<input
 					type="button"
+					class="vote-button"
 					value="+"
+					title="Upvote"
+					aria-label="Upvote"
 					@click="$emit('vote', +1)"
 					:disabled="result.vote == +1"
 				/>
@@ -103,7 +106,10 @@ defineProps<{
 			<li>
 				<input
 					type="button"
+					class="vote-button"
 					value="±"
+					title="Retract vote"
+					aria-label="Retract vote"
 					@click="$emit('vote', 0)"
 					:disabled="result.vote == 0"
 				/>
@@ -111,7 +117,10 @@ defineProps<{
 			<li>
 				<input
 					type="button"
+					class="vote-button"
 					value="−"
+					title="Downvote"
+					aria-label="Downvote"
 					@click="$emit('vote', -1)"
 					:disabled="result.vote == -1"
 				/>
