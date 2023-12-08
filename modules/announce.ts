@@ -68,8 +68,16 @@ export function message(what: WebhookEmbed) {
 function send_off() {
 	if (!queue.length) return;
 	if (queue.length > 10) {
+		let top = queue[0];
+		if (top?.body?.embeds?.[0]?.title) {
+			top.body.embeds[0].title =
+				trim(200, top.body.embeds[0].title) +
+				` (+ ${queue.length - 1} other events)`;
+			request(top);
+		} else {
+			message({ title: `${queue.length} events omitted` });
+		}
 		queue.splice(0, queue.length);
-		message({ title: `${queue.length} events omitted` });
 		return;
 	}
 	const m = queue.shift();
