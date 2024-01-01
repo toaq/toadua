@@ -129,7 +129,7 @@ body {
 
 .dark body {
 	color: hsl(0deg, 0%, 90%);
-	background-color: hsl(0deg, 0%, 20%);
+	background-color: hsl(0deg, 0%, 12%);
 	caret-color: hsl(330deg, 75%, 75%);
 }
 
