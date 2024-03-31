@@ -7,7 +7,7 @@ import request from 'request-promise-native';
 import { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
 
-type AnnounceEvent = 'create' | 'note' | 'remove';
+type AnnounceEvent = 'create' | 'note' | 'remove' | 'removenote';
 
 interface WebhookEmbed {
 	color?: number;
@@ -23,7 +23,12 @@ function trim(max: number, str: string): string {
 }
 
 export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
-	const action = { create: 'created', note: 'noted on', remove: 'removed' }[ev];
+	const action = {
+		create: 'created',
+		note: 'noted on',
+		remove: 'removed',
+		removenote: 'removed a note on',
+	}[ev];
 	if (!action) {
 		console.log(`!! unexpected action ${action} in announce.entry`);
 		return;
@@ -102,7 +107,7 @@ var options: { enabled: boolean; hook: string };
 var queue: request.Options[] = [];
 export function state_change() {
 	if (enabled !== (options = this ?? {}).enabled)
-		for (const ev of ['create', 'note', 'remove'])
+		for (const ev of ['create', 'note', 'remove', 'removenote'])
 			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
 	enabled = options.enabled;
 	if (!enabled) queue.splice(0, queue.length);

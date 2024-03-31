@@ -209,6 +209,30 @@ actions.note = guard(
 	},
 );
 
+actions.removenote = guard(
+	true,
+	{
+		id: checks.goodid,
+		date: checks.present,
+	},
+	(ret, i, uname) => {
+		let word = by_id(i.id);
+		let keep = [];
+		for (const note of word.notes) {
+			if (note.user === uname && note.date === i.date) {
+				emitter.emit('removenote', word, note);
+			} else {
+				keep.push(note);
+			}
+		}
+		if (keep.length === word.notes.length) {
+			return ret(flip('no such note by you'));
+		}
+		word.notes = keep;
+		ret(good({ entry: present(word, uname) }));
+	},
+);
+
 export const replacements = (s: string): string =>
 	s.replace(/___/g, '▯').replace(/\s+$/g, '').normalize('NFC');
 
