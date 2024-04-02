@@ -55,6 +55,14 @@ defineProps<{
 					@click="navigate('@' + note.user)"
 					>{{ note.user }}</span
 				><span v-html="note.fancy_content"></span>
+				<span v-if="username === note.user" class="note-controls">
+					<input
+						type="button"
+						value="remove"
+						title="Remove this note"
+						@click="$emit('removenote', note.date)"
+					/>
+				</span>
 			</p>
 			<form
 				style="display: contents"
@@ -197,10 +205,11 @@ export default defineComponent({
 		fancy_body(): string {
 			return shared.replacements(this.result.body, false, false);
 		},
-		fancy_notes(): { user: string; fancy_content: string }[] {
+		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
 			const result = this.result as Entry;
-			return result.notes.map(({ user, content }) => ({
+			return result.notes.map(({ user, date, content }) => ({
 				user,
+				date,
 				fancy_content: shared.replacements(content, false, false),
 			}));
 		},

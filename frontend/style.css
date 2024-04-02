@@ -202,7 +202,7 @@ footer .controls {
 	padding-top: 16px;
 }
 
-.notes :last-child {
+.notes .note:last-child {
 	padding-bottom: 16px;
 }
 
@@ -222,7 +222,7 @@ footer .controls {
 	/* 32 px = 26 px (bounding box) + 2 * _3px_ */
 }
 
-.note input,
+.note input[type='text'],
 #login input[type='text'],
 #login input[type='password'],
 #create input[type='text'],
@@ -230,6 +230,17 @@ footer .controls {
 	display: block;
 	border: none;
 	border-radius: 0;
+}
+
+.note-controls {
+	margin-inline-start: 4px;
+	position: relative;
+	opacity: 0;
+}
+
+.note:hover .note-controls,
+.note:focus-within .note-controls {
+	opacity: 1;
 }
 
 #create input[type='text'] {

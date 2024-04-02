@@ -44,6 +44,8 @@
 				type="button"
 				id="cancel"
 				value="×"
+				title="Clear"
+				aria-label="Clear"
 				v-show="query"
 				@click="
 					navigate('');
@@ -68,6 +70,7 @@
 			:username="username"
 			:theme="theme"
 			@note="s => note(result, s)"
+			@removenote="date => removenote(result, date)"
 			@uncollapse="
 				results.forEach(r => (r.uncollapsed = false));
 				result.uncollapsed = true;
@@ -369,6 +372,14 @@ export default defineComponent({
 			this.apisend({ action: 'note', id: whom.id, content: input }, data => {
 				whom.uncollapsed = false;
 				this.update_entry(whom, data.entry);
+			});
+		},
+
+		removenote(whom: Entry, date: string): void {
+			this.apisend({ action: 'removenote', id: whom.id, date }, data => {
+				whom.uncollapsed = false;
+				this.update_entry(whom, data.entry);
+				(document.activeElement as HTMLElement)?.blur();
 			});
 		},
 
