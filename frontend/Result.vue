@@ -29,7 +29,18 @@ defineProps<{
 				>
 			</h2>
 			<span class="info">
+				<input
+					v-if="editing"
+					type="text"
+					size="5"
+					v-model="new_scope"
+					class="scope editing"
+					autocomplete="language"
+					list="common-languages"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
 				<a
+					v-if="!editing"
 					:href="'#scope:' + result.scope"
 					class="scope"
 					@click="navigate('scope:' + result.scope)"
@@ -53,7 +64,7 @@ defineProps<{
 			rows="1"
 			placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
 			@input="set_new_body"
-			:value.sync="edit_body"
+			:value.sync="new_body"
 			@keypress.enter.exact.prevent="submit_edit"
 			autocomplete="off"
 			autocorrect="on"
@@ -109,7 +120,15 @@ defineProps<{
 				</p>
 			</form>
 		</div>
-		<ul class="controls" v-if="username">
+		<ul class="controls" v-if="username && editing">
+			<li>
+				<input type="button" value="submit" @click="submit_edit" />
+			</li>
+			<li>
+				<input type="button" value="cancel" @click="editing = false" />
+			</li>
+		</ul>
+		<ul class="controls" v-if="username && !editing">
 			<li v-if="!result.uncollapsed">
 				<input type="button" value="add note" @click="$emit('uncollapse')" />
 				<!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
@@ -156,11 +175,8 @@ defineProps<{
 			<li>
 				<input type="button" value="fork" @click="$emit('fork')" />
 			</li>
-			<li v-if="username == result.user && !editing">
+			<li v-if="username == result.user">
 				<input type="button" value="edit" @click="start_edit" />
-			</li>
-			<li v-if="username == result.user && editing">
-				<input type="button" value="submit" @click="submit_edit" />
 			</li>
 		</ul>
 	</div>
@@ -217,12 +233,13 @@ export default defineComponent({
 
 		start_edit(): void {
 			this.editing = true;
-			this.edit_body = this.result.body;
+			this.new_body = this.result.body;
+			this.new_scope = this.result.scope;
 		},
 
 		set_new_body(event: Event): void {
 			const target = event.target as HTMLTextAreaElement;
-			target.value = this.edit_body = shared.replacements(
+			target.value = this.new_body = shared.replacements(
 				target.value,
 				true,
 				true,
@@ -230,7 +247,7 @@ export default defineComponent({
 		},
 
 		submit_edit(): void {
-			this.$emit('edit', this.edit_body);
+			this.$emit('edit', this.new_body, this.new_scope);
 			this.editing = false;
 		},
 	},
@@ -239,7 +256,8 @@ export default defineComponent({
 			hesitating: false,
 			input: '',
 			editing: false,
-			edit_body: '',
+			new_body: '',
+			new_scope: '',
 		};
 	},
 	computed: {

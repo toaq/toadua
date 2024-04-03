@@ -72,7 +72,7 @@
 			:theme="theme"
 			@note="s => note(result, s)"
 			@removenote="date => removenote(result, date)"
-			@edit="body => edit(result, body)"
+			@edit="(body, scope) => edit(result, body, scope)"
 			@uncollapse="
 				results.forEach(r => (r.uncollapsed = false));
 				result.uncollapsed = true;
@@ -385,10 +385,10 @@ export default defineComponent({
 			});
 		},
 
-		edit(whom: Entry, body: string): void {
+		edit(whom: Entry, body: string, scope: string): void {
 			// Update the entry early to prevent a flash of the old body...
-			this.update_entry(whom, { body });
-			this.apisend({ action: 'edit', id: whom.id, body }, data => {
+			this.update_entry(whom, { body, scope });
+			this.apisend({ action: 'edit', id: whom.id, body, scope }, data => {
 				// ...but let the API response have the final word:
 				this.update_entry(whom, data.entry);
 			});

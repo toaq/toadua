@@ -7,7 +7,14 @@ import request from 'request-promise-native';
 import { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
 
-const event_types = ['create', 'note', 'remove', 'removenote', 'edit'] as const;
+const event_types = [
+	'create',
+	'note',
+	'remove',
+	'removenote',
+	'edit',
+	'move',
+] as const;
 type AnnounceEvent = (typeof event_types)[any];
 
 interface WebhookEmbed {
@@ -27,16 +34,22 @@ export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
 	const action = {
 		create: 'created',
 		note: 'noted on',
-		edit: 'edited',
 		remove: 'removed',
 		removenote: 'removed a note on',
+		edit: 'edited',
+		move: 'moved',
 	}[ev];
 	if (!action) {
 		console.log(`!! unexpected action ${action} in announce.entry`);
 		return;
 	}
 
-	const scope = entry.scope !== 'en' ? ` in scope __${entry.scope}__` : '';
+	const scope =
+		ev === 'move'
+			? ` to scope __${entry.scope}__`
+			: entry.scope !== 'en'
+			? ` in scope __${entry.scope}__`
+			: '';
 	const title = note
 		? `*${note.user}* ${action} **${entry.head}**`
 		: `*${entry.user}* ${action} **${entry.head}**${scope}`;

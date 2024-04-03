@@ -182,7 +182,7 @@ footer .controls {
 	margin-left: 0.25em;
 }
 
-.card .scope {
+.card .scope:not(.editing) {
 	color: inherit;
 	opacity: 0.5;
 }
@@ -284,7 +284,8 @@ textarea {
 	padding-bottom: 16px;
 }
 
-textarea.editing {
+.editing {
+	color: inherit;
 	background-color: #0000000d;
 }
 
