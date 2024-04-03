@@ -27,6 +27,7 @@ export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
 	const action = {
 		create: 'created',
 		note: 'noted on',
+		edit: 'edited',
 		remove: 'removed',
 		removenote: 'removed a note on',
 	}[ev];
