@@ -147,10 +147,11 @@
 			/>
 			<datalist id="common-languages">
 				<option value="en" />
+				<option value="pl" />
 				<option value="toa" />
+				<option value="tok" />
 				<option value="ja" />
 				<option value="jbo" />
-				<option value="fr" />
 			</datalist>
 		</span>
 		<ul class="controls">
