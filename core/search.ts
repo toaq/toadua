@@ -80,7 +80,7 @@ export function score(entry: Entry): number {
 
 emitter.on('remove', (_, entry) => cache.splice(cached_index(entry.id), 1));
 emitter.on('create', (_, entry) => cache.push(cacheify(entry)));
-for (let k of ['vote', 'note', 'removenote'])
+for (let k of ['vote', 'note', 'removenote', 'edit'])
 	emitter.on(k, (_, entry) =>
 		cache.splice(cached_index(entry.id), 1, cacheify(entry)),
 	);

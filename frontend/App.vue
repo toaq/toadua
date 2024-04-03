@@ -66,11 +66,13 @@
 		</div>
 		<Result
 			v-for="result in results"
+			:key="result.id"
 			:result="result"
 			:username="username"
 			:theme="theme"
 			@note="s => note(result, s)"
 			@removenote="date => removenote(result, date)"
+			@edit="body => edit(result, body)"
 			@uncollapse="
 				results.forEach(r => (r.uncollapsed = false));
 				result.uncollapsed = true;
@@ -380,6 +382,15 @@ export default defineComponent({
 				whom.uncollapsed = false;
 				this.update_entry(whom, data.entry);
 				(document.activeElement as HTMLElement)?.blur();
+			});
+		},
+
+		edit(whom: Entry, body: string): void {
+			// Update the entry early to prevent a flash of the old body...
+			this.update_entry(whom, { body });
+			this.apisend({ action: 'edit', id: whom.id, body }, data => {
+				// ...but let the API response have the final word:
+				this.update_entry(whom, data.entry);
 			});
 		},
 

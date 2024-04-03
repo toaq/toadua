@@ -209,6 +209,23 @@ actions.note = guard(
 	},
 );
 
+actions.edit = guard(
+	true,
+	{
+		id: checks.goodid,
+		body: checks.nobomb,
+	},
+	(ret, i, uname) => {
+		let word = by_id(i.id);
+		if (word.user !== uname) {
+			return ret(flip('you are not the owner of this entry'));
+		}
+		word.body = replacements(i.body);
+		ret(good({ entry: present(word, uname) }));
+		emitter.emit('edit', word);
+	},
+);
+
 actions.removenote = guard(
 	true,
 	{
