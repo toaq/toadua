@@ -209,6 +209,32 @@ actions.note = guard(
 	},
 );
 
+actions.edit = guard(
+	true,
+	{
+		id: checks.goodid,
+		body: checks.nobomb,
+		scope: checks.scope,
+	},
+	(ret, i, uname) => {
+		let word = by_id(i.id);
+		if (word.user !== uname) {
+			return ret(flip('you are not the owner of this entry'));
+		}
+		const new_body = replacements(i.body);
+		const body_changed = word.body !== new_body;
+		const scope_changed = word.scope !== i.scope;
+		word.body = new_body;
+		word.scope = i.scope;
+		ret(good({ entry: present(word, uname) }));
+		if (body_changed) {
+			emitter.emit('edit', word);
+		} else if (scope_changed) {
+			emitter.emit('move', word);
+		}
+	},
+);
+
 actions.removenote = guard(
 	true,
 	{

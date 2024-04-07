@@ -7,7 +7,15 @@ import request from 'request-promise-native';
 import { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
 
-type AnnounceEvent = 'create' | 'note' | 'remove' | 'removenote';
+const event_types = [
+	'create',
+	'note',
+	'remove',
+	'removenote',
+	'edit',
+	'move',
+] as const;
+type AnnounceEvent = (typeof event_types)[any];
 
 interface WebhookEmbed {
 	color?: number;
@@ -28,13 +36,20 @@ export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
 		note: 'noted on',
 		remove: 'removed',
 		removenote: 'removed a note on',
+		edit: 'edited',
+		move: 'moved',
 	}[ev];
 	if (!action) {
 		console.log(`!! unexpected action ${action} in announce.entry`);
 		return;
 	}
 
-	const scope = entry.scope !== 'en' ? ` in scope __${entry.scope}__` : '';
+	const scope =
+		ev === 'move'
+			? ` to scope __${entry.scope}__`
+			: entry.scope !== 'en'
+			? ` in scope __${entry.scope}__`
+			: '';
 	const title = note
 		? `*${note.user}* ${action} **${entry.head}**`
 		: `*${entry.user}* ${action} **${entry.head}**${scope}`;
@@ -107,7 +122,7 @@ var options: { enabled: boolean; hook: string };
 var queue: request.Options[] = [];
 export function state_change() {
 	if (enabled !== (options = this ?? {}).enabled)
-		for (const ev of ['create', 'note', 'remove', 'removenote'])
+		for (const ev of event_types)
 			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
 	enabled = options.enabled;
 	if (!enabled) queue.splice(0, queue.length);

@@ -182,7 +182,7 @@ footer .controls {
 	margin-left: 0.25em;
 }
 
-.card .scope {
+.card .scope:not(.editing) {
 	color: inherit;
 	opacity: 0.5;
 }
@@ -226,7 +226,7 @@ footer .controls {
 #login input[type='text'],
 #login input[type='password'],
 #create input[type='text'],
-#create textarea {
+textarea {
 	display: block;
 	border: none;
 	border-radius: 0;
@@ -264,7 +264,7 @@ textarea {
 }
 
 #create input[type='text'],
-#create textarea {
+textarea {
 	padding: 0;
 	border: none;
 	resize: none;
@@ -282,6 +282,11 @@ textarea {
 	resize: none;
 	overflow: hidden;
 	padding-bottom: 16px;
+}
+
+.editing {
+	color: inherit;
+	background-color: #0000000d;
 }
 
 p.new_note.note input[type='text'] {
