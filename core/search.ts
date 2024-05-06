@@ -16,7 +16,15 @@ import {
 // keep an own cache for entries
 var cache: CachedEntry[] = [];
 
-const RE_TRAITS = ['id', 'user', 'scope', 'head', 'body', 'date'] as const;
+const RE_TRAITS = [
+	'id',
+	'user',
+	'scope',
+	'head',
+	'body',
+	'date',
+	'score',
+] as const;
 type Trait = (typeof RE_TRAITS)[number];
 
 type ReCache = Record<Trait, Record<string, (entry: CachedEntry) => boolean>>;
@@ -196,9 +204,9 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 				.replace(/V/g, '[aeıiouy]');
 
 		let regexp = new RegExp(`^${s}\$`, 'iu');
-		return entry => regexp.test(entry.$[trait]);
+		return entry => regexp.test(String(entry.$[trait]));
 	} catch (_) {
-		return entry => s === entry.$[trait];
+		return entry => s === String(entry.$[trait]);
 	}
 }
 
