@@ -15,17 +15,10 @@
 						:value="limit_search ? 'yes' : 'no'"
 						class="submit"
 						@click="update_limit_search"
-						tabindex="8"
 					/>
 				</li>
 				<li v-if="username">
-					<input
-						type="button"
-						value="logout"
-						class="submit"
-						@click="logout"
-						tabindex="9"
-					/>
+					<input type="button" value="logout" class="submit" @click="logout" />
 				</li>
 			</ul>
 		</div>
@@ -38,7 +31,6 @@
 				@input.lazy="search"
 				autocomplete="off"
 				spellcheck="false"
-				tabindex="1"
 			/>
 			<input
 				type="button"
@@ -51,7 +43,6 @@
 					navigate('');
 					focus_search();
 				"
-				tabindex="2"
 			/>
 		</div>
 	</nav>
@@ -117,7 +108,6 @@
 				autocorrect="off"
 				autocapitalize="off"
 				spellcheck="false"
-				tabindex="3"
 			/>
 		</div>
 		<textarea
@@ -132,7 +122,6 @@
 			autocorrect="on"
 			autocapitalize="on"
 			spellcheck="true"
-			tabindex="4"
 		></textarea>
 		<span class="controls-left" id="scope-editor">
 			<label for="scope">scope:</label>&thinsp;
@@ -143,7 +132,6 @@
 				id="scope"
 				autocomplete="language"
 				list="common-languages"
-				tabindex="7"
 			/>
 			<datalist id="common-languages">
 				<option value="en" />
@@ -162,7 +150,6 @@
 					class="submit"
 					@click="create"
 					:disabled="!(new_head && new_body)"
-					tabindex="4"
 				/>
 			</li>
 			<li>
@@ -171,7 +158,6 @@
 					value="clear"
 					@click="new_head = new_body = ''"
 					:disabled="!(new_head || new_body)"
-					tabindex="5"
 				/>
 			</li>
 		</ul>
@@ -200,7 +186,6 @@
 				placeholder="username"
 				v-model="login_name"
 				autocomplete="username"
-				tabindex="3"
 			/>
 		</div>
 		<div id="login_password">
@@ -210,7 +195,6 @@
 				placeholder="password"
 				v-model="login_pass"
 				autocomplete="current-password"
-				tabindex="4"
 			/>
 		</div>
 		<ul class="controls">
@@ -220,7 +204,6 @@
 					value="login"
 					@click="account('login')"
 					:disabled="!(login_name && login_pass)"
-					tabindex="5"
 				/>
 			</li>
 			<li>
@@ -229,7 +212,6 @@
 					value="register"
 					@click="account('register')"
 					:disabled="!(login_name && login_pass)"
-					tabindex="6"
 				/>
 			</li>
 		</ul>
