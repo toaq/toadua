@@ -29,7 +29,7 @@ html {
 html.dark {
 	--pink: hsl(330deg, 100%, 73%);
 	--text-color: hsl(330deg, 25%, 90%);
-	--cancel-color: hsl(210deg, 87.5%, 50%);
+	--cancel-color: hsl(330deg, 25%, 90%);
 	--placeholder-color: hsl(330deg, 0%, 65%);
 	--page-color: hsl(0deg, 0%, 12%);
 	--card-color: hsl(330deg, 30%, 30%);
@@ -101,10 +101,6 @@ input[type='button'].vote-button {
 
 #cancel:hover {
 	text-decoration: none;
-}
-
-.dark #cancel {
-	color: inherit;
 }
 
 input[type='button']:enabled:active,
@@ -439,8 +435,7 @@ a:hover {
 		width: calc(512px - 2 * 16px);
 	}
 
-	#menu,
-	.dark #menu {
+	#menu {
 		left: calc((100% - 512px) / 2 - 2px);
 		width: 516px; /* 512px + 4px */
 		border-top-width: 0;
@@ -452,8 +447,7 @@ a:hover {
 		width: calc(100% - 2 * 16px);
 	}
 
-	#menu,
-	.dark #menu {
+	#menu {
 		width: 100%;
 		border-width: 0 0 2px 0;
 		border-radius: 0;
