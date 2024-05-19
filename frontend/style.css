@@ -1,7 +1,15 @@
+* {
+	box-sizing: border-box;
+}
+
 html {
 	--body-font: 'Noto Sans', sans-serif;
 	--heading-font: 'Noto Sans', sans-serif;
 	--pink: hsl(330deg, 87.5%, 50%);
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 html.dark {
@@ -9,14 +17,8 @@ html.dark {
 }
 
 #container {
-	box-sizing: border-box;
 	width: 100%;
-	padding-top: 96px;
 	padding-bottom: 16px;
-}
-
-#as_who {
-	font-weight: 600;
 }
 
 input,
@@ -28,6 +30,7 @@ textarea {
 	border: none;
 	color: hsl(330deg, 25%, 25%);
 	font-size: inherit;
+	font-family: var(--body-font);
 }
 
 .dark input,
@@ -70,8 +73,8 @@ input[type='button'].vote-button {
 
 #cancel {
 	position: absolute;
-	top: 0px;
-	right: 0px;
+	top: 0;
+	right: 0;
 	color: hsl(210deg, 87.5%, 50%);
 }
 
@@ -106,13 +109,6 @@ input[type='submit']:disabled {
 	color: hsl(330deg, 0%, 65%);
 }
 
-html {
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	padding: 0;
-}
-
 body {
 	width: 100%;
 	margin: 0;
@@ -140,9 +136,7 @@ footer .controls {
 }
 
 .card {
-	box-sizing: border-box;
 	margin: 16px;
-	margin-top: 0px;
 	padding: 16px;
 	background-color: white;
 	transition: background-color 0.2s;
@@ -168,11 +162,6 @@ footer .controls {
 	margin-top: -4px;
 }
 
-.card h2,
-.card .name {
-	display: inline;
-}
-
 .card .info {
 	font-size: 16px;
 }
@@ -187,7 +176,6 @@ footer .controls {
 }
 
 .card .body {
-	line-height: 24px;
 	margin: 0;
 }
 
@@ -210,15 +198,9 @@ footer .controls {
 	width: 50%;
 	font-family: inherit;
 	font-size: inherit;
-	margin: 0 auto;
+	margin: 3px auto;
 	padding: 2px;
 	border-bottom: 1px solid hsl(330deg, 50%, 75%);
-}
-
-#login_username,
-#login_password {
-	padding: 3px 0;
-	/* 32 px = 26 px (bounding box) + 2 * _3px_ */
 }
 
 .note input[type='text'],
@@ -242,24 +224,13 @@ textarea {
 	opacity: 1;
 }
 
-#create input[type='text'] {
-	line-height: 32px;
-}
-
 #create #scope-editor input[type='text']#scope {
-	height: 17px;
 	width: unset;
 	min-width: unset;
 	max-width: unset;
-	line-height: 12px;
 	display: inline;
 	color: var(--pink);
 	font-family: var(--heading-font);
-}
-
-input,
-textarea {
-	font-family: var(--body-font);
 }
 
 #create input[type='text'],
@@ -267,18 +238,12 @@ textarea {
 	padding: 0;
 	border: none;
 	resize: none;
-	box-sizing: border-box;
 	width: 100%;
 	min-width: 100%;
 	max-width: 100%;
 }
 
 #create textarea {
-	font-family: var(--body-font);
-	font-size: 16px;
-	line-height: 24px;
-	padding: 0;
-	resize: none;
 	overflow: hidden;
 	padding-bottom: 16px;
 }
@@ -289,7 +254,6 @@ textarea {
 }
 
 p.new_note.note input[type='text'] {
-	box-sizing: border-box;
 	width: 100%;
 	font-family: inherit;
 	font-size: inherit;
@@ -341,19 +305,13 @@ h2,
 	margin-bottom: 0;
 	font-size: 24px;
 	font-family: var(--heading-font);
-	color: #333;
-	display: inline-block;
-}
-
-.word_id {
-	color: #333;
-	text-decoration: underline;
+	color: inherit;
+	display: inline;
 }
 
 .note {
 	font-size: 12px;
-	line-height: 16px;
-	color: #333;
+	color: inherit;
 	text-indent: -15px;
 	padding-left: 15px;
 	margin: 0;
@@ -361,30 +319,19 @@ h2,
 	padding-top: 0;
 }
 
-.dark h2,
-.dark .name,
-.dark .word_id,
-.dark .note {
-	color: hsl(0deg, 0%, 90%);
-}
-
 .note-author::after {
 	content: ': ';
 }
 
 #menu {
-	position: fixed;
+	position: sticky;
+	margin-bottom: 16px;
 	top: 0;
-	box-sizing: border-box;
-	height: 82px; /* 10px + 16px + 54px + 2px */
-	width: 100%;
 	z-index: 1000;
-	padding: 0;
-	margin: 0;
 	background-color: hsl(210deg, 50%, 97%);
 	transition: background-color 0.2s;
 	border: 2px solid hsl(210deg, 50%, 80%);
-	border-radius: 0px 0px 4px 4px;
+	border-radius: 0 0 4px 4px;
 }
 
 .dark #menu {
@@ -393,10 +340,8 @@ h2,
 }
 
 #search {
-	box-sizing: border-box;
 	display: inline;
 	width: 100%;
-	height: 54px;
 	outline: none;
 	font-size: 24px;
 	border: none;
@@ -426,32 +371,16 @@ h2,
 	font-family: var(--body-font);
 	margin: 0;
 	padding: 0;
-	box-sizing: border-box;
 	padding-bottom: 5px;
 }
 
 #control-row {
-	height: 16px;
-	width: 100%;
-	overflow-x: auto;
-	margin: 0;
 	padding-top: 10px;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-}
-
-#control-row::-webkit-scrollbar {
-	display: none;
 }
 
 #top-controls {
-	width: max-content;
-	width: -moz-max-content;
-	height: 16px;
-	overflow-y: hidden;
 	padding: 0 12px;
 	margin: 0 auto;
-	line-height: 16px;
 	color: hsl(210deg, 25%, 50%);
 }
 
@@ -480,24 +409,14 @@ h2,
 	text-decoration: underline;
 }
 
-.scope-name {
-	font-family: var(--heading-font);
-	color: hsl(210deg, 75%, 25%);
-}
-
-.dark .scope-name {
-	color: hsl(210deg, 75%, 75%);
-}
-
 .error-line {
 	text-align: center;
-	margin: -8px 0 8px 0;
 	color: var(--pink);
 }
 
 .result-count {
 	text-align: center;
-	margin: -8px 0 8px 0;
+	margin: -8px 0;
 	font-size: 12px;
 }
 
@@ -546,7 +465,7 @@ a:hover {
 	#menu,
 	.dark #menu {
 		width: 100%;
-		border-width: 0px 0px 2px 0px;
+		border-width: 0 0 2px 0;
 		border-radius: 0;
 	}
 }

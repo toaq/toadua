@@ -6,9 +6,7 @@
 					logged in as <span :style="color_for(username)">{{ username }}</span>
 				</li>
 				<li>
-					<label for="limit-search"
-						>search scope ‘<span class="scope-name">{{ scope }}</span
-						>’ only:</label
+					<label for="limit-search">search scope {{ scope }} only:</label
 					>&thinsp;<input
 						id="limit-search"
 						type="button"
