@@ -1,7 +1,5 @@
 import color_convert from 'color-convert';
 
-const hsl_to_hex = color_convert.hsl.hex;
-
 export interface Note {
 	date: string;
 	user: string;
@@ -27,11 +25,13 @@ export interface Color {
 	css: string;
 }
 
-export function convert_hue(n: number, theme?: string): Color {
-	const l = theme === 'dark' ? 70 : 30;
+export function convert_hue(h: number, theme?: string): Color {
+	const l = theme === 'dark' ? 80 : 60;
+	const c = theme === 'dark' ? 30 : 50;
+	console.log(color_convert.lch.hex(l, c, h));
 	return {
-		hex: parseInt(hsl_to_hex(n, 100, l), 16),
-		css: `color: hsl(${n}, 100%, ${l}%);`,
+		hex: parseInt(color_convert.lch.hex(l, c, h), 16),
+		css: `color: lch(${l}% ${c} ${h});`,
 	};
 }
 
