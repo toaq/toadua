@@ -5,7 +5,21 @@
 html {
 	--body-font: 'Noto Sans', sans-serif;
 	--heading-font: 'Noto Sans', sans-serif;
+
 	--pink: hsl(330deg, 87.5%, 50%);
+	--text-color: hsl(330deg, 25%, 90%);
+	--cancel-color: hsl(210deg, 87.5%, 50%);
+	--placeholder-color: hsl(330deg, 50%, 75%);
+	--page-color: hsl(330deg, 50%, 97%);
+	--card-color: white;
+	--card-border-color: hsl(330deg, 50%, 80%);
+	--menu-color: hsl(210deg, 50%, 97%);
+	--menu-border-color: hsl(210deg, 50%, 80%);
+	--search-text-color: hsl(210deg, 50%, 25%);
+	--search-placeholder-color: hsl(210deg, 50%, 75%);
+	--controls-text-color: hsl(210deg, 25%, 50%);
+	--controls-input-color: hsl(210deg, 75%, 25%);
+
 	width: 100%;
 	height: 100%;
 	margin: 0;
@@ -14,6 +28,18 @@ html {
 
 html.dark {
 	--pink: hsl(330deg, 100%, 73%);
+	--text-color: hsl(330deg, 25%, 90%);
+	--cancel-color: hsl(210deg, 87.5%, 50%);
+	--placeholder-color: hsl(330deg, 0%, 65%);
+	--page-color: hsl(0deg, 0%, 12%);
+	--card-color: hsl(330deg, 30%, 30%);
+	--card-border-color: hsl(330deg, 50%, 60%);
+	--menu-color: hsl(210deg, 30%, 30%);
+	--menu-border-color: hsl(210deg, 30%, 60%);
+	--search-text-color: hsl(210deg, 50%, 90%);
+	--search-placeholder-color: hsl(210deg, 50%, 75%);
+	--controls-text-color: hsl(210deg, 20%, 80%);
+	--controls-input-color: hsl(0deg, 0%, 90%);
 }
 
 #container {
@@ -28,14 +54,9 @@ textarea {
 	-webkit-appearance: none;
 	outline: none;
 	border: none;
-	color: hsl(330deg, 25%, 25%);
+	color: var(--text-color);
 	font-size: inherit;
 	font-family: var(--body-font);
-}
-
-.dark input,
-.dark textarea {
-	color: hsl(330deg, 25%, 90%);
 }
 
 input[type='button'],
@@ -75,7 +96,7 @@ input[type='button'].vote-button {
 	position: absolute;
 	top: 0;
 	right: 0;
-	color: hsl(210deg, 87.5%, 50%);
+	color: var(--cancel-color);
 }
 
 #cancel:hover {
@@ -102,11 +123,7 @@ input[type='submit']:disabled {
 }
 
 ::placeholder {
-	color: hsl(330deg, 50%, 75%);
-}
-
-.dark ::placeholder {
-	color: hsl(330deg, 0%, 65%);
+	color: var(--placeholder-color);
 }
 
 body {
@@ -114,18 +131,13 @@ body {
 	margin: 0;
 	height: 100%;
 	padding: 0;
-	color: hsl(0deg, 0%, 25%);
+	color: var(--text-color);
 	font-family: var(--body-font);
 	font-size: 16px;
-	background-color: hsl(330deg, 50%, 97%);
+	background-color: var(--page-color);
 	transition: background-color 0.2s;
 	overflow-y: scroll;
 	caret-color: var(--pink);
-}
-
-.dark body {
-	color: hsl(0deg, 0%, 90%);
-	background-color: hsl(0deg, 0%, 12%);
 }
 
 footer .controls {
@@ -138,16 +150,11 @@ footer .controls {
 .card {
 	margin: 16px;
 	padding: 16px;
-	background-color: white;
+	background-color: var(--card-color);
 	transition: background-color 0.2s;
-	border: 2px solid hsl(330deg, 50%, 80%);
+	border: 2px solid var(--card-border-color);
 	border-radius: 4px;
 	overflow-x: auto;
-}
-
-.dark .card {
-	border: 2px solid hsl(330deg, 50%, 60%);
-	background-color: hsl(330deg, 30%, 30%);
 }
 
 #container > .card:last-child {
@@ -200,7 +207,7 @@ footer .controls {
 	font-size: inherit;
 	margin: 3px auto;
 	padding: 2px;
-	border-bottom: 1px solid hsl(330deg, 50%, 75%);
+	border-bottom: 1px solid var(--placeholder-color);
 }
 
 .note input[type='text'],
@@ -328,15 +335,10 @@ h2,
 	margin-bottom: 16px;
 	top: 0;
 	z-index: 1000;
-	background-color: hsl(210deg, 50%, 97%);
+	background-color: var(--menu-color);
 	transition: background-color 0.2s;
-	border: 2px solid hsl(210deg, 50%, 80%);
+	border: 2px solid var(--menu-border-color);
 	border-radius: 0 0 4px 4px;
-}
-
-.dark #menu {
-	border: 2px solid hsl(210deg, 30%, 60%);
-	background-color: hsl(210deg, 30%, 30%);
 }
 
 #search {
@@ -347,17 +349,13 @@ h2,
 	border: none;
 	font-family: var(--heading-font);
 	text-align: center;
-	color: hsl(210deg, 50%, 25%);
+	color: var(--search-text-color);
 	padding: 10px 54px 15px 54px;
 	vertical-align: top;
 }
 
-.dark #search {
-	color: hsl(210deg, 50%, 90%);
-}
-
 #search::placeholder {
-	color: hsl(210deg, 50%, 75%);
+	color: var(--search-placeholder-color);
 }
 
 #search-row {
@@ -381,11 +379,7 @@ h2,
 #top-controls {
 	padding: 0 12px;
 	margin: 0 auto;
-	color: hsl(210deg, 25%, 50%);
-}
-
-.dark #top-controls {
-	color: hsl(210deg, 20%, 80%);
+	color: var(--controls-text-color);
 }
 
 #top-controls li:first-child::before {
@@ -393,11 +387,7 @@ h2,
 }
 
 #top-controls input {
-	color: hsl(210deg, 75%, 25%);
-}
-
-.dark #top-controls input {
-	color: hsl(0deg, 0%, 90%);
+	color: var(--controls-input-color);
 }
 
 #top-controls input[type='button']:enabled:active,
