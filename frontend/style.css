@@ -124,13 +124,12 @@ body {
 	background-color: hsl(330deg, 50%, 97%);
 	transition: background-color 0.2s;
 	overflow-y: scroll;
-	caret-color: hsl(330deg, 75%, 50%);
+	caret-color: var(--pink);
 }
 
 .dark body {
 	color: hsl(0deg, 0%, 90%);
 	background-color: hsl(0deg, 0%, 12%);
-	caret-color: hsl(330deg, 75%, 75%);
 }
 
 footer .controls {
@@ -154,7 +153,7 @@ footer .controls {
 
 .dark .card {
 	border: 2px solid hsl(330deg, 50%, 60%);
-	background-color: hsl(330deg, 15%, 35%);
+	background-color: hsl(330deg, 30%, 30%);
 }
 
 #container > .card:last-child {
@@ -369,16 +368,6 @@ h2,
 	color: hsl(0deg, 0%, 90%);
 }
 
-.hl {
-	color: #fff;
-	background-color: #333;
-}
-
-.note .hl {
-	color: #ffffff;
-	background-color: #333;
-}
-
 .note-author::after {
 	content: ': ';
 }
@@ -400,7 +389,7 @@ h2,
 
 .dark #menu {
 	border: 2px solid hsl(210deg, 30%, 60%);
-	background-color: hsl(210deg, 15%, 35%);
+	background-color: hsl(210deg, 30%, 30%);
 }
 
 #search {
