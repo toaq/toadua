@@ -7,7 +7,7 @@ html {
 	--heading-font: 'Noto Sans', sans-serif;
 
 	--pink: hsl(330deg, 87.5%, 50%);
-	--text-color: hsl(330deg, 25%, 90%);
+	--text-color: hsl(0deg, 0%, 25%);
 	--cancel-color: hsl(210deg, 87.5%, 50%);
 	--placeholder-color: hsl(330deg, 50%, 75%);
 	--page-color: hsl(330deg, 50%, 97%);
