@@ -18,7 +18,9 @@ defineProps<{
 				@click="navigate('#' + result.id)"
 			>
 				<span style="font-size: 24px">&ZeroWidthSpace;</span
-				>{{ pretty_date(new Date(result.date)) }}</a
+				><time :datetime="result.date">{{
+					pretty_date(new Date(result.date))
+				}}</time></a
 			>
 			<h2>
 				<a
