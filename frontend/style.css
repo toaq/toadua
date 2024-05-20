@@ -30,7 +30,7 @@ html.dark {
 	--pink: hsl(330deg, 100%, 73%);
 	--text-color: hsl(330deg, 25%, 90%);
 	--cancel-color: hsl(330deg, 25%, 90%);
-	--placeholder-color: hsl(330deg, 0%, 65%);
+	--placeholder-color: hsl(330deg, 50%, 75%);
 	--page-color: hsl(0deg, 0%, 12%);
 	--card-color: hsl(330deg, 30%, 30%);
 	--card-border-color: hsl(330deg, 50%, 60%);
