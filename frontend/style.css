@@ -225,7 +225,7 @@ textarea {
 	opacity: 1;
 }
 
-input[type='text']#scope {
+#create input[type='text']#scope {
 	width: unset;
 	min-width: unset;
 	max-width: unset;
