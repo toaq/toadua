@@ -8,7 +8,6 @@ html {
 
 	--pink: hsl(330deg, 87.5%, 50%);
 	--text-color: hsl(0deg, 0%, 25%);
-	--cancel-color: hsl(210deg, 87.5%, 50%);
 	--placeholder-color: hsl(330deg, 50%, 75%);
 	--page-color: hsl(330deg, 50%, 97%);
 	--card-color: white;
@@ -29,7 +28,6 @@ html {
 html.dark {
 	--pink: hsl(330deg, 100%, 73%);
 	--text-color: hsl(330deg, 25%, 90%);
-	--cancel-color: hsl(330deg, 25%, 90%);
 	--placeholder-color: hsl(330deg, 50%, 75%);
 	--page-color: hsl(0deg, 0%, 12%);
 	--card-color: hsl(330deg, 30%, 30%);
@@ -96,7 +94,7 @@ input[type='button'].vote-button {
 	position: absolute;
 	top: 0;
 	right: 0;
-	color: var(--cancel-color);
+	color: var(--search-placeholder-color);
 }
 
 #cancel:hover {
@@ -227,7 +225,7 @@ textarea {
 	opacity: 1;
 }
 
-#create #scope-editor input[type='text']#scope {
+input[type='text']#scope {
 	width: unset;
 	min-width: unset;
 	max-width: unset;
@@ -411,10 +409,6 @@ h2,
 h3 {
 	font-family: var(--heading-font);
 	font-weight: 300;
-}
-
-h2 {
-	font-size: 24px;
 }
 
 a {
