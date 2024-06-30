@@ -28,7 +28,7 @@ export function log(...args: any[]): void {
 export function deburr(s: string): string[] {
 	return s
 		.normalize('NFD')
-		.replace(/\p{M}+/gu, '')
+		.replace(/\p{M}+|-/gu, '')
 		.replace(/[ʼ‘’]/g, "'")
 		.split(/(?:(?!['-])\P{L})+/gu)
 		.map(_ => _.toLowerCase().replace(/ı/g, 'i'))
