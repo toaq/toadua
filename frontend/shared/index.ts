@@ -35,6 +35,13 @@ export function convert_hue(h: number, theme?: string): Color {
 	};
 }
 
+/**
+ * Normalize Toaq text, e.g. turn `Vyadi hoi2 pai2` into `Ꝡadı hóı páı`.
+ *
+ * Beware! When Toadua starts up, this function gets called on everything in the
+ * database (see modules/housekeep.ts). Changing its behavior might cause
+ * widespread destruction.
+ */
 export function normalize(s: string, trim?: boolean): string {
 	if (trim === undefined) trim = true;
 	let suffix = trim ? '' : s.match(/\s*$/)[0];
@@ -45,7 +52,7 @@ export function normalize(s: string, trim?: boolean): string {
 			.map(w =>
 				w
 					.replace(
-						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])q?)([0-8]*)(?=(-.)?)/gi,
+						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])(?:q|m(?![aeiou]))?)([0-8]*)(?=(-.)?)/gi,
 						(
 							_,
 							_apo,
