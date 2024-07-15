@@ -258,9 +258,9 @@ function bare_terms(o: any[]) {
 	}
 }
 
-type Order = (e: CachedEntry, deburrs: string[]) => number;
+type Order = (e: CachedEntry, deburrs: string[], bares: string[]) => number;
 
-const default_ordering: Order = (e, deburrs) => {
+const default_ordering: Order = (e, deburrs, bares) => {
 	const official = e.$.user === 'official' ? 1 : 0;
 	const pos = Math.max(0, e.score);
 	const neg = Math.max(0, -e.score);
@@ -281,6 +281,9 @@ const default_ordering: Order = (e, deburrs) => {
 	const exact = deburrMatch(deburrs, e.head, MatchMode.Exact);
 	if (exact > 0 && exact === e.head.length) points += 69.4201337;
 
+	// Bonus points for "typographically exact" (no deburring required) matches:
+	if (bares.includes(e.$.head)) points += 30;
+
 	return voteMultiplier * points;
 };
 
@@ -298,8 +301,8 @@ function interpret_ordering(
 	preferred_scope_bias: number | undefined,
 ): Order {
 	const base_order = base_orders.get(ordering) ?? default_ordering;
-	return (e, deburrs) =>
-		base_order(e, deburrs) +
+	return (e, deburrs, bares) =>
+		base_order(e, deburrs, bares) +
 		+(e.$.scope === preferred_scope) * (preferred_scope_bias || 0);
 }
 
@@ -332,13 +335,13 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		// No limit: in this case it's best to filter everything, then sort
 		results = cache
 			.filter(filter)
-			.map(e => [e, ordering(e, deburrs)] as [CachedEntry, number])
+			.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, number])
 			.sort((e1, e2) => e2[1] - e1[1]);
 	} else {
 		// In case a limit is given, use a heap to extract the first n matching
 		// entries rather than sorting what would often be the entire dictionary
 		const heap = new Heap(
-			cache.map(e => [e, ordering(e, deburrs)] as [CachedEntry, number]),
+			cache.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, number]),
 			(e1, e2) => e2[1] - e1[1],
 		);
 
