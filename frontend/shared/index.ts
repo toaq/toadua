@@ -169,7 +169,7 @@ export function replacements(
 			replacement = all;
 		}
 		accum.push(replacement);
-		let catchUp: RegExpMatchArray;
+		let catchUp: RegExpExecArray;
 		while ((catchUp = matches.shift())) {
 			if (catchUp.index >= i) {
 				matches.unshift(catchUp);

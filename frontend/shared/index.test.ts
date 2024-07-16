@@ -1,5 +1,5 @@
 import { test, describe, expect } from 'vitest';
-import { normalize } from './index';
+import { normalize } from './index.js';
 
 describe('normalize', () => {
 	test('it normalizes Toaq text', () => {
