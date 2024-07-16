@@ -2,11 +2,10 @@
 	"compilerOptions": {
 		"outDir": "./dist/",
 		"noImplicitAny": false,
-		"allowSyntheticDefaultImports": true,
 		"module": "esnext",
-		"target": "es2021",
+		"target": "esnext",
 		"allowJs": true,
-		"moduleResolution": "node"
+		"moduleResolution": "bundler"
 	},
 	"include": ["core/**/*", "modules/**/*", "frontend/shared/**/*"]
 }

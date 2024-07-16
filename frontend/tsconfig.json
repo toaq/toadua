@@ -3,9 +3,9 @@
 		"outDir": "./dist/",
 		"noImplicitAny": false,
 		"module": "esnext",
-		"target": "es2021",
+		"target": "esnext",
 		"allowJs": true,
-		"moduleResolution": "node"
+		"moduleResolution": "bundler"
 	},
 	"include": ["./*.ts", "./shared/*.ts"]
 }
