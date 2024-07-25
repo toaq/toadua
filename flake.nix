@@ -33,7 +33,7 @@
           cp -r ${backend}/* ${self}/{config,package.json} $out/libexec/toadua
           cp -r ${frontend} $out/libexec/toadua/frontend
           tee > $out/bin/toadua <<EOF
-            ${pkgs.nodejs_latest}/bin/node $out/libexec/toadua/dist/core/server.js \$@
+            ${pkgs.nodejs_latest}/bin/node --no-warnings=ExperimentalWarning $out/libexec/toadua/dist/core/server.js \$@
           EOF
           chmod +x $out/bin/toadua
         '';

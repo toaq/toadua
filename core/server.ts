@@ -34,7 +34,7 @@ let config = commons.config;
 
 const VERSION = (
 	await import(pathToFileURL(`${installation_dir}/package.json`).href, {
-		assert: { type: 'json' },
+		with: { type: 'json' },
 	})
 ).default.version;
 
