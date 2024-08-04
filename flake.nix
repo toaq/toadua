@@ -74,7 +74,10 @@
                     "--port"
                     (toString port)
                   ]));
-              serviceConfig.WorkingDirectory = dataDir;
+                serviceConfig = {
+                  Restart = "on-failure";
+                  WorkingDirectory = dataDir;
+                };
             };
           };
       }));
