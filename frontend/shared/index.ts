@@ -144,7 +144,7 @@ export function replacements(
 		/([*]{2})(.*?)([*]{2})/g,
 		/()(@[a-zA-Z]+)()/g,
 		/()(#[0-9a-zA-Z_-]+)()/g,
-		/(https?:\/\/)(\S+)()/g,
+		/(https?:\/\/)(\S*[\w\/])()/g,
 	];
 	let matches = starters
 		.flatMap(starter => [...content.matchAll(starter)])
