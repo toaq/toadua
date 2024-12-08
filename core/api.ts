@@ -244,9 +244,10 @@ actions.removenote = guard(
 	(ret, i, uname) => {
 		let word = by_id(i.id);
 		let keep = [];
+		let removed_notes = [];
 		for (const note of word.notes) {
 			if (note.user === uname && note.date === i.date) {
-				emitter.emit('removenote', word, note);
+				removed_notes.push(note);
 			} else {
 				keep.push(note);
 			}
@@ -255,6 +256,9 @@ actions.removenote = guard(
 			return ret(flip('no such note by you'));
 		}
 		word.notes = keep;
+		for (const note of removed_notes) {
+			emitter.emit('removenote', word, note);
+		}
 		ret(good({ entry: present(word, uname) }));
 	},
 );
