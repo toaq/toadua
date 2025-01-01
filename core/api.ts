@@ -25,25 +25,21 @@ export type ApiError = { success: false; error: string };
 export type ApiSuccess = { success: true } & ApiBody;
 export type ApiResponse = ApiError | ApiSuccess;
 
-type ActionFunction = (
-	ret: (response: ApiResponse) => any,
-	i: any,
-	uname?: string,
-) => void;
+type Ret = (response: ApiResponse) => any;
+
+type ActionFunction = (ret: Ret, i: any, uname?: string) => void;
 type Action = ActionFunction & { checks: Record<string, Check> };
 
-// `uname` is used to override the user – a kind of sudo mode
-export function call(
-	i: any,
-	ret: (response: ApiResponse) => any,
-	uname?: string,
-) {
+// `sudoUname` is used to override the user – a kind of sudo mode
+export function call(i: any, baseRet: Ret, sudoUname?: string) {
 	const time = +new Date();
 	const action = actions.hasOwnProperty(i.action) && actions[i.action];
 	if (!action) {
 		console.log(`%% action '${i.action}' unknown`);
-		return ret(flip('unknown action'));
+		return baseRet(flip('unknown action'));
 	}
+	let ret: Ret = baseRet;
+	let uname: string | undefined = sudoUname;
 	if (!uname && 'token' in i && typeof i.token === 'string') {
 		const token = store.pass.tokens[i.token];
 		if (token) {
@@ -73,7 +69,7 @@ export function call(
 			console.log(`${i.action} returned in ${Date.now() - time} ms`);
 			old_ret(data);
 		})(ret);
-		action(ret, i, uname);
+		action(baseRet, i, uname);
 	} catch (e) {
 		console.log(`an error occurred: ${e.stack}`);
 		ret(flip('internal error'));
@@ -95,7 +91,7 @@ function guard(
 	conds: Record<string, Check>,
 	f: ActionFunction,
 ): Action {
-	const res: any = (ret, i: object, uname: string | undefined) => {
+	const res: Action = (ret, i: object, uname: string | undefined) => {
 		if (logged_in && !uname) return ret(flip('must be logged in'));
 		if (conds)
 			for (const [k, v] of Object.entries(conds)) {
@@ -108,7 +104,7 @@ function guard(
 	return res;
 }
 
-const limit = (lim: number) => (i: any) =>
+const limit = (lim: number) => (i: unknown) =>
 	!i || typeof i !== 'string'
 		? 'absent'
 		: i.length <= lim || `too long (max. ${lim} characters)`;

@@ -94,7 +94,7 @@ emitter.emit = function (ev, ...args) {
 // for ever-changing configuration files, etc.
 const FluidConfig = {
 	update(): void {
-		let file;
+		let file: Buffer;
 		try {
 			file = readFileSync(this.fname);
 			this.cache = yaml(file);
