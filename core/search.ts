@@ -221,7 +221,7 @@ search.parse_query = parse_query;
 function parse_query(
 	query,
 ): string | false | ((entry: CachedEntry) => boolean) {
-	if (!(query instanceof Array)) return 'found non-array branch';
+	if (!(Array.isArray(query))) return 'found non-array branch';
 	if (!query.length) return 'found empty array node';
 	query = [...query];
 	const op_name = query.shift();
