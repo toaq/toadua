@@ -242,7 +242,7 @@ export default defineComponent({
 
 		focus_body(): void {
 			setTimeout(() => {
-				let body = document.getElementById('create_body')!;
+				const body = document.getElementById('create_body')!;
 				body.focus();
 			}, 0);
 		},
@@ -259,11 +259,11 @@ export default defineComponent({
 			req.open('POST', 'api', true);
 			if (this && this.token) what.token = this.token;
 			req.send(JSON.stringify(what));
-			let app = this;
+			const app = this;
 			req.onreadystatechange = function () {
 				if (this.readyState === 4 && this.status === 200) {
 					try {
-						let data = JSON.parse(this.responseText);
+						const data = JSON.parse(this.responseText);
 						if (data.success) {
 							setTimeout(() => and(data), 0);
 						} else {
@@ -325,7 +325,7 @@ export default defineComponent({
 				this.scroll_up = true;
 				return;
 			}
-			let parsed_query = this.parse_query();
+			const parsed_query = this.parse_query();
 			if (this.limit_search)
 				parsed_query.query = ['and', ['scope', this.scope], parsed_query.query];
 			parsed_query.action = 'search';
@@ -405,7 +405,7 @@ export default defineComponent({
 		},
 
 		update_entry(whom: Entry, what_with: Partial<Entry>): void {
-			for (let p in what_with)
+			for (const p in what_with)
 				if (Object.hasOwnProperty.call(what_with, p)) whom[p] = what_with[p];
 		},
 
@@ -456,11 +456,11 @@ export default defineComponent({
 		},
 
 		resize(): void {
-			let create = document.getElementById(
+			const create = document.getElementById(
 				'create_body',
 			) as HTMLTextAreaElement;
 			if (!create) return;
-			let clone = create.cloneNode() as HTMLTextAreaElement;
+			const clone = create.cloneNode() as HTMLTextAreaElement;
 			create.parentNode!.insertBefore(clone, create);
 			clone.style.visibility = 'hidden';
 			// clone.style.position = 'absolute';
@@ -478,7 +478,7 @@ export default defineComponent({
 		},
 
 		scrape_cache(): void {
-			let screens =
+			const screens =
 				(document.body.scrollHeight -
 					window.scrollY +
 					document.body.scrollTop) /

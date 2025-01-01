@@ -38,17 +38,17 @@ export function call(
 	ret: (response: ApiResponse) => any,
 	uname?: string,
 ) {
-	let time = +new Date();
-	let action = actions.hasOwnProperty(i.action) && actions[i.action];
+	const time = +new Date();
+	const action = actions.hasOwnProperty(i.action) && actions[i.action];
 	if (!action) {
 		console.log(`%% action '${i.action}' unknown`);
 		return ret(flip('unknown action'));
 	}
 	if (!uname && 'token' in i && typeof i.token === 'string') {
-		let token = store.pass.tokens[i.token];
+		const token = store.pass.tokens[i.token];
 		if (token) {
 			uname = token.name;
-			let now = +new Date();
+			const now = +new Date();
 			if (now > token.last + config().token_expiry) {
 				delete store.pass.tokens[i.token];
 				ret = (old_ret => data => {
@@ -59,7 +59,7 @@ export function call(
 			} else store.pass.tokens[i.token].last = now;
 		}
 	}
-	let entries = Object.entries(i)
+	const entries = Object.entries(i)
 		.filter(
 			([k, v]) =>
 				Object.keys({ ...(action.checks || {}), uname: uname }).includes(k) &&
@@ -83,7 +83,7 @@ export function call(
 if (!store.db) store.db = { entries: [] };
 if (!store.pass) store.pass = { hashes: {}, tokens: {} };
 
-let actions: Record<string, Action> = {};
+const actions: Record<string, Action> = {};
 
 const flip = (e: string): ApiError => ({ success: false, error: e });
 const good = (d?: ApiBody): ApiResponse => ({ success: true, ...d });
@@ -95,11 +95,11 @@ function guard(
 	conds: Record<string, Check>,
 	f: ActionFunction,
 ): Action {
-	let res: any = (ret, i: object, uname: string | undefined) => {
+	const res: any = (ret, i: object, uname: string | undefined) => {
 		if (logged_in && !uname) return ret(flip('must be logged in'));
 		if (conds)
-			for (let [k, v] of Object.entries(conds)) {
-				let err = v(i[k]);
+			for (const [k, v] of Object.entries(conds)) {
+				const err = v(i[k]);
 				if (err !== true) return ret(flip(`invalid field '${k}'${`: ${err}`}`));
 			}
 		f(ret, i, uname);
@@ -164,7 +164,7 @@ actions.search = guard(
 		preferred_scope_bias: checks.optional(checks.number),
 	},
 	(ret, i, uname) => {
-		let data = search.search(i, uname);
+		const data = search.search(i, uname);
 		if (typeof data === 'string') ret(flip(data));
 		else ret(good({ results: data }));
 	},
@@ -181,8 +181,8 @@ actions.vote = guard(
 		vote: _ => [-1, 0, 1].includes(_) || 'invalid vote',
 	},
 	(ret, i, uname) => {
-		let e = by_id(i.id);
-		let old_vote = e.votes[uname] || 0;
+		const e = by_id(i.id);
+		const old_vote = e.votes[uname] || 0;
 		e.votes[uname] = i.vote;
 		e.score += i.vote - old_vote;
 		ret(good({ entry: present(e, uname) }));
@@ -197,8 +197,8 @@ actions.note = guard(
 		content: checks.nobomb,
 	},
 	(ret, i, uname) => {
-		let word = by_id(i.id);
-		let this_note = {
+		const word = by_id(i.id);
+		const this_note = {
 			date: new Date().toISOString(),
 			user: uname,
 			content: replacements(i.content),
@@ -217,7 +217,7 @@ actions.edit = guard(
 		scope: checks.scope,
 	},
 	(ret, i, uname) => {
-		let word = by_id(i.id);
+		const word = by_id(i.id);
 		if (word.user !== uname) {
 			return ret(flip('you are not the owner of this entry'));
 		}
@@ -242,9 +242,9 @@ actions.removenote = guard(
 		date: checks.present,
 	},
 	(ret, i, uname) => {
-		let word = by_id(i.id);
-		let keep = [];
-		let removed_notes = [];
+		const word = by_id(i.id);
+		const keep = [];
+		const removed_notes = [];
 		for (const note of word.notes) {
 			if (note.user === uname && note.date === i.date) {
 				removed_notes.push(note);
@@ -274,8 +274,8 @@ actions.create = guard(
 		scope: checks.scope,
 	},
 	(ret, i, uname) => {
-		let id = shortid.generate();
-		let this_entry: Entry = {
+		const id = shortid.generate();
+		const this_entry: Entry = {
 			id,
 			date: new Date().toISOString(),
 			head: shared.normalize(i.head),
@@ -299,7 +299,7 @@ actions.login = guard(
 		pass: checks.present,
 	},
 	(ret, i) => {
-		let expected = store.pass.hashes[i.name];
+		const expected = store.pass.hashes[i.name];
 		if (!expected) return ret(flip('user not registered'));
 		if (bcrypt.compareSync(i.pass, expected)) {
 			var token = uuid.v4();
@@ -339,8 +339,8 @@ actions.remove = guard(
 		id: checks.goodid,
 	},
 	(ret, i, uname) => {
-		let index = index_of(i.id);
-		let entry = store.db.entries[index];
+		const index = index_of(i.id);
+		const entry = store.db.entries[index];
 		if (entry.user !== uname)
 			return ret(flip('you are not the owner of this entry'));
 		store.db.entries.splice(index, 1);

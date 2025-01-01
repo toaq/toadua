@@ -10,12 +10,12 @@ import { EventEmitter } from 'events';
 const old_log = console.log;
 
 export function log(...args: any[]): void {
-	let date = new Date()
+	const date = new Date()
 		.toISOString()
 		.replace(/[:-]/g, '')
 		.replace('T', '.')
 		.substring(4, 15);
-	let message = Array.from(args)
+	const message = Array.from(args)
 		.join(' ')
 		// padding the message so that it doesn't interfere
 		// with the timestamp column:
@@ -52,26 +52,26 @@ export function deburrMatch(
 		(a: string, b: string) => a == b,
 	][mode];
 	let count = 0;
-	for (let w of what) if (where.some(y => predicate(w, y))) count++;
+	for (const w of what) if (where.some(y => predicate(w, y))) count++;
 	return count;
 }
 
 const real_setInterval = global.setInterval;
 const real_clearInterval = global.clearInterval;
 
-let interval_cache = [];
+const interval_cache = [];
 export function setInterval(
 	callback: (...args: any[]) => void,
 	ms?: number,
 ): NodeJS.Timer {
-	let this_one = real_setInterval(callback, ms).unref();
+	const this_one = real_setInterval(callback, ms).unref();
 	interval_cache.push(this_one);
 	return this_one;
 }
 
 export function clearInterval(i: string | number | NodeJS.Timeout): void {
 	real_clearInterval(i);
-	let index = interval_cache.indexOf(i);
+	const index = interval_cache.indexOf(i);
 	if (index !== -1) interval_cache.splice(index, 1);
 }
 
@@ -111,7 +111,7 @@ const FluidConfig = {
 };
 Object.setPrototypeOf(FluidConfig, new EventEmitter());
 export function fluid_config(fname: string) {
-	let f: any = () => {
+	const f: any = () => {
 		return f.cache;
 	};
 	f.fname = fname;
@@ -127,7 +127,7 @@ const MAIN_CONFIG = 'config/config.yml',
 	__dirname = dirname(fileURLToPath(import.meta.url)),
 	DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
 // initialise the global config file
-let main_config = fluid_config(MAIN_CONFIG),
+const main_config = fluid_config(MAIN_CONFIG),
 	default_config = yaml(readFileSync(DEFAULT_CONFIG));
 
 export const config: any = () => ({ ...default_config, ...main_config() });

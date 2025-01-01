@@ -7,7 +7,7 @@ import * as api from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 
-let { store } = commons;
+const { store } = commons;
 
 import request from 'request-promise-native';
 const config = commons.fluid_config('config/sources.yml');
@@ -45,7 +45,7 @@ const FORMATS = {
 };
 
 // Word list cache.
-let word_lists = {};
+const word_lists = {};
 
 // poll for new entries at remote TSV spreadsheets and add them to the
 // dictionary every now and then
@@ -60,7 +60,7 @@ export async function sync_resources() {
 				try {
 					data = await request.get(source);
 					console.log(`updating resource '${name}'`);
-					let word_list = Object.fromEntries(
+					const word_list = Object.fromEntries(
 						FORMATS[format](data, rest)
 							.filter(_ => _.head && _.body)
 							.map(_ => [shared.normalize(_.head), api.replacements(_.body)]),
@@ -85,10 +85,10 @@ export async function sync_resources() {
 		return;
 	}
 	console.log('adding...');
-	for (let [name, words] of Object.entries(word_lists)) {
-		let user = cf[name].user;
-		for (let [head, body] of Object.entries(words)) {
-			let s = search.search({
+	for (const [name, words] of Object.entries(word_lists)) {
+		const user = cf[name].user;
+		for (const [head, body] of Object.entries(words)) {
+			const s = search.search({
 				query: [
 					'and',
 					['user_raw', user],
@@ -112,12 +112,12 @@ export async function sync_resources() {
 		}
 	}
 
-	let messages: Record<string, any> = {};
+	const messages: Record<string, any> = {};
 	if (Object.keys(word_lists).length === Object.keys(cf).length) {
 		console.log('obsoleting...');
-		let unames = new Set(Object.values(cf).map(_ => _.user));
+		const unames = new Set(Object.values(cf).map(_ => _.user));
 		// ...I do have the right to write messy code, don't I?
-		let fetched = Object.fromEntries(
+		const fetched = Object.fromEntries(
 			[...unames].map(uname => [
 				uname,
 				Object.fromEntries(
@@ -132,7 +132,7 @@ export async function sync_resources() {
 		store.db.entries
 			.filter(e => unames.has(e.user))
 			.forEach(e => {
-				let found = fetched[e.user][e.head];
+				const found = fetched[e.user][e.head];
 				if (found && found === e.body) return;
 				// we need to re-find the entry because `search` makes
 				// copies on output
@@ -152,7 +152,7 @@ export async function sync_resources() {
 
 	search.recache();
 
-	for (let [user, msgs] of Object.entries(messages)) {
+	for (const [user, msgs] of Object.entries(messages)) {
 		if (msgs.length > 5)
 			announce.message({
 				title: `${msgs.length} definitions obsoleted for user *${user}*`,
@@ -164,7 +164,7 @@ export async function sync_resources() {
 					(msgs.length > 50 ? `, and ${msgs.length - 50} more` : ''),
 			});
 		else
-			for (let { title, description, url } of msgs)
+			for (const { title, description, url } of msgs)
 				announce.message({ title, description, url });
 	}
 

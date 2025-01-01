@@ -88,7 +88,7 @@ export function message(what: WebhookEmbed) {
 function send_off() {
 	if (!queue.length) return;
 	if (queue.length > 10) {
-		let top = queue[0];
+		const top = queue[0];
 		if (top?.body?.embeds?.[0]?.title) {
 			top.body.embeds[0].title =
 				trim(200, top.body.embeds[0].title) +

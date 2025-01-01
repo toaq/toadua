@@ -52,9 +52,9 @@ export interface PresentedEntry extends Omit<Entry, 'votes'> {
 
 // compute a few fields for faster processing
 export function cacheify(e: Entry): CachedEntry {
-	let deburredHead = deburr(e.head);
-	let deburredBody = deburr(e.body);
-	let deburredNotes = e.notes.flatMap(({ content }) => deburr(content));
+	const deburredHead = deburr(e.head);
+	const deburredBody = deburr(e.body);
+	const deburredNotes = e.notes.flatMap(({ content }) => deburr(content));
 	return {
 		$: e,
 		id: e.id,
@@ -88,7 +88,7 @@ export function score(entry: Entry): number {
 
 emitter.on('remove', (_, entry) => cache.splice(cached_index(entry.id), 1));
 emitter.on('create', (_, entry) => cache.push(cacheify(entry)));
-for (let k of ['vote', 'note', 'removenote', 'edit', 'move'])
+for (const k of ['vote', 'note', 'removenote', 'edit', 'move'])
 	emitter.on(k, (_, entry) =>
 		cache.splice(cached_index(entry.id), 1, cacheify(entry)),
 	);
@@ -113,12 +113,12 @@ interface Operation {
 	build: (args: any[]) => (entry: CachedEntry) => boolean;
 }
 
-let operations: Record<string, Operation> = (search.operations = {
+const operations: Record<string, Operation> = (search.operations = {
 	and: {
 		type: OperationType.Functor,
 		check: all_funcs,
 		build: args => entry => {
-			for (let a of args) if (!a(entry)) return false;
+			for (const a of args) if (!a(entry)) return false;
 			return true;
 		},
 	},
@@ -126,7 +126,7 @@ let operations: Record<string, Operation> = (search.operations = {
 		type: OperationType.Functor,
 		check: all_funcs,
 		build: args => entry => {
-			for (let a of args) if (a(entry)) return true;
+			for (const a of args) if (a(entry)) return true;
 			return false;
 		},
 	},
@@ -153,8 +153,8 @@ let operations: Record<string, Operation> = (search.operations = {
 		type: OperationType.Textual,
 		check: one_string,
 		build: ([s]) => {
-			let deburred = deburr(s);
-			let deburredW = deburred.some(x => /vy?|w|y/.test(x))
+			const deburred = deburr(s);
+			const deburredW = deburred.some(x => /vy?|w|y/.test(x))
 				? deburred.map(x => x.replace(/vy?|w|y/g, 'ꝡ'))
 				: undefined;
 			return entry =>
@@ -167,7 +167,7 @@ let operations: Record<string, Operation> = (search.operations = {
 	},
 });
 
-for (let trait of RE_TRAITS) {
+for (const trait of RE_TRAITS) {
 	operations[trait] = {
 		type: OperationType.Other,
 		check: one_string,
@@ -203,7 +203,7 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 				.replace(/V\\\+/g, 'V+')
 				.replace(/V/g, '[aeıiouy]');
 
-		let regexp = new RegExp(`^${s}\$`, 'iu');
+		const regexp = new RegExp(`^${s}\$`, 'iu');
 		return entry => regexp.test(String(entry.$[trait]));
 	} catch (_) {
 		return entry => s === String(entry.$[trait]);
@@ -224,22 +224,22 @@ function parse_query(
 	if (!(query instanceof Array)) return 'found non-array branch';
 	if (!query.length) return 'found empty array node';
 	query = [...query];
-	let op_name = query.shift();
-	let op =
+	const op_name = query.shift();
+	const op =
 		Object.hasOwnProperty.call(operations, op_name) && operations[op_name];
 	if (!op) return `unknown operation ${op_name}`;
 	let args;
 	try {
 		args = query.map(arg => {
 			if (typeof arg !== 'object') return arg;
-			let might_be_it = parse_query(arg);
+			const might_be_it = parse_query(arg);
 			if (typeof might_be_it === 'string') throw might_be_it;
 			return might_be_it;
 		});
 	} catch (e) {
 		return e;
 	}
-	let check = op.check(args);
+	const check = op.check(args);
 	if (check !== true) return check;
 	return op.build(args);
 }
@@ -247,7 +247,7 @@ function parse_query(
 search.bare_terms = bare_terms;
 function bare_terms(o: any[]) {
 	// `o` must be instanceof Array.
-	let op = operations[o[0]];
+	const op = operations[o[0]];
 	switch (op.type) {
 		case OperationType.Textual:
 			return [o[1]];
@@ -319,9 +319,9 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		query = parsed.query;
 		requested_ordering ??= parsed.ordering;
 	}
-	let filter = parse_query(query);
+	const filter = parse_query(query);
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
-	let bares = bare_terms(query),
+	const bares = bare_terms(query),
 		deburrs = bares.map(deburr).flat();
 
 	const ordering = interpret_ordering(
@@ -352,6 +352,8 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		}
 	}
 
-	let presented = results.map(([e, relevance]) => present(e, uname, relevance));
+	const presented = results.map(([e, relevance]) =>
+		present(e, uname, relevance),
+	);
 	return presented;
 }

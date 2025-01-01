@@ -8,7 +8,7 @@ var options: any = {};
 
 export function remove_obsoleted(_, { score, user, id, head }, voter) {
 	if (!options) return;
-	let { users, vote_threshold } = options;
+	const { users, vote_threshold } = options;
 	if ((users && !users.includes(user)) || score > vote_threshold)
 		// || user == voter)
 		return;

@@ -21,16 +21,16 @@ argparser.add_argument('-p', '--port', {
 	help: 'Bind port',
 	type: 'int',
 });
-let args = argparser.parse_args();
+const args = argparser.parse_args();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const installation_dir = `${__dirname}/../..`;
-let dir = args.data_directory
+const dir = args.data_directory
 	? fs.realpathSync(args.data_directory)
 	: installation_dir;
 process.chdir(dir);
 import * as commons from './commons.js';
 
-let config = commons.config;
+const config = commons.config;
 
 const VERSION = (
 	await import(pathToFileURL(`${installation_dir}/package.json`).href, {
@@ -43,7 +43,7 @@ console.log(`starting up v${VERSION}...`);
 import * as http from 'http';
 import * as api from './api.js';
 
-let fourohfour = static_handler('frontend/404.html', 'text/html', 404),
+const fourohfour = static_handler('frontend/404.html', 'text/html', 404),
 	routes = {
 		'/api': api_handler,
 		'/': static_handler('frontend/index.html', 'text/html'),
@@ -114,12 +114,12 @@ function api_handler(r, s) {
 }
 
 function static_handler(fn: string, mime: string, code?: number) {
-	let fname = `${installation_dir}/${fn}`;
+	const fname = `${installation_dir}/${fn}`;
 	code = code || 200;
 	let f = fs.readFileSync(fname);
-	let t = fs.statSync(fname).mtimeMs;
+	const t = fs.statSync(fname).mtimeMs;
 	return function static_handler(r, s) {
-		let t_ = fs.statSync(fname).mtimeMs;
+		const t_ = fs.statSync(fname).mtimeMs;
 		if (t_ > t) {
 			console.log(
 				`file '${fname}' has been reloaded (${f.length}b; mtime ${t_} > ${t})`,
@@ -134,12 +134,12 @@ function static_handler(fn: string, mime: string, code?: number) {
 }
 
 function handler(r, s_) {
-	let time = +new Date();
-	let url = new URL(r.url, config().entry_point);
-	let handler = routes.hasOwnProperty(url.pathname)
+	const time = +new Date();
+	const url = new URL(r.url, config().entry_point);
+	const handler = routes.hasOwnProperty(url.pathname)
 		? routes[url.pathname]
 		: fourohfour;
-	let s = {
+	const s = {
 		writeHead(code, headers?) {
 			if (code !== 200)
 				console.log(
@@ -149,7 +149,7 @@ function handler(r, s_) {
 			return this;
 		},
 		write(what) {
-			let w = what instanceof Buffer ? what : Buffer.from(what);
+			const w = what instanceof Buffer ? what : Buffer.from(what);
 			console.log(`sent off ${w.length}b`);
 			return s_.write(w);
 		},
@@ -160,7 +160,7 @@ function handler(r, s_) {
 		},
 	};
 	Object.setPrototypeOf(s, s_);
-	let { address, port } = r.socket.address();
+	const { address, port } = r.socket.address();
 	console.log(`${r.url} ${address}:${port} -> ${handler.name}`);
 	try {
 		handler(r, s, url);
@@ -176,7 +176,7 @@ function handler(r, s_) {
 	}
 }
 
-let modules: Record<string, any> = {};
+const modules: Record<string, any> = {};
 await config_update(config());
 config.on('update', config_update);
 
@@ -193,8 +193,8 @@ async function config_update(data) {
 			}
 		}
 	}
-	for (let path in modules) {
-		let new_options = data.modules[path];
+	for (const path in modules) {
+		const new_options = data.modules[path];
 		// note that when an entry in the module table is removed,
 		// `new_options === undefined`. this is all right
 		if (JSON.stringify(new_options) !== JSON.stringify(modules[path].options)) {
@@ -220,7 +220,7 @@ server.on('connection', conn => {
 });
 
 const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP', 'uncaughtException'];
-for (let s of SIGNALS) process.once(s, bye);
+for (const s of SIGNALS) process.once(s, bye);
 
 function bye(error) {
 	if (error.stack) console.log(`uncaught exception: ${error.stack}`);
