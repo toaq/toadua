@@ -315,12 +315,12 @@ actions.register = guard(
 	},
 	(ret, i) => {
 		return ret(flip('registrations are temporarily disabled'));
-		if (store.pass.hashes[i.name]) return ret(flip('already registered'));
-		store.pass.hashes[i.name] = bcrypt.hashSync(
-			i.pass,
-			config().password_rounds,
-		);
-		actions.login(ret, { name: i.name, pass: i.pass });
+		// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
+		// store.pass.hashes[i.name] = bcrypt.hashSync(
+		// 	i.pass,
+		// 	config().password_rounds,
+		// );
+		// actions.login(ret, { name: i.name, pass: i.pass });
 	},
 );
 
