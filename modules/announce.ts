@@ -117,9 +117,9 @@ function send_off() {
 	);
 }
 
-var enabled: boolean;
-var options: { enabled: boolean; hook: string };
-var queue: request.Options[] = [];
+let enabled: boolean;
+let options: { enabled: boolean; hook: string };
+const queue: request.Options[] = [];
 export function state_change() {
 	if (enabled !== (options = this ?? {}).enabled)
 		for (const ev of event_types)

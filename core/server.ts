@@ -209,7 +209,7 @@ async function config_update(data) {
 	}
 }
 
-var server = http.createServer(handler),
+const server = http.createServer(handler),
 	connections = [];
 
 server.on('connection', conn => {

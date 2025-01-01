@@ -71,7 +71,7 @@ function write_(fname, data, guard_override) {
 	return true;
 }
 
-export var using: any = {};
+export const using: any = {};
 
 export function write(fname, data, guard_override?: any) {
 	if (using[fname])

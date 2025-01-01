@@ -80,7 +80,7 @@ export function clearAllIntervals(): void {
 	interval_cache.length = 0;
 }
 
-var emitter = new EventEmitter();
+const emitter = new EventEmitter();
 emitter.setMaxListeners(Infinity);
 const _emitter = emitter;
 export { _emitter as emitter };
@@ -188,4 +188,4 @@ export interface Store {
 }
 
 // a store for stuff and things
-export var store: Store = {};
+export const store: Store = {};

@@ -171,7 +171,7 @@ export async function sync_resources() {
 	console.log(`updating done (${Date.now() - time} ms)`);
 }
 
-var interval, options;
+let interval, options;
 export function state_change() {
 	if (interval) {
 		commons.clearInterval(interval);

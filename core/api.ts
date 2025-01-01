@@ -302,7 +302,7 @@ actions.login = guard(
 		const expected = store.pass.hashes[i.name];
 		if (!expected) return ret(flip('user not registered'));
 		if (bcrypt.compareSync(i.pass, expected)) {
-			var token = uuid.v4();
+			const token = uuid.v4();
 			store.pass.tokens[token] = { name: i.name, last: +new Date() };
 			ret(good({ token }));
 		} else ret(flip("password doesn't match"));

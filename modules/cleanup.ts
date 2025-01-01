@@ -4,7 +4,7 @@
 import * as commons from '../core/commons.js';
 import * as api from '../core/api.js';
 
-var options: any = {};
+let options: any = {};
 
 export function remove_obsoleted(_, { score, user, id, head }, voter) {
 	if (!options) return;

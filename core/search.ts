@@ -14,7 +14,7 @@ import {
 } from './commons.js';
 
 // keep an own cache for entries
-var cache: CachedEntry[] = [];
+let cache: CachedEntry[] = [];
 
 const RE_TRAITS = [
 	'id',
@@ -30,7 +30,7 @@ type Trait = (typeof RE_TRAITS)[number];
 type ReCache = Record<Trait, Record<string, (entry: CachedEntry) => boolean>>;
 const empty_re_cache = () =>
 	Object.fromEntries(RE_TRAITS.map(trait => [trait, {}])) as ReCache;
-var re_cache: ReCache = empty_re_cache();
+let re_cache: ReCache = empty_re_cache();
 
 interface CachedEntry {
 	$: Entry;
@@ -221,7 +221,7 @@ search.parse_query = parse_query;
 function parse_query(
 	query,
 ): string | false | ((entry: CachedEntry) => boolean) {
-	if (!(Array.isArray(query))) return 'found non-array branch';
+	if (!Array.isArray(query)) return 'found non-array branch';
 	if (!query.length) return 'found empty array node';
 	query = [...query];
 	const op_name = query.shift();
