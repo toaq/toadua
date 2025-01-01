@@ -114,9 +114,8 @@ function api_handler(r, s) {
 	}
 }
 
-function static_handler(fn: string, mime: string, code?: number) {
+function static_handler(fn: string, mime: string, code = 200) {
 	const fname = `${installation_dir}/${fn}`;
-	code = code || 200;
 	let f = fs.readFileSync(fname);
 	const t = fs.statSync(fname).mtimeMs;
 	return function static_handler(r, s) {

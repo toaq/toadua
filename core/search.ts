@@ -191,19 +191,19 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 	try {
 		if (!(is_morphological(trait) ? /[?*CV]/ : /[?*]/).test(s)) throw null;
 
-		s = s
+		let source = s
 			.replace(/[\[\]{}()+.\\^$|]/g, '\\$&')
 			.replace(/\*+/g, '.*')
 			.replace(/\?/g, '.')
 			.replace(/i/g, '[ıi]');
 
 		if (is_morphological(trait))
-			s = s
+			source = source
 				.replace(/C/g, "(?:[bcdfghjklmnprstꝡz']|ch|sh|nh)")
 				.replace(/V\\\+/g, 'V+')
 				.replace(/V/g, '[aeıiouy]');
 
-		const regexp = new RegExp(`^${s}\$`, 'iu');
+		const regexp = new RegExp(`^${source}\$`, 'iu');
 		return entry => regexp.test(String(entry.$[trait]));
 	} catch (_) {
 		return entry => s === String(entry.$[trait]);
@@ -219,11 +219,11 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 // for anybody asking: yes, this is basically a kind of Lisp
 search.parse_query = parse_query;
 function parse_query(
-	query,
+	queryObject: any,
 ): string | false | ((entry: CachedEntry) => boolean) {
-	if (!Array.isArray(query)) return 'found non-array branch';
-	if (!query.length) return 'found empty array node';
-	query = [...query];
+	if (!Array.isArray(queryObject)) return 'found non-array branch';
+	if (!queryObject.length) return 'found empty array node';
+	const query = [...queryObject];
 	const op_name = query.shift();
 	const op =
 		Object.hasOwnProperty.call(operations, op_name) && operations[op_name];
