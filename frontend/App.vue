@@ -242,8 +242,7 @@ export default defineComponent({
 
 		focus_body(): void {
 			setTimeout(() => {
-				const body = document.getElementById('create_body')!;
-				body.focus();
+				document.getElementById('create_body')?.focus();
 			}, 0);
 		},
 
@@ -461,7 +460,7 @@ export default defineComponent({
 			) as HTMLTextAreaElement;
 			if (!create) return;
 			const clone = create.cloneNode() as HTMLTextAreaElement;
-			create.parentNode!.insertBefore(clone, create);
+			create.parentNode?.insertBefore(clone, create);
 			clone.style.visibility = 'hidden';
 			// clone.style.position = 'absolute';
 			clone.style.height = 'auto';
@@ -469,8 +468,8 @@ export default defineComponent({
 			clone.value = create.value;
 			let u = clone.scrollTop + clone.scrollHeight;
 			if (u > 40) u += 1;
-			create.style.height = u + 'px';
-			clone.parentNode!.removeChild(clone);
+			create.style.height = `${u}px`;
+			clone.parentNode?.removeChild(clone);
 		},
 
 		focus_search(): void {
