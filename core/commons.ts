@@ -83,7 +83,7 @@ export function clearAllIntervals(): void {
 }
 
 const emitter = new EventEmitter();
-emitter.setMaxListeners(Infinity);
+emitter.setMaxListeners(Number.POSITIVE_INFINITY);
 const _emitter = emitter;
 export { _emitter as emitter };
 emitter.emit = function (ev, ...args) {
@@ -109,7 +109,7 @@ const FluidConfig = {
 		log(`updating fluid_config '${this.fname}' (${file.length}b read)`);
 		this.emit('update', this.cache);
 	},
-	_maxListeners: Infinity,
+	_maxListeners: Number.POSITIVE_INFINITY,
 };
 Object.setPrototypeOf(FluidConfig, new EventEmitter());
 export function fluid_config(fname: string) {
