@@ -2,7 +2,7 @@
 // tamper with the database store
 
 import * as commons from '../core/commons.js';
-import { Token } from '../core/commons.js';
+import type { Token } from '../core/commons.js';
 import * as search from '../core/search.js';
 import * as shared from '../frontend/shared/index.js';
 const { store, config } = commons;

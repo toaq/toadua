@@ -4,7 +4,7 @@
 import * as commons from '../core/commons.js';
 
 import request from 'request-promise-native';
-import { Entry, Note } from '../core/commons.js';
+import type { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
 
 const event_types = [

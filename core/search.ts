@@ -10,7 +10,7 @@ import {
 	config,
 	store,
 	MatchMode,
-	Entry,
+	type Entry,
 } from './commons.js';
 
 // keep an own cache for entries

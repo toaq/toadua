@@ -229,7 +229,7 @@ import { defineComponent } from 'vue';
 import Result from './Result.vue';
 import package_info from './package.json';
 import * as shared from './shared/index';
-import { Entry } from './shared/index';
+import type { Entry } from './shared/index';
 const version = package_info.version;
 
 export default defineComponent({

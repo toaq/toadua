@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Entry } from './shared/index';
+import type { Entry } from './shared/index';
 
 defineProps<{
 	result: Entry;
