@@ -125,12 +125,12 @@ export function fluid_config(fname: string) {
 	return f;
 }
 
-const MAIN_CONFIG = 'config/config.yml',
-	__dirname = dirname(fileURLToPath(import.meta.url)),
-	DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
+const MAIN_CONFIG = 'config/config.yml';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
 // initialise the global config file
-const main_config = fluid_config(MAIN_CONFIG),
-	default_config = yaml(readFileSync(DEFAULT_CONFIG));
+const main_config = fluid_config(MAIN_CONFIG);
+const default_config = yaml(readFileSync(DEFAULT_CONFIG));
 
 export const config: any = () => ({ ...default_config, ...main_config() });
 

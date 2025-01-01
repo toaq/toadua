@@ -28,10 +28,10 @@ export function read(fname, deft) {
 
 function write_(fname, data, guard_override) {
 	const gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
-	let backup = fname + '~',
-		our_size = gzip.length,
-		success = false,
-		unbackup = true;
+	const backup = fname + '~';
+	const our_size = gzip.length;
+	let success = false;
+	let unbackup = true;
 	if (!guard_override)
 		try {
 			const { size: old_size } = fs.statSync(fname);
@@ -116,8 +116,8 @@ export function save() {
 }
 
 const acts = { save_interval: save, backup_interval: backup };
-let first_go = true,
-	intervals = {};
+let first_go = true;
+const intervals = {};
 export function state_change() {
 	for (const k of Object.keys(acts)) {
 		if (intervals[k]) commons.clearInterval(intervals[k]);

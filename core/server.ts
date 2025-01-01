@@ -44,25 +44,25 @@ import * as http from 'node:http';
 import * as api from './api.js';
 import { Socket } from 'node:net';
 
-const fourohfour = static_handler('frontend/404.html', 'text/html', 404),
-	routes = {
-		'/api': api_handler,
-		'/': static_handler('frontend/index.html', 'text/html'),
-		'/style.css': static_handler('frontend/style.css', 'text/css'),
-		'/frontend.js': static_handler(
-			'frontend/dist/bundle.js',
-			'application/javascript',
-		),
-		'/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
-		'/site.webmanifest': static_handler(
-			'frontend/site.webmanifest',
-			'application/json',
-		),
-		'/.well-known/assetlinks.json': static_handler(
-			'frontend/assetlinks.json',
-			'application/json',
-		),
-	};
+const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
+const routes = {
+	'/api': api_handler,
+	'/': static_handler('frontend/index.html', 'text/html'),
+	'/style.css': static_handler('frontend/style.css', 'text/css'),
+	'/frontend.js': static_handler(
+		'frontend/dist/bundle.js',
+		'application/javascript',
+	),
+	'/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
+	'/site.webmanifest': static_handler(
+		'frontend/site.webmanifest',
+		'application/json',
+	),
+	'/.well-known/assetlinks.json': static_handler(
+		'frontend/assetlinks.json',
+		'application/json',
+	),
+};
 
 function api_handler(r, s) {
 	const flip = (code, message) => {

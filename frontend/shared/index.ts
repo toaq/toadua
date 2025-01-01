@@ -197,7 +197,8 @@ export function parse_query(query_string: string): {
 	let ordering: string | undefined;
 	const parts = query_string.split(/ /).map(a => {
 		const parts = a.split(/\|/).map(b => {
-			let negative, what;
+			let negative;
+			let what;
 			if ((negative = b[0] === '!')) b = b.substring(1);
 			let parts = b.split(':');
 			if (parts.length === 2) {

@@ -47,9 +47,9 @@ const word_lists = {};
 // poll for new entries at remote TSV spreadsheets and add them to the
 // dictionary every now and then
 export async function sync_resources() {
-	let time = Date.now(),
-		cf: Record<string, any> = config(),
-		changed = false;
+	const time = Date.now();
+	const cf: Record<string, any> = config();
+	let changed = false;
 	await Promise.all(
 		Object.entries(cf).map(
 			async ([name, { source, user, format, ...rest }]) => {
@@ -166,7 +166,8 @@ export async function sync_resources() {
 	console.log(`updating done (${Date.now() - time} ms)`);
 }
 
-let interval, options;
+let interval;
+let options;
 export function state_change() {
 	if (interval) {
 		commons.clearInterval(interval);

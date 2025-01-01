@@ -321,8 +321,8 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 	}
 	const filter = parse_query(query);
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
-	const bares = bare_terms(query),
-		deburrs = bares.flatMap(deburr);
+	const bares = bare_terms(query);
+	const deburrs = bares.flatMap(deburr);
 
 	const ordering = interpret_ordering(
 		requested_ordering,
