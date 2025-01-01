@@ -4,10 +4,10 @@
 import * as commons from '../core/commons.js';
 const store = commons.store;
 
-import * as http from 'http';
-import * as fs from 'fs';
-import * as zlib from 'zlib';
-import * as stream from 'stream';
+import * as http from 'node:http';
+import * as fs from 'node:fs';
+import * as zlib from 'node:zlib';
+import * as stream from 'node:stream';
 
 export function read(fname, deft) {
 	let gzip;

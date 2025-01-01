@@ -1,12 +1,12 @@
 // server.ts
 // the server, duh
 
-import { dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { dirname } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 console.log('-----------');
 
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import * as argparse from 'argparse';
 
 const argparser = new argparse.ArgumentParser({
@@ -40,7 +40,7 @@ const VERSION = (
 
 console.log(`starting up v${VERSION}...`);
 
-import * as http from 'http';
+import * as http from 'node:http';
 import * as api from './api.js';
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404),

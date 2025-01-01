@@ -1,6 +1,6 @@
 import vuePlugin from 'esbuild-plugin-vue3';
 import * as esbuild from 'esbuild';
-import fs from 'fs';
+import fs from 'node:fs';
 
 esbuild
 	.build({

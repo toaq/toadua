@@ -1,11 +1,11 @@
 // commons.ts
 // common utilities
 
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { readFileSync, watchFile } from 'fs';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readFileSync, watchFile } from 'node:fs';
 import { load as yaml } from 'js-yaml';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 const old_log = console.log;
 
