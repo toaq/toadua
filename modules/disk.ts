@@ -2,7 +2,7 @@
 // load from disk, save to disk, do backups
 
 import * as commons from '../core/commons.js';
-let store = commons.store;
+const store = commons.store;
 
 import * as http from 'http';
 import * as fs from 'fs';
@@ -20,21 +20,21 @@ export function read(fname, deft) {
 		write(fname, deft);
 		return deft;
 	}
-	let buf = zlib.gunzipSync(gzip);
-	let o = JSON.parse(buf.toString());
+	const buf = zlib.gunzipSync(gzip);
+	const o = JSON.parse(buf.toString());
 	console.log(`successfully read ${buf.length}b from '${fname}'`);
 	return o;
 }
 
 function write_(fname, data, guard_override) {
-	let gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
+	const gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
 	let backup = fname + '~',
 		our_size = gzip.length,
 		success = false,
 		unbackup = true;
 	if (!guard_override)
 		try {
-			let { size: old_size } = fs.statSync(fname);
+			const { size: old_size } = fs.statSync(fname);
 			if (gzip.length / (old_size || 1) < 0.5) {
 				console.log(
 					`warning: refusing to destructively write ${our_size}b over ${old_size}b file '${fname}'`,
@@ -119,7 +119,7 @@ const acts = { save_interval: save, backup_interval: backup };
 let first_go = true,
 	intervals = {};
 export function state_change() {
-	for (let k of Object.keys(acts)) {
+	for (const k of Object.keys(acts)) {
 		if (intervals[k]) commons.clearInterval(intervals[k]);
 		if (this && this.enabled && this[k])
 			intervals[k] = commons.setInterval(acts[k], this[k]);

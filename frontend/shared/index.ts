@@ -44,9 +44,9 @@ export function convert_hue(h: number, theme?: string): Color {
  */
 export function normalize(s: string, trim?: boolean): string {
 	if (trim === undefined) trim = true;
-	let suffix = trim ? '' : s.match(/\s*$/)[0];
+	const suffix = trim ? '' : s.match(/\s*$/)[0];
 	s = s.normalize('NFD').replace(/ı/g, 'i').replace(/ȷ/g, 'j');
-	let words = s.split(/\s+/gi).filter(_ => _);
+	const words = s.split(/\s+/gi).filter(_ => _);
 	return (
 		words
 			.map(w =>
@@ -69,7 +69,7 @@ export function normalize(s: string, trim?: boolean): string {
 							if (tone === '\u0304' || tone === '\u0309') tone = '';
 							if (num !== '' && num >= 2 && num <= 4)
 								tone = ['\u0301', '\u0308', '\u0302'][num - 2];
-							let abnormal = offset && tone !== '';
+							const abnormal = offset && tone !== '';
 							return [
 								abnormal && ' ',
 								offset && !initial && !abnormal && "'",
@@ -116,13 +116,13 @@ export function score_number(n: number): string {
 }
 
 function escape(s: string): string {
-	let el = document.createElement('p');
+	const el = document.createElement('p');
 	el.innerText = s;
 	return el.innerHTML;
 }
 
 function make_link(href: string, text: string): string {
-	let el = document.createElement('a');
+	const el = document.createElement('a');
 	el.innerText = text;
 	el.setAttribute('href', href);
 	return el.outerHTML;
@@ -137,7 +137,7 @@ export function replacements(
 	content = plain_text ? content : escape(content);
 	content = content.replace(/___/g, '▯');
 	let i = 0;
-	let accum: string[] = [];
+	const accum: string[] = [];
 	const starters: RegExp[] = [
 		plain_text ? /(<)(.*?)(>)/g : /(&lt;)(.*?)(&gt;)/g,
 		...(still_editing ? [/([*]{2})(?!.*?[*]{2})(.*)()/g] : []),
@@ -146,12 +146,12 @@ export function replacements(
 		/()(#[0-9a-zA-Z_-]+)()/g,
 		/(https?:\/\/)(\S*[\w\/])()/g,
 	];
-	let matches = starters
+	const matches = starters
 		.flatMap(starter => [...content.matchAll(starter)])
 		.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 	while (i < content.length && matches.length) {
-		let nearestMatch = matches[0];
-		let [all, start, cont, end] = nearestMatch;
+		const nearestMatch = matches[0];
+		const [all, start, cont, end] = nearestMatch;
 		accum.push(content.substring(i, nearestMatch.index));
 		i = (nearestMatch.index ?? 0) + all.length;
 		let replacement;
@@ -160,8 +160,8 @@ export function replacements(
 		} else if (start.startsWith('http') && !still_editing) {
 			replacement = make_link(all, cont.replace(/^www\.|\/$/g, ''));
 		} else if (!plain_text && !still_editing) {
-			let href = '#' + encodeURIComponent(cont);
-			let style = cont.startsWith('@')
+			const href = '#' + encodeURIComponent(cont);
+			const style = cont.startsWith('@')
 				? `style="${color_for(cont.substring(1), theme).css}"`
 				: '';
 			replacement = `<a href="${href}" ${style}>${cont}</a>`;
@@ -195,8 +195,8 @@ export function parse_query(query_string: string): {
 	ordering: string | undefined;
 } {
 	let ordering: string | undefined;
-	let parts = query_string.split(/ /).map(a => {
-		let parts = a.split(/\|/).map(b => {
+	const parts = query_string.split(/ /).map(a => {
+		const parts = a.split(/\|/).map(b => {
 			let negative, what;
 			if ((negative = b[0] === '!')) b = b.substring(1);
 			let parts = b.split(':');
@@ -211,11 +211,11 @@ export function parse_query(query_string: string): {
 					];
 			} else {
 				parts = b.split(/(?=[\/@#=])/);
-				let operations: [string, string | number][] = [];
+				const operations: [string, string | number][] = [];
 				if (!parts[0].match(/^[\/@#=]/))
 					operations.push(['term', parts.shift()]);
 				for (let i = 0; i < parts.length; ++i) {
-					let rest = parts[i].substring(1);
+					const rest = parts[i].substring(1);
 					operations.push([
 						character_operators[parts[i][0]],
 						parts[i][0] === '/' ? parseInt(rest, 10) || 0 : rest,
