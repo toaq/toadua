@@ -76,7 +76,9 @@ export function clearInterval(i: string | number | NodeJS.Timeout): void {
 }
 
 export function clearAllIntervals(): void {
-	interval_cache.forEach(clearInterval);
+	for (const interval of interval_cache) {
+		clearInterval(interval);
+	}
 	interval_cache.length = 0;
 }
 

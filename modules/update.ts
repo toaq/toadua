@@ -125,25 +125,24 @@ export async function sync_resources() {
 			]),
 		);
 
-		store.db.entries
-			.filter(e => unames.has(e.user))
-			.forEach(e => {
-				const found = fetched[e.user][e.head];
-				if (found && found === e.body) return;
-				// we need to re-find the entry because `search` makes
-				// copies on output
-				e = api.by_id(e.id);
-				e.user = `old${e.user}`;
-				e.votes[e.user] = -1;
-				e.score--;
-				console.log(`~~ '${e.head}' obsoleted`);
-				(messages[e.user] = messages[e.user] || []).push({
-					title: `definition for **${e.head}** obsoleted`,
-					description: e.body,
-					url: `${commons.config().entry_point}#%23${e.id}`,
-					head: e.head,
-				});
+		for (let e of store.db.entries) {
+			if (!unames.has(e.user)) continue;
+			const found = fetched[e.user][e.head];
+			if (found && found === e.body) return;
+			// we need to re-find the entry because `search` makes
+			// copies on output
+			e = api.by_id(e.id);
+			e.user = `old${e.user}`;
+			e.votes[e.user] = -1;
+			e.score--;
+			console.log(`~~ '${e.head}' obsoleted`);
+			(messages[e.user] = messages[e.user] || []).push({
+				title: `definition for **${e.head}** obsoleted`,
+				description: e.body,
+				url: `${commons.config().entry_point}#%23${e.id}`,
+				head: e.head,
 			});
+		}
 	}
 
 	search.recache();

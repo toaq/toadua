@@ -42,6 +42,7 @@ console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
 import * as api from './api.js';
+import { Socket } from 'node:net';
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404),
 	routes = {
@@ -209,8 +210,8 @@ async function config_update(data) {
 	}
 }
 
-const server = http.createServer(handler),
-	connections = [];
+const server = http.createServer(handler);
+const connections: Socket[] = [];
 
 server.on('connection', conn => {
 	connections.push(conn);
@@ -229,18 +230,18 @@ function bye(error) {
 	config.off('update', config_update);
 	commons.clearAllIntervals();
 	server.close();
-	connections.forEach(_ => _.destroy());
-	Object.entries(modules)
-		.reverse()
-		.forEach(([path, _]) => {
-			try {
-				_.state_change.call(null);
-			} catch (e) {
-				console.log(
-					`ignoring state change error for module '${path}': ${e.stack}`,
-				);
-			}
-		});
+	for (const connection of connections) {
+		connection.destroy();
+	}
+	for (const [path, _] of Object.entries(modules).reverse()) {
+		try {
+			_.state_change.call(null);
+		} catch (e) {
+			console.log(
+				`ignoring state change error for module '${path}': ${e.stack}`,
+			);
+		}
+	}
 	process.exitCode = 0;
 }
 

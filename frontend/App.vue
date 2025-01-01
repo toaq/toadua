@@ -63,7 +63,7 @@
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"
 			@uncollapse="
-				results.forEach(r => (r.uncollapsed = false));
+				for (const r of results) r.uncollapsed = false;
 				result.uncollapsed = true;
 			"
 			@vote="n => vote(result, n)"
