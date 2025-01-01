@@ -228,7 +228,7 @@ function parse_query(
 	const op =
 		Object.hasOwnProperty.call(operations, op_name) && operations[op_name];
 	if (!op) return `unknown operation ${op_name}`;
-	let args;
+	let args: any[];
 	try {
 		args = query.map(arg => {
 			if (typeof arg !== 'object') return arg;

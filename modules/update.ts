@@ -53,7 +53,7 @@ export async function sync_resources() {
 	await Promise.all(
 		Object.entries(cf).map(
 			async ([name, { source, user, format, ...rest }]) => {
-				let data;
+				let data: unknown;
 				try {
 					data = await request.get(source);
 					console.log(`updating resource '${name}'`);
@@ -166,8 +166,8 @@ export async function sync_resources() {
 	console.log(`updating done (${Date.now() - time} ms)`);
 }
 
-let interval;
-let options;
+let interval: any;
+let options: any;
 export function state_change() {
 	if (interval) {
 		commons.clearInterval(interval);

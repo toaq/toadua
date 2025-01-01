@@ -42,7 +42,7 @@ console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
 import * as api from './api.js';
-import { Socket } from 'node:net';
+import type { Socket } from 'node:net';
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
@@ -82,7 +82,7 @@ function api_handler(r, s) {
 			}
 		});
 		r.on('end', () => {
-			let json;
+			let json: unknown;
 			try {
 				json = JSON.parse(body);
 			} catch (e) {
