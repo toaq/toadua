@@ -47,9 +47,9 @@ export function deburrMatch(
 	mode: MatchMode,
 ): number {
 	const predicate = [
-		(a: string, b: string) => b.indexOf(a) != -1,
-		(a: string, b: string) => a.indexOf(b) != -1,
-		(a: string, b: string) => a == b,
+		(a: string, b: string) => b.indexOf(a) !== -1,
+		(a: string, b: string) => a.indexOf(b) !== -1,
+		(a: string, b: string) => a === b,
 	][mode];
 	let count = 0;
 	for (const w of what) if (where.some(y => predicate(w, y))) count++;
@@ -97,7 +97,7 @@ const FluidConfig = {
 			file = readFileSync(this.fname);
 			this.cache = yaml(file);
 		} catch (e) {
-			if (e.code == 'ENOENT') {
+			if (e.code === 'ENOENT') {
 				log(
 					`fluid_config '${this.fname}' absent from disk ` + '– not updating',
 				);

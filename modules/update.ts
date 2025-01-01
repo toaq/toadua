@@ -122,7 +122,7 @@ export async function sync_resources() {
 				uname,
 				Object.fromEntries(
 					Object.entries(cf)
-						.filter(_ => _[1].user == uname)
+						.filter(_ => _[1].user === uname)
 						.map(_ => Object.entries(word_lists[_[0]]))
 						.flat(),
 				),

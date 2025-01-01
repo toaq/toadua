@@ -155,7 +155,7 @@ export function replacements(
 		accum.push(content.substring(i, nearestMatch.index));
 		i = (nearestMatch.index ?? 0) + all.length;
 		let replacement;
-		if (start == '**' && still_editing) {
+		if (start === '**' && still_editing) {
 			replacement = start + normalize(cont, !!end) + end;
 		} else if (start.startsWith('http') && !still_editing) {
 			replacement = make_link(all, cont.replace(/^www\.|\/$/g, ''));
@@ -201,7 +201,7 @@ export function parse_query(query_string: string): {
 			if ((negative = b[0] === '!')) b = b.substring(1);
 			let parts = b.split(':');
 			if (parts.length === 2) {
-				if (parts[0] == 'order') {
+				if (parts[0] === 'order') {
 					ordering = parts[1];
 					return ['and'];
 				} else

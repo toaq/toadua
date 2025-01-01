@@ -135,7 +135,7 @@ const checks = {
 };
 
 export function index_of(id: string): number {
-	return store.db.entries.findIndex(_ => _.id == id);
+	return store.db.entries.findIndex(_ => _.id === id);
 }
 
 export function by_id(id: string): Entry {
