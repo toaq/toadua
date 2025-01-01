@@ -252,7 +252,7 @@ function bare_terms(o: any[]) {
 		case OperationType.Textual:
 			return [o[1]];
 		case OperationType.Functor:
-			return o.slice(1).map(bare_terms).flat();
+			return o.slice(1).flatMap(bare_terms);
 		default:
 			return [];
 	}
@@ -322,7 +322,7 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 	const filter = parse_query(query);
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
 	const bares = bare_terms(query),
-		deburrs = bares.map(deburr).flat();
+		deburrs = bares.flatMap(deburr);
 
 	const ordering = interpret_ordering(
 		requested_ordering,

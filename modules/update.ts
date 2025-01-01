@@ -18,7 +18,7 @@ const FORMATS = {
 			.split(/\r?\n/g)
 			.slice(options.skip)
 			.map(line => line.split(/\t/))
-			.map(cols =>
+			.flatMap(cols =>
 				options.patterns.map(p =>
 					Object.fromEntries(
 						Object.entries(p).map(([k, v]) => [
@@ -27,21 +27,18 @@ const FORMATS = {
 						]),
 					),
 				),
-			)
-			.flat(),
+			),
 	json: (data, options) =>
-		JSON.parse(data)
-			.map(e =>
-				options.patterns.map(p =>
-					Object.fromEntries(
-						Object.entries(p).map(([k, v]) => [
-							k,
-							(v as string).replace(/%\((.*?)\)/g, (_, id) => e[id]),
-						]),
-					),
+		JSON.parse(data).flatMap(e =>
+			options.patterns.map(p =>
+				Object.fromEntries(
+					Object.entries(p).map(([k, v]) => [
+						k,
+						(v as string).replace(/%\((.*?)\)/g, (_, id) => e[id]),
+					]),
 				),
-			)
-			.flat(),
+			),
+		),
 };
 
 // Word list cache.
@@ -123,8 +120,7 @@ export async function sync_resources() {
 				Object.fromEntries(
 					Object.entries(cf)
 						.filter(_ => _[1].user === uname)
-						.map(_ => Object.entries(word_lists[_[0]]))
-						.flat(),
+						.flatMap(_ => Object.entries(word_lists[_[0]])),
 				),
 			]),
 		);
