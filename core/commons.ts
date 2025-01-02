@@ -3,8 +3,8 @@
 
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, watchFile } from 'node:fs';
-import { load as yaml } from 'js-yaml';
+import { readFileSync } from 'node:fs';
+import * as yaml from 'js-yaml';
 import { EventEmitter } from 'node:events';
 import { spawnSync } from 'node:child_process';
 
@@ -97,38 +97,6 @@ emitter.emit = function (ev, ...args) {
 	return EventEmitter.prototype.emit.call(this, ev, ev, ...args);
 };
 
-// for ever-changing configuration files, etc.
-const FluidConfig = {
-	update(): void {
-		let file: Buffer;
-		try {
-			file = readFileSync(this.fname);
-			this.cache = yaml(file);
-		} catch (e) {
-			if (e.code === 'ENOENT') {
-				log(`fluid_config '${this.fname}' absent from disk – not updating`);
-				return;
-			} else throw e;
-		}
-		log(`updating fluid_config '${this.fname}' (${file.length}b read)`);
-		this.emit('update', this.cache);
-	},
-	_maxListeners: Number.POSITIVE_INFINITY,
-};
-Object.setPrototypeOf(FluidConfig, new EventEmitter());
-export function fluid_config(fname: string) {
-	const f: any = () => {
-		return f.cache;
-	};
-	f.fname = fname;
-	Object.setPrototypeOf(f, FluidConfig);
-	watchFile(fname, { persistent: false }, () => {
-		f.update();
-	});
-	f.update();
-	return f;
-}
-
 function getRepositoryRootPath(): string {
 	const { stdout, error } = spawnSync('git worktree list --porcelain', {
 		encoding: 'utf8',
@@ -172,14 +140,10 @@ const toaduaPath = getToaduaPath();
 const MAIN_CONFIG = `${toaduaPath}/config/config.yml`;
 const DEFAULT_CONFIG = `${toaduaPath}/config/defaults.yml`;
 // initialise the global config file
-const main_config = fluid_config(MAIN_CONFIG);
-const default_config = yaml(readFileSync(DEFAULT_CONFIG));
+const main_config = yaml.load(readFileSync(MAIN_CONFIG));
+const default_config = yaml.load(readFileSync(DEFAULT_CONFIG));
 
-export const config: any = () => ({ ...default_config, ...main_config() });
-
-Object.setPrototypeOf(config, new EventEmitter());
-config.update = () => main_config.update();
-main_config.on('update', () => config.emit('update', config()));
+export const config = { ...default_config, ...main_config };
 
 export interface Note {
 	/// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.

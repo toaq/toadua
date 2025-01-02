@@ -6,11 +6,13 @@ import * as search from '../core/search.js';
 import * as api from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
+import * as yaml from 'js-yaml';
+import { readFileSync } from 'node:fs';
 
 const { store } = commons;
 
 import request from 'request-promise-native';
-const config = commons.fluid_config('config/sources.yml');
+const config = yaml.load(readFileSync('config/sources.yml'));
 
 interface UpdateFormatOptions {
 	skip: number;
@@ -58,7 +60,7 @@ const word_lists = {};
 // dictionary every now and then
 export async function sync_resources() {
 	const time = Date.now();
-	const cf: Record<string, any> = config();
+	const cf: Record<string, any> = config;
 	let changed = false;
 	await Promise.all(
 		Object.entries(cf).map(
@@ -150,7 +152,7 @@ export async function sync_resources() {
 			messages[e.user].push({
 				title: `definition for **${e.head}** obsoleted`,
 				description: e.body,
-				url: `${commons.config().entry_point}#%23${e.id}`,
+				url: `${commons.config.entry_point}#%23${e.id}`,
 				head: e.head,
 			});
 		}

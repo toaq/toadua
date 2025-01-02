@@ -58,7 +58,7 @@ export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
 		name: trim(256, `(definition by *${entry.user}*${scope})`),
 		value: trim(1024, entry.body),
 	});
-	const backlink = `${commons.config().entry_point}#%23${entry.id}`;
+	const backlink = `${commons.config.entry_point}#%23${entry.id}`;
 
 	const payload: WebhookEmbed = {
 		color: shared.color_for(note?.user ?? entry.user).hex,
@@ -75,7 +75,7 @@ export function message(what: WebhookEmbed) {
 	const url: string = options.hook;
 	if (!url) return;
 	const color = what.color ?? 0;
-	const entrypoint = what.url ?? commons.config().entry_point;
+	const entrypoint = what.url ?? commons.config.entry_point;
 	const req: request.Options = {
 		url,
 		method: 'POST',

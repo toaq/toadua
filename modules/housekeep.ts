@@ -15,7 +15,7 @@ export function state_change() {
 	const now = +new Date();
 	const entries: [string, Token][] = Object.entries(store.pass.tokens);
 	for (const [k, { last }] of entries)
-		if (now > last + config().token_expiry) delete store.pass.tokens[k];
+		if (now > last + config.token_expiry) delete store.pass.tokens[k];
 
 	let reformed = 0;
 	const reform = (e, p, f) => {

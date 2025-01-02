@@ -45,7 +45,7 @@ export function call(i: any, baseRet: Ret, sudoUname?: string) {
 		if (token) {
 			uname = token.name;
 			const now = +new Date();
-			if (now > token.last + config().token_expiry) {
+			if (now > token.last + config.token_expiry) {
 				delete store.pass.tokens[i.token];
 				ret = (old_ret => data => {
 					if (data.success === false && data.error === 'must be logged in')
@@ -318,7 +318,7 @@ actions.register = guard(
 		// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
 		// store.pass.hashes[i.name] = bcrypt.hashSync(
 		// 	i.pass,
-		// 	config().password_rounds,
+		// 	config.password_rounds,
 		// );
 		// actions.login(ret, { name: i.name, pass: i.pass });
 	},

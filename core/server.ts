@@ -68,7 +68,7 @@ function api_handler(r, s) {
 		let body = '';
 		r.on('data', data => {
 			body += data;
-			if (body.length > config().request_body_size_limit) {
+			if (body.length > config.request_body_size_limit) {
 				body = undefined;
 				flip(413 /* Payload Too Large */, 'The request was too large.');
 				r.connection.destroy();
@@ -128,7 +128,7 @@ function static_handler(fn: string, mime: string, code = 200) {
 
 function handler(r, s_) {
 	const time = +new Date();
-	const url = new URL(r.url, config().entry_point);
+	const url = new URL(r.url, config.entry_point);
 	const handler = Object.hasOwn(routes, url.pathname)
 		? routes[url.pathname]
 		: fourohfour;
@@ -170,8 +170,7 @@ function handler(r, s_) {
 }
 
 const modules: Record<string, any> = {};
-await config_update(config());
-config.on('update', config_update);
+await config_update(config);
 
 // this function should be idempotent
 async function config_update(data) {
@@ -180,7 +179,7 @@ async function config_update(data) {
 			try {
 				modules[path] = { ...(await import(`./../${path}`)), path };
 			} catch (e) {
-				if (config().exit_on_module_load_error) throw e;
+				if (config.exit_on_module_load_error) throw e;
 				console.log(`error when loading module '${path}': ${e.stack}`);
 				delete modules[path];
 			}
@@ -219,7 +218,6 @@ function bye(error) {
 	if (error.stack) console.log(`uncaught exception: ${error.stack}`);
 	else console.log(`caught signal ${error}`);
 	console.log('trying to exit gracefully');
-	config.off('update', config_update);
 	commons.clearAllIntervals();
 	server.close();
 	for (const connection of connections) {
@@ -239,6 +237,6 @@ function bye(error) {
 
 process.on('exit', code => console.log(`exiting with code ${code}`));
 
-const port = Number(args.port ?? config().port ?? 29138);
+const port = Number(args.port ?? config.port ?? 29138);
 server.listen(port);
 console.log(`server started on :${port}!`);

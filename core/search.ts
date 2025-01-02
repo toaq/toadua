@@ -7,7 +7,6 @@ import {
 	deburr,
 	deburrMatch,
 	emitter,
-	config,
 	store,
 	MatchMode,
 	type Entry,
