@@ -1,13 +1,11 @@
 // server.ts
 // the server, duh
 
-import { dirname } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-
 console.log('-----------');
 
 import * as fs from 'node:fs';
 import * as argparse from 'argparse';
+import * as commons from './commons.js';
 
 const argparser = new argparse.ArgumentParser({
 	description: 'Toaq dictionary',
@@ -22,22 +20,17 @@ argparser.add_argument('-p', '--port', {
 	type: 'int',
 });
 const args = argparser.parse_args();
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const installation_dir = `${__dirname}/../..`;
+const installation_dir = commons.getToaduaPath();
 const dir = args.data_directory
 	? fs.realpathSync(args.data_directory)
 	: installation_dir;
 process.chdir(dir);
-import * as commons from './commons.js';
 
 const config = commons.config;
 
-const VERSION = (
-	await import(pathToFileURL(`${installation_dir}/package.json`).href, {
-		with: { type: 'json' },
-	})
-).default.version;
-
+const VERSION = JSON.parse(
+	fs.readFileSync(`${installation_dir}/package.json`, 'utf-8'),
+).version;
 console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
