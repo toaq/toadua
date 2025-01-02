@@ -28,7 +28,7 @@ export function read(fname, deft) {
 
 function write_(fname, data, guard_override) {
 	const gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
-	const backup = fname + '~';
+	const backup = `${fname}~`;
 	const our_size = gzip.length;
 	let success = false;
 	let unbackup = true;

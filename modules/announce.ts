@@ -27,7 +27,7 @@ interface WebhookEmbed {
 
 function trim(max: number, str: string): string {
 	if (str.length <= max) return str;
-	return str.substring(0, max - 1) + '…';
+	return `${str.substring(0, max - 1)}…`;
 }
 
 export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
@@ -90,9 +90,9 @@ function send_off() {
 	if (queue.length > 10) {
 		const top = queue[0];
 		if (top?.body?.embeds?.[0]?.title) {
-			top.body.embeds[0].title =
-				trim(200, top.body.embeds[0].title) +
-				` (+ ${queue.length - 1} other events)`;
+			const title = trim(200, top.body.embeds[0].title);
+			const n = queue.length - 1;
+			top.body.embeds[0].title = `${title} (+ ${n} other events)`;
 			request(top);
 		} else {
 			message({ title: `${queue.length} events omitted` });

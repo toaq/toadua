@@ -94,7 +94,7 @@ export async function sync_resources() {
 				],
 			});
 			if (typeof s === 'string') {
-				console.log('!! malformed query: ' + s);
+				console.log(`!! malformed query: ${s}`);
 			} else if (!s.length) {
 				api.call(
 					{ action: 'create', head, body, scope: 'en' },

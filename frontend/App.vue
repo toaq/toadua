@@ -300,7 +300,7 @@ export default defineComponent({
 
 		add_to_history(query: string): void {
 			if (query) this.query = query;
-			if (window.history) window.history.replaceState('', '', '#' + this.query);
+			if (window.history) window.history.replaceState('', '', `#${this.query}`);
 			else window.location.hash = this.query;
 		},
 
@@ -388,7 +388,7 @@ export default defineComponent({
 						document.querySelector('#create_body') as HTMLTextAreaElement
 					).style.height = '24';
 					this.done_searching = this.dismissed = true;
-					this.add_to_history((this.query = '#' + data.entry.id));
+					this.add_to_history((this.query = `#${data.entry.id}`));
 					this.results = [data.entry];
 				},
 			);

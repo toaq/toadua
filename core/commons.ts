@@ -100,9 +100,7 @@ const FluidConfig = {
 			this.cache = yaml(file);
 		} catch (e) {
 			if (e.code === 'ENOENT') {
-				log(
-					`fluid_config '${this.fname}' absent from disk ` + '– not updating',
-				);
+				log(`fluid_config '${this.fname}' absent from disk – not updating`);
 				return;
 			} else throw e;
 		}

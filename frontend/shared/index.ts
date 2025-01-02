@@ -160,7 +160,7 @@ export function replacements(
 		} else if (start.startsWith('http') && !still_editing) {
 			replacement = make_link(all, cont.replace(/^www\.|\/$/g, ''));
 		} else if (!plain_text && !still_editing) {
-			const href = '#' + encodeURIComponent(cont);
+			const href = `#${encodeURIComponent(cont)}`;
 			const style = cont.startsWith('@')
 				? `style="${color_for(cont.substring(1), theme).css}"`
 				: '';
