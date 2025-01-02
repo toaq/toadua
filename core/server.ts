@@ -170,10 +170,8 @@ function handler(r, s_) {
 }
 
 const modules: Record<string, any> = {};
-await config_update(config);
 
-// this function should be idempotent
-async function config_update(data) {
+async function load_modules(data: commons.ToaduaConfig): Promise<void> {
 	for (const path of Object.keys(data.modules)) {
 		if (!modules[path]) {
 			try {
@@ -200,6 +198,8 @@ async function config_update(data) {
 		}
 	}
 }
+
+await load_modules(config);
 
 const server = http.createServer(handler);
 const connections: Socket[] = [];

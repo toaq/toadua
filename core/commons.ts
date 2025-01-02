@@ -136,15 +136,6 @@ export function getToaduaPath(): string {
 	}
 }
 
-const toaduaPath = getToaduaPath();
-const MAIN_CONFIG = `${toaduaPath}/config/config.yml`;
-const DEFAULT_CONFIG = `${toaduaPath}/config/defaults.yml`;
-// initialise the global config file
-const main_config = yaml.load(readFileSync(MAIN_CONFIG));
-const default_config = yaml.load(readFileSync(DEFAULT_CONFIG));
-
-export const config = { ...default_config, ...main_config };
-
 export interface Note {
 	/// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
 	date: string;
@@ -195,6 +186,48 @@ export interface Store {
 		tokens: Record<string, Token>;
 	};
 }
+
+export interface ToaduaConfig {
+	/**
+	 * Currently, this only controls the variant of Vue.js to send to the web
+	 * app user.
+	 */
+	production: boolean;
+	/**
+	 * The address to display in links, etc. `http://localhost:29138/` by
+	 * default; the trailing slash is significant.
+	 */
+	entry_point: string;
+	/**
+	 * Port to host the server on. 29138 by default.
+	 */
+	port: number;
+	/**
+	 * In bytes. 16384 by default.
+	 */
+	request_body_size_limit: number;
+	/**
+	 * In milliseconds. 604_800_000 by default (7 days).
+	 */
+	token_expiry: number;
+	exit_on_module_load_error: boolean;
+	/**
+	 * Passed to bcrypt.hash. 8 by default. Changing this value will not break
+	 * existing passwords.
+	 */
+	password_rounds: number;
+
+	modules: Record<string, object>;
+}
+
+const toaduaPath = getToaduaPath();
+const MAIN_CONFIG = `${toaduaPath}/config/config.yml`;
+const DEFAULT_CONFIG = `${toaduaPath}/config/defaults.yml`;
+// initialise the global config file
+const main_config: ToaduaConfig = yaml.load(readFileSync(MAIN_CONFIG));
+const default_config: ToaduaConfig = yaml.load(readFileSync(DEFAULT_CONFIG));
+
+export const config: ToaduaConfig = { ...default_config, ...main_config };
 
 // a store for stuff and things
 export const store: Store = {};
