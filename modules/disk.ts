@@ -105,7 +105,7 @@ export function backup() {
 			store,
 		)
 	)
-		console.log(`note: backup failed`);
+		console.log("note: backup failed");
 }
 
 export function save() {
@@ -129,7 +129,7 @@ export function state_change() {
 			(store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} }));
 		first_go = false;
 	} else if (!this) {
-		console.log(`trying to save data...`);
+		console.log("trying to save data...");
 		save();
 	}
 }
