@@ -1,11 +1,12 @@
 // commons.ts
 // common utilities
 
-import { dirname } from 'node:path';
+import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, watchFile } from 'node:fs';
 import { load as yaml } from 'js-yaml';
 import { EventEmitter } from 'node:events';
+import { spawnSync } from 'node:child_process';
 
 const old_log = console.log;
 
@@ -123,9 +124,48 @@ export function fluid_config(fname: string) {
 	return f;
 }
 
-const MAIN_CONFIG = 'config/config.yml';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_CONFIG = `${__dirname}/../../config/defaults.yml`;
+function getRepositoryRootPath(): string {
+	const { stdout, error } = spawnSync('git worktree list --porcelain', {
+		encoding: 'utf8',
+		shell: true,
+	});
+	if (error) {
+		throw new Error(
+			`Couldn't use git to find repository root path:\n\n${error}`,
+		);
+	}
+	for (const line of stdout.split('\n')) {
+		const m = line.match(/^worktree (.+)$/);
+		if (m) return m[1];
+	}
+	throw new Error('Failed to parse git worktree output');
+}
+
+/**
+ * Figure out the path to the Toadua root (the directory that contains
+ * `config`). This tries to call `git worktree` but falls back to parsing
+ * `import.meta.url`.
+ */
+export function getToaduaPath(): string {
+	try {
+		// Preferably use `git` to figure out where Toadua is rooted...
+		return getRepositoryRootPath();
+	} catch (e) {
+		// but if that fails, fall back to parsing `import.meta.url`:
+		console.warn(e);
+		const commonsPath = path.dirname(fileURLToPath(import.meta.url));
+
+		// Figure out if we are in `toadua/dist/core` (running `npm build` output)
+		// or in `toadua/core` (running TypeScript source code directly).
+		return /\bdist\Wcore\b/.test(commonsPath)
+			? `${commonsPath}/../..`
+			: `${commonsPath}/..`;
+	}
+}
+
+const toaduaPath = getToaduaPath();
+const MAIN_CONFIG = `${toaduaPath}/config/config.yml`;
+const DEFAULT_CONFIG = `${toaduaPath}/config/defaults.yml`;
 // initialise the global config file
 const main_config = fluid_config(MAIN_CONFIG);
 const default_config = yaml(readFileSync(DEFAULT_CONFIG));
