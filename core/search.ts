@@ -102,9 +102,9 @@ const all_funcs = args => args.every(_ => _ instanceof Function);
 const one_string = args => args.length === 1 && typeof args[0] === 'string';
 
 enum OperationType {
-	Other,
-	Textual,
-	Functor,
+	Other = 0,
+	Textual = 1,
+	Functor = 2,
 }
 
 interface Operation {
