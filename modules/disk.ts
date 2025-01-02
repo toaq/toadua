@@ -26,7 +26,7 @@ export function read(fname, deft) {
 	return o;
 }
 
-function write_(fname, data, guard_override) {
+function write_(fname: string, data: any, guard_override: boolean) {
 	const gzip = zlib.gzipSync(Buffer.from(JSON.stringify(data)));
 	const backup = `${fname}~`;
 	const our_size = gzip.length;
@@ -71,13 +71,13 @@ function write_(fname, data, guard_override) {
 	return true;
 }
 
-export const using: any = {};
+export const using: Record<string, true> = {};
 
-export function write(fname, data, guard_override?: any) {
+export function write(fname: string, data, guard_override?: boolean) {
 	if (using[fname])
 		console.log(`warning: '${fname}' is already being written to`);
 	using[fname] = true;
-	let res;
+	let res: boolean;
 	try {
 		res = write_(fname, data, guard_override);
 	} catch (e) {

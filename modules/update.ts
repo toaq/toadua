@@ -12,7 +12,17 @@ const { store } = commons;
 import request from 'request-promise-native';
 const config = commons.fluid_config('config/sources.yml');
 
-const FORMATS = {
+interface UpdateFormatOptions {
+	skip: number;
+	patterns: Record<string, string>[];
+}
+
+type UpdateFormat = (
+	data: string,
+	options: UpdateFormatOptions,
+) => Record<string, string>[];
+
+const FORMATS: Record<string, UpdateFormat> = {
 	tsv: (data, options) =>
 		data
 			.split(/\r?\n/g)
@@ -58,7 +68,7 @@ export async function sync_resources() {
 					data = await request.get(source);
 					console.log(`updating resource '${name}'`);
 					const word_list = Object.fromEntries(
-						FORMATS[format](data, rest)
+						FORMATS[format](data as string, rest)
 							.filter(_ => _.head && _.body)
 							.map(_ => [shared.normalize(_.head), api.replacements(_.body)]),
 					);
