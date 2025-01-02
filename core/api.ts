@@ -33,7 +33,7 @@ type Action = ActionFunction & { checks: Record<string, Check> };
 // `sudoUname` is used to override the user – a kind of sudo mode
 export function call(i: any, baseRet: Ret, sudoUname?: string) {
 	const time = +new Date();
-	const action = actions.hasOwnProperty(i.action) && actions[i.action];
+	const action = Object.hasOwn(actions, i.action) && actions[i.action];
 	if (!action) {
 		console.log(`%% action '${i.action}' unknown`);
 		return baseRet(flip('unknown action'));

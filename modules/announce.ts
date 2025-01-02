@@ -15,7 +15,7 @@ const event_types = [
 	'edit',
 	'move',
 ] as const;
-type AnnounceEvent = (typeof event_types)[any];
+type AnnounceEvent = (typeof event_types)[number];
 
 interface WebhookEmbed {
 	color?: number;
@@ -121,7 +121,8 @@ let enabled: boolean;
 let options: { enabled: boolean; hook: string };
 const queue: request.Options[] = [];
 export function state_change() {
-	if (enabled !== (options = this ?? {}).enabled)
+	options = this ?? {};
+	if (enabled !== options.enabled)
 		for (const ev of event_types)
 			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
 	enabled = options.enabled;

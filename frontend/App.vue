@@ -405,7 +405,7 @@ export default defineComponent({
 
 		update_entry(whom: Entry, what_with: Partial<Entry>): void {
 			for (const p in what_with)
-				if (Object.hasOwnProperty.call(what_with, p)) whom[p] = what_with[p];
+				if (Object.hasOwn(what_with, p)) whom[p] = what_with[p];
 		},
 
 		new_word(): void {

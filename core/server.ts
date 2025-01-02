@@ -136,7 +136,7 @@ function static_handler(fn: string, mime: string, code = 200) {
 function handler(r, s_) {
 	const time = +new Date();
 	const url = new URL(r.url, config().entry_point);
-	const handler = routes.hasOwnProperty(url.pathname)
+	const handler = Object.hasOwn(routes, url.pathname)
 		? routes[url.pathname]
 		: fourohfour;
 	const s = {
@@ -225,7 +225,7 @@ for (const s of SIGNALS) process.once(s, bye);
 function bye(error) {
 	if (error.stack) console.log(`uncaught exception: ${error.stack}`);
 	else console.log(`caught signal ${error}`);
-	console.log("trying to exit gracefully");
+	console.log('trying to exit gracefully');
 	config.off('update', config_update);
 	commons.clearAllIntervals();
 	server.close();

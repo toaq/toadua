@@ -225,8 +225,7 @@ function parse_query(
 	if (!queryObject.length) return 'found empty array node';
 	const query = [...queryObject];
 	const op_name = query.shift();
-	const op =
-		Object.hasOwnProperty.call(operations, op_name) && operations[op_name];
+	const op = Object.hasOwn(operations, op_name) && operations[op_name];
 	if (!op) return `unknown operation ${op_name}`;
 	let args: any[];
 	try {
