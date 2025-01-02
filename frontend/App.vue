@@ -249,7 +249,9 @@ export default defineComponent({
 		apisend(what, or, and) {
 			if (!and) {
 				and = or;
-				or = e => (this.error_line = e);
+				or = e => {
+					this.error_line = e;
+				};
 			}
 			this.error_line = '';
 			let req = this.queue[what.action];
@@ -388,7 +390,8 @@ export default defineComponent({
 						document.querySelector('#create_body') as HTMLTextAreaElement
 					).style.height = '24';
 					this.done_searching = this.dismissed = true;
-					this.add_to_history((this.query = `#${data.entry.id}`));
+					this.query = `#${data.entry.id}`;
+					this.add_to_history(this.query);
 					this.results = [data.entry];
 				},
 			);
@@ -499,6 +502,11 @@ export default defineComponent({
 	},
 
 	data() {
+		if (!window.localStorage) {
+			alert(
+				"Your browser doesn't support local storage, which is required for the app to function properly. Please consider updating.",
+			);
+		}
 		return {
 			dismissed: false,
 			done_searching: false,
@@ -515,14 +523,7 @@ export default defineComponent({
 			results: [] as Entry[],
 			scope: 'en',
 			scroll_up: false,
-			store:
-				window.localStorage ||
-				(alert(
-					"Your browser doesn't support local storage, " +
-						'which is required for the app to function properly. ' +
-						'Please consider updating.',
-				),
-				null),
+			store: window.localStorage || null,
 			theme:
 				window.localStorage.getItem('user-theme') ??
 				(window.matchMedia('(prefers-color-scheme: dark)').matches

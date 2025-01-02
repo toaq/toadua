@@ -20,6 +20,7 @@ export function remove_obsoleted(_, { score, user, id, head }, voter) {
 }
 
 export function state_change() {
+	// biome-ignore lint/suspicious/noAssignInExpressions: this trick is too cute to change
 	if (options.enabled !== (options = this || {}).enabled) {
 		commons.emitter[options.enabled ? 'on' : 'off']('vote', remove_obsoleted);
 	}

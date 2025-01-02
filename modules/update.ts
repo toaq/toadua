@@ -136,7 +136,8 @@ export async function sync_resources() {
 			e.votes[e.user] = -1;
 			e.score--;
 			console.log(`~~ '${e.head}' obsoleted`);
-			(messages[e.user] = messages[e.user] || []).push({
+			messages[e.user] ||= [];
+			messages[e.user].push({
 				title: `definition for **${e.head}** obsoleted`,
 				description: e.body,
 				url: `${commons.config().entry_point}#%23${e.id}`,

@@ -30,7 +30,7 @@ export function convert_hue(h: number, theme?: string): Color {
 	const c = theme === 'dark' ? 40 : 60;
 	console.log(color_convert.lch.hex(l, c, h));
 	return {
-		hex: parseInt(color_convert.lch.hex(l, c, h), 16),
+		hex: Number.parseInt(color_convert.lch.hex(l, c, h), 16),
 		css: `color: lch(${l}% ${c} ${h});`,
 	};
 }
@@ -52,6 +52,7 @@ export function normalize(s: string, trim?: boolean): string {
 			.map(w =>
 				w
 					.replace(
+						// biome-ignore lint/suspicious/noMisleadingCharacterClass: We really do mean to have `aeiouq` and `\u0300-\u036f` in the same character class here.
 						/(['ʼ‘’x-]*)([^aeiouq\u0300-\u036f'ʼ‘’0-9x]*)([aeiou])([\u0323]?)([\u0300-\u036f]?)([\u0323]?)([aeiou]*(?![\u0300-\u036f])(?:q|m(?![aeiou]))?)([0-8]*)(?=(-.)?)/gi,
 						(
 							_,
@@ -97,9 +98,8 @@ export function color_for(name: string, theme?: string): Color {
 	if (name === 'official') {
 		if (theme === 'dark') {
 			return { hex: 0xdddddd, css: '#ddd' };
-		} else {
-			return { hex: 0x333333, css: '#333' };
 		}
+		return { hex: 0x333333, css: '#333' };
 	}
 	let n = 0;
 	for (let i = 0, l = name.length; i < l; ++i)
@@ -154,7 +154,7 @@ export function replacements(
 		const [all, start, cont, end] = nearestMatch;
 		accum.push(content.substring(i, nearestMatch.index));
 		i = (nearestMatch.index ?? 0) + all.length;
-		let replacement;
+		let replacement: string;
 		if (start === '**' && still_editing) {
 			replacement = start + normalize(cont, !!end) + end;
 		} else if (start.startsWith('http') && !still_editing) {
@@ -170,6 +170,7 @@ export function replacements(
 		}
 		accum.push(replacement);
 		let catchUp: RegExpExecArray;
+		// biome-ignore lint/suspicious/noAssignInExpressions: it's idiomatic enough in a while loop
 		while ((catchUp = matches.shift())) {
 			if (catchUp.index >= i) {
 				matches.unshift(catchUp);
@@ -178,9 +179,10 @@ export function replacements(
 		}
 	}
 	if (i < content.length) accum.push(content.substring(i));
-	if (!plain_text && !still_editing)
+	if (!plain_text && !still_editing) {
 		return accum.join('').replace(/\\(.)/g, '$1');
-	else return accum.join('');
+	}
+	return accum.join('');
 }
 
 const character_operators = {

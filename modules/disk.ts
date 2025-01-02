@@ -10,7 +10,7 @@ import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
 
 export function read(fname, deft) {
-	let gzip;
+	let gzip: any;
 	try {
 		gzip = fs.readFileSync(fname);
 	} catch (e) {
@@ -125,8 +125,8 @@ export function state_change() {
 			intervals[k] = commons.setInterval(acts[k], this[k]);
 	}
 	if (first_go) {
-		(store.db = read('data/dict.json.gz', { entries: [] })),
-			(store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} }));
+		store.db = read('data/dict.json.gz', { entries: [] });
+		store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} });
 		first_go = false;
 	} else if (!this) {
 		console.log('trying to save data...');

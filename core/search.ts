@@ -113,7 +113,7 @@ interface Operation {
 	build: (args: any[]) => (entry: CachedEntry) => boolean;
 }
 
-const operations: Record<string, Operation> = (search.operations = {
+const operations: Record<string, Operation> = {
 	and: {
 		type: OperationType.Functor,
 		check: all_funcs,
@@ -165,14 +165,18 @@ const operations: Record<string, Operation> = (search.operations = {
 						deburredW.length);
 		},
 	},
-});
+};
+
+search.operations = operations;
 
 for (const trait of RE_TRAITS) {
 	operations[trait] = {
 		type: OperationType.Other,
 		check: one_string,
-		build: ([s]) =>
-			re_cache[trait][s] || (re_cache[trait][s] = make_re(trait, s)),
+		build: ([s]) => {
+			re_cache[trait][s] ||= make_re(trait, s);
+			return re_cache[trait][s];
+		},
 	};
 	operations[`${trait}_raw`] = {
 		type: OperationType.Other,
