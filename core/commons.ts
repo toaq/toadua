@@ -32,7 +32,12 @@ export function deburr(s: string): string[] {
 		.replace(/\p{M}+|-/gu, '')
 		.replace(/[ʼ‘’]/g, "'")
 		.split(/(?:(?!['-])\P{L})+/gu)
-		.map(_ => _.toLowerCase().replace(/ı/g, 'i'))
+		.map(_ =>
+			_.toLowerCase()
+				.replace(/ı/g, 'i')
+				.replace(/ȷ/g, 'j')
+				.replace(/vy?|w|y/g, 'ꝡ'),
+		)
 		.filter(_ => _);
 }
 
