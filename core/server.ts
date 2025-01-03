@@ -186,17 +186,17 @@ class ToaduaModules {
 		private config: commons.ToaduaConfig,
 		private emitter: EventEmitter,
 	) {
+		const housekeepConfig = config.modules['modules/housekeep.js'];
+		if (housekeepConfig) {
+			this.housekeep = new HousekeepModule();
+		}
+
 		const diskConfig = config.modules['modules/disk.js'];
 		if (diskConfig) {
 			this.disk = new DiskModule(
 				diskConfig.save_interval,
 				diskConfig.backup_interval,
 			);
-		}
-
-		const housekeepConfig = config.modules['modules/housekeep.js'];
-		if (housekeepConfig) {
-			this.housekeep = new HousekeepModule();
 		}
 
 		const announceConfig = config.modules['modules/announce.js'];
@@ -220,11 +220,13 @@ class ToaduaModules {
 	public up(): void {
 		this.housekeep?.up(this.store, this.config);
 		this.disk?.up(this.store);
-		this.update?.up(this.store);
 		this.announce?.up(this.emitter);
+		this.update?.up(this.store);
 	}
 
 	public down(): void {
+		// The other modules don't need to do anything special when Toadua is
+		// going down:
 		this.disk?.down(this.store);
 	}
 }
