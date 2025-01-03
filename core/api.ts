@@ -185,13 +185,15 @@ actions.vote = guard(
 
 		const cleanup = config.modules['modules/cleanup.js'];
 		if (cleanup.enabled) {
-			if (cleanup.users && !cleanup.users.includes(e.user)) return;
-			if (e.score > cleanup.vote_threshold) return;
-			call(
-				{ action: 'remove', id: e.id },
-				() => console.log(`-- ${e.head} weeded out`),
-				e.user,
-			);
+			const culpable = !cleanup.users || cleanup.users.includes(e.user);
+			const bad = e.score <= cleanup.vote_threshold;
+			if (culpable && bad) {
+				call(
+					{ action: 'remove', id: e.id },
+					() => console.log(`-- ${e.head} weeded out`),
+					e.user,
+				);
+			}
 		}
 
 		emitter.emit('vote', e, uname);
