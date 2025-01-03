@@ -7,6 +7,11 @@ import * as fs from 'node:fs';
 import * as argparse from 'argparse';
 import * as commons from './commons.js';
 
+import { HousekeepModule } from '../modules/housekeep.js';
+import { DiskModule } from '../modules/disk.js';
+import { UpdateModule } from '../modules/update.js';
+import { AnnounceModule } from '../modules/announce.js';
+
 const argparser = new argparse.ArgumentParser({
 	description: 'Toaq dictionary',
 	add_help: true,
@@ -36,6 +41,7 @@ console.log(`starting up v${VERSION}...`);
 import * as http from 'node:http';
 import * as api from './api.js';
 import type { Socket } from 'node:net';
+import type { EventEmitter } from 'node:stream';
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
@@ -169,37 +175,62 @@ function handler(r, s_) {
 	}
 }
 
-const modules: Record<string, any> = {};
+class ToaduaModules {
+	private housekeep?: HousekeepModule;
+	private disk?: DiskModule;
+	private announce?: AnnounceModule;
+	private update?: UpdateModule;
 
-async function load_modules(data: commons.ToaduaConfig): Promise<void> {
-	for (const path of Object.keys(data.modules)) {
-		if (!modules[path]) {
-			try {
-				modules[path] = { ...(await import(`./../${path}`)), path };
-			} catch (e) {
-				if (config.exit_on_module_load_error) throw e;
-				console.log(`error when loading module '${path}': ${e.stack}`);
-				delete modules[path];
-			}
+	constructor(
+		private store: commons.Store,
+		private config: commons.ToaduaConfig,
+		private emitter: EventEmitter,
+	) {
+		const diskConfig = config.modules['modules/disk.js'];
+		if (diskConfig) {
+			this.disk = new DiskModule(
+				diskConfig.save_interval,
+				diskConfig.backup_interval,
+			);
+		}
+
+		const housekeepConfig = config.modules['modules/housekeep.js'];
+		if (housekeepConfig) {
+			this.housekeep = new HousekeepModule();
+		}
+
+		const announceConfig = config.modules['modules/announce.js'];
+		if (announceConfig) {
+			this.announce = new AnnounceModule(
+				announceConfig.enabled,
+				announceConfig.hook,
+			);
+		}
+
+		const updateConfig = config.modules['modules/update.js'];
+		if (updateConfig) {
+			this.update = new UpdateModule(
+				updateConfig.enabled,
+				updateConfig.save_interval,
+				this.announce,
+			);
 		}
 	}
-	for (const path in modules) {
-		const new_options = data.modules[path];
-		// note that when an entry in the module table is removed,
-		// `new_options === undefined`. this is all right
-		if (JSON.stringify(new_options) !== JSON.stringify(modules[path].options)) {
-			modules[path].options = new_options;
-			console.log(`changing state for module '${path}'`);
-			try {
-				modules[path].state_change.call(new_options);
-			} catch (e) {
-				console.log(`error for module '${path}': ${e.stack}`);
-			}
-		}
+
+	public up(): void {
+		this.housekeep?.up(this.store, this.config);
+		this.disk?.up(this.store);
+		this.update?.up(this.store);
+		this.announce?.up(this.emitter);
+	}
+
+	public down(): void {
+		this.disk?.down(this.store);
 	}
 }
 
-await load_modules(config);
+const modules = new ToaduaModules(commons.store, config, commons.emitter);
+modules.up();
 
 const server = http.createServer(handler);
 const connections: Socket[] = [];
@@ -223,15 +254,7 @@ function bye(error) {
 	for (const connection of connections) {
 		connection.destroy();
 	}
-	for (const [path, _] of Object.entries(modules).reverse()) {
-		try {
-			_.state_change.call(null);
-		} catch (e) {
-			console.log(
-				`ignoring state change error for module '${path}': ${e.stack}`,
-			);
-		}
-	}
+	modules.down();
 	process.exitCode = 0;
 }
 
