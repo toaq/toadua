@@ -6,6 +6,7 @@ import * as commons from '../core/commons.js';
 import request from 'request-promise-native';
 import type { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
+import type { EventEmitter } from 'node:stream';
 
 const event_types = [
 	'create',
@@ -30,101 +31,105 @@ function trim(max: number, str: string): string {
 	return `${str.substring(0, max - 1)}…`;
 }
 
-export function onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
-	const action = {
-		create: 'created',
-		note: 'noted on',
-		remove: 'removed',
-		removenote: 'removed a note on',
-		edit: 'edited',
-		move: 'moved',
-	}[ev];
-	if (!action) {
-		console.log(`!! unexpected action ${action} in announce.entry`);
-		return;
-	}
+export class AnnounceModule {
+	private queue: request.Options[] = [];
 
-	const scope =
-		ev === 'move'
-			? ` to scope __${entry.scope}__`
-			: entry.scope !== 'en'
-			? ` in scope __${entry.scope}__`
-			: '';
-	const title = note
-		? `*${note.user}* ${action} **${entry.head}**`
-		: `*${entry.user}* ${action} **${entry.head}**${scope}`;
+	constructor(
+		private enabled: boolean,
+		private hook: string,
+	) {}
 
-	const noteField = () => ({
-		name: trim(256, `(definition by *${entry.user}*${scope})`),
-		value: trim(1024, entry.body),
-	});
-	const backlink = `${commons.config.entry_point}#%23${entry.id}`;
-
-	const payload: WebhookEmbed = {
-		color: shared.color_for(note?.user ?? entry.user).hex,
-		title: trim(256, title),
-		fields: note ? [noteField()] : undefined,
-		description: trim(4096, note ? note.content : entry.body),
-		url: ev !== 'remove' ? backlink : undefined,
-	};
-	message(payload);
-}
-
-export function message(what: WebhookEmbed) {
-	if (!enabled) return;
-	const url: string = options.hook;
-	if (!url) return;
-	const color = what.color ?? 0;
-	const entrypoint = what.url ?? commons.config.entry_point;
-	const req: request.Options = {
-		url,
-		method: 'POST',
-		json: true,
-		body: { embeds: [{ color, url: entrypoint, ...what }] },
-	};
-	if (queue.push(req) === 1) setTimeout(send_off, 0);
-}
-
-function send_off() {
-	if (!queue.length) return;
-	if (queue.length > 10) {
-		const top = queue[0];
-		if (top?.body?.embeds?.[0]?.title) {
-			const title = trim(200, top.body.embeds[0].title);
-			const n = queue.length - 1;
-			top.body.embeds[0].title = `${title} (+ ${n} other events)`;
-			request(top);
-		} else {
-			message({ title: `${queue.length} events omitted` });
+	private onAnnounceEvent(ev: AnnounceEvent, entry: Entry, note?: Note) {
+		const action = {
+			create: 'created',
+			note: 'noted on',
+			remove: 'removed',
+			removenote: 'removed a note on',
+			edit: 'edited',
+			move: 'moved',
+		}[ev];
+		if (!action) {
+			console.log(`!! unexpected action ${action} in announce.entry`);
+			return;
 		}
-		queue.splice(0, queue.length);
-		return;
-	}
-	const m = queue.shift();
-	request(m).then(
-		() => {
-			console.log(`-> '${m.body.embeds[0].title}' announced`);
-			setTimeout(send_off, 0);
-		},
-		err => {
-			queue.push(m);
-			if (err.statusCode === 429) setTimeout(send_off, err.error.retryAfter);
-			else {
-				console.log(`-> error when posting message: ${err.stack}`);
-				if (err.statusCode !== 400) setTimeout(send_off, 0);
-			}
-		},
-	);
-}
 
-let enabled: boolean;
-let options: { enabled: boolean; hook: string };
-const queue: request.Options[] = [];
-export function state_change() {
-	options = this ?? {};
-	if (enabled !== options.enabled)
-		for (const ev of event_types)
-			commons.emitter[options.enabled ? 'on' : 'off'](ev, onAnnounceEvent);
-	enabled = options.enabled;
-	if (!enabled) queue.splice(0, queue.length);
+		const scope =
+			ev === 'move'
+				? ` to scope __${entry.scope}__`
+				: entry.scope !== 'en'
+				? ` in scope __${entry.scope}__`
+				: '';
+		const title = note
+			? `*${note.user}* ${action} **${entry.head}**`
+			: `*${entry.user}* ${action} **${entry.head}**${scope}`;
+
+		const noteField = () => ({
+			name: trim(256, `(definition by *${entry.user}*${scope})`),
+			value: trim(1024, entry.body),
+		});
+		const backlink = `${commons.config.entry_point}#%23${entry.id}`;
+
+		const payload: WebhookEmbed = {
+			color: shared.color_for(note?.user ?? entry.user).hex,
+			title: trim(256, title),
+			fields: note ? [noteField()] : undefined,
+			description: trim(4096, note ? note.content : entry.body),
+			url: ev !== 'remove' ? backlink : undefined,
+		};
+		this.message(payload);
+	}
+
+	public message(what: WebhookEmbed) {
+		if (!this.enabled) return;
+		const url: string = this.hook;
+		if (!url) return;
+		const color = what.color ?? 0;
+		const entrypoint = what.url ?? commons.config.entry_point;
+		const req: request.Options = {
+			url,
+			method: 'POST',
+			json: true,
+			body: { embeds: [{ color, url: entrypoint, ...what }] },
+		};
+		if (this.queue.push(req) === 1) setTimeout(() => this.send_off(), 0);
+	}
+
+	private send_off() {
+		if (!this.queue.length) return;
+		if (this.queue.length > 10) {
+			const top = this.queue[0];
+			if (top?.body?.embeds?.[0]?.title) {
+				const title = trim(200, top.body.embeds[0].title);
+				const n = this.queue.length - 1;
+				top.body.embeds[0].title = `${title} (+ ${n} other events)`;
+				request(top);
+			} else {
+				this.message({ title: `${this.queue.length} events omitted` });
+			}
+			this.queue.splice(0, this.queue.length);
+			return;
+		}
+		const m = this.queue.shift();
+		request(m).then(
+			() => {
+				console.log(`-> '${m.body.embeds[0].title}' announced`);
+				setTimeout(() => this.send_off(), 0);
+			},
+			err => {
+				this.queue.push(m);
+				if (err.statusCode === 429)
+					setTimeout(() => this.send_off(), err.error.retryAfter);
+				else {
+					console.log(`-> error when posting message: ${err.stack}`);
+					if (err.statusCode !== 400) setTimeout(() => this.send_off(), 0);
+				}
+			},
+		);
+	}
+
+	public up(emitter: EventEmitter) {
+		for (const et of event_types) {
+			emitter.on(et, (e, entry, note) => this.onAnnounceEvent(e, entry, note));
+		}
+	}
 }
