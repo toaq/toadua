@@ -182,6 +182,20 @@ actions.vote = guard(
 		e.votes[uname] = i.vote;
 		e.score += i.vote - old_vote;
 		ret(good({ entry: present(e, uname) }));
+
+		const cleanup = config.modules['modules/cleanup.js'];
+		if (cleanup.enabled) {
+			const culpable = !cleanup.users || cleanup.users.includes(e.user);
+			const bad = e.score <= cleanup.vote_threshold;
+			if (culpable && bad) {
+				call(
+					{ action: 'remove', id: e.id },
+					() => console.log(`-- ${e.head} weeded out`),
+					e.user,
+				);
+			}
+		}
+
 		emitter.emit('vote', e, uname);
 	},
 );

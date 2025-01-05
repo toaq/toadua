@@ -2,14 +2,11 @@
 // load from disk, save to disk, do backups
 
 import * as commons from '../core/commons.js';
-const store = commons.store;
 
-import * as http from 'node:http';
 import * as fs from 'node:fs';
 import * as zlib from 'node:zlib';
-import * as stream from 'node:stream';
 
-export function read(fname, deft) {
+function read(fname, deft) {
 	let gzip: any;
 	try {
 		gzip = fs.readFileSync(fname);
@@ -71,9 +68,9 @@ function write_(fname: string, data: any, guard_override: boolean) {
 	return true;
 }
 
-export const using: Record<string, true> = {};
+const using: Record<string, true> = {};
 
-export function write(fname: string, data, guard_override?: boolean) {
+function write(fname: string, data, guard_override?: boolean) {
 	if (using[fname])
 		console.log(`warning: '${fname}' is already being written to`);
 	using[fname] = true;
@@ -90,7 +87,7 @@ export function write(fname: string, data, guard_override?: boolean) {
 	return res;
 }
 
-export function backup() {
+function backup(store: commons.Store) {
 	try {
 		fs.mkdirSync('backup');
 	} catch (e) {
@@ -108,28 +105,27 @@ export function backup() {
 		console.log('note: backup failed');
 }
 
-export function save() {
+function save(store: commons.Store) {
 	return ((a, b) => a && b)(
 		write('data/dict.json.gz', store.db),
 		write('data/accounts.json.gz', store.pass),
 	);
 }
 
-const acts = { save_interval: save, backup_interval: backup };
-let first_go = true;
-const intervals = {};
-export function state_change() {
-	for (const k of Object.keys(acts)) {
-		if (intervals[k]) commons.clearInterval(intervals[k]);
-		if (this && this.enabled && this[k])
-			intervals[k] = commons.setInterval(acts[k], this[k]);
-	}
-	if (first_go) {
+export class DiskModule {
+	constructor(
+		private save_interval: number,
+		private backup_interval: number,
+	) {}
+
+	public up(store: commons.Store): void {
+		commons.setInterval(_ => save(store), this.save_interval);
+		commons.setInterval(_ => backup(store), this.backup_interval);
 		store.db = read('data/dict.json.gz', { entries: [] });
 		store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} });
-		first_go = false;
-	} else if (!this) {
+	}
+	public down(store: commons.Store): void {
 		console.log('trying to save data...');
-		save();
+		save(store);
 	}
 }

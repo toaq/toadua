@@ -217,7 +217,21 @@ export interface ToaduaConfig {
 	 */
 	password_rounds: number;
 
-	modules: Record<string, object>;
+	modules: {
+		'modules/disk.js'?: {
+			enabled: boolean;
+			save_interval: number;
+			backup_interval: number;
+		};
+		'modules/housekeep.js'?: Record<string, never>;
+		'modules/update.js'?: { enabled: boolean; save_interval: number };
+		'modules/cleanup.js'?: {
+			enabled: boolean;
+			vote_threshold: number;
+			users?: string[];
+		};
+		'modules/announce.js'?: { enabled: boolean; hook: string };
+	};
 }
 
 const toaduaPath = getToaduaPath();
