@@ -493,9 +493,17 @@ export default defineComponent({
 		},
 
 		toggle_theme(): void {
-			this.theme = this.theme === 'light' ? 'dark' : 'light';
+			this.update_theme(this.theme === 'light' ? 'dark' : 'light');
+		},
+
+		update_theme(theme: 'light' | 'dark'): void {
+			this.theme = theme;
+			const system_theme = this.dark_system_theme.matches ? 'dark' : 'light';
 			try {
-				window.localStorage.setItem('user-theme', this.theme);
+				// If the user's theme now matches the system theme, continue following the
+				// system theme
+				if (this.theme === system_theme) this.store.removeItem('user-theme');
+				else this.store.setItem('user-theme', this.theme);
 			} catch (e) {}
 			document.documentElement.className = this.theme;
 		},
@@ -507,6 +515,7 @@ export default defineComponent({
 				"Your browser doesn't support local storage, which is required for the app to function properly. Please consider updating.",
 			);
 		}
+		const dark_system_theme = window.matchMedia('(prefers-color-scheme: dark)');
 		return {
 			dismissed: false,
 			done_searching: false,
@@ -524,11 +533,10 @@ export default defineComponent({
 			scope: 'en',
 			scroll_up: false,
 			store: window.localStorage || null,
+			dark_system_theme,
 			theme:
 				window.localStorage.getItem('user-theme') ??
-				(window.matchMedia('(prefers-color-scheme: dark)').matches
-					? 'dark'
-					: 'light'),
+				(dark_system_theme.matches ? 'dark' : 'light'),
 			token: null as string | null,
 			username: null as string | null,
 			version,
@@ -573,6 +581,10 @@ export default defineComponent({
 			this.navigate(decodeURIComponent(window.location.hash.substring(1))),
 		);
 		document.body.onscroll = () => this.scrape_cache();
+		this.dark_system_theme.addEventListener('change', () => {
+			if (this.store.getItem('user-theme') === null)
+				this.update_theme(this.dark_system_theme.matches ? 'dark' : 'light');
+		});
 	},
 	updated() {
 		if (this.scroll_up) {
