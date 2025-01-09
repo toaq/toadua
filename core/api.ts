@@ -199,24 +199,24 @@ actions.vote = guard(
 	},
 );
 
-actions.note = guard(
-	true,
-	{
-		id: checks.goodid,
-		content: checks.nobomb,
-	},
-	(ret, i, uname) => {
-		const word = by_id(i.id);
-		const this_note = {
-			date: new Date().toISOString(),
-			user: uname,
-			content: replacements(i.content),
-		};
-		word.notes.push(this_note);
-		ret(good({ entry: present(word, uname) }));
-		emitter.emit('note', word, this_note);
-	},
-);
+actions.note = (ret, i, uname) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	const e_content = checks.nobomb(i.content);
+	if (e_content !== true)
+		return ret(flip(`invalid field 'content': ${e_content}`));
+
+	const word = by_id(i.id);
+	const this_note = {
+		date: new Date().toISOString(),
+		user: uname,
+		content: replacements(i.content),
+	};
+	word.notes.push(this_note);
+	ret(good({ entry: present(word, uname) }));
+	emitter.emit('note', word, this_note);
+};
 
 actions.edit = (ret, i, uname) => {
 	if (!uname) return ret(flip('must be logged in'));
