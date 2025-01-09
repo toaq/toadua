@@ -318,29 +318,27 @@ actions.login = guard(
 	},
 );
 
-actions.register = guard(
-	false,
-	{
-		name: it =>
-			(it.match(/^[a-zA-Z]{1,64}$/) && true) ||
-			'name must be 1-64 Latin characters',
-		pass: checks.limit(128),
-	},
-	(ret, i) => {
-		return ret(flip('registrations are temporarily disabled'));
-		// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
-		// store.pass.hashes[i.name] = bcrypt.hashSync(
-		// 	i.pass,
-		// 	config.password_rounds,
-		// );
-		// actions.login(ret, { name: i.name, pass: i.pass });
-	},
-);
+actions.register = (ret: Ret, i: any, uname: string) => {
+	if (!i.name.match(/^[a-zA-Z]{1,64}$/)) {
+		return ret(flip(`invalid field 'id': name must be 1-64 Latin characters`));
+	}
+	const e_pass = checks.limit(128)(i.pass);
+	if (e_pass !== true) ret(flip(`invalid field 'pass': ${e_pass}`));
 
-actions.logout = guard(true, {}, (ret, i, uname) => {
+	return ret(flip('registrations are temporarily disabled'));
+	// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
+	// store.pass.hashes[i.name] = bcrypt.hashSync(
+	// 	i.pass,
+	// 	config.password_rounds,
+	// );
+	// actions.login(ret, { name: i.name, pass: i.pass });
+};
+
+actions.logout = (ret: Ret, i: any, uname: string) => {
+	if (!uname) return ret(flip('must be logged in'));
 	delete store.pass.tokens[i.token];
 	ret(good());
-});
+};
 
 actions.remove = (ret: Ret, i: any, uname: string) => {
 	if (!uname) return ret(flip('must be logged in'));
