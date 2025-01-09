@@ -275,31 +275,31 @@ actions.removenote = guard(
 export const replacements = (s: string): string =>
 	s.replace(/___/g, '▯').replace(/\s+$/g, '').normalize('NFC');
 
-actions.create = guard(
-	true,
-	{
-		head: checks.nobomb,
-		body: checks.nobomb,
-		scope: checks.scope,
-	},
-	(ret, i, uname) => {
-		const id = shortid.generate();
-		const this_entry: Entry = {
-			id,
-			date: new Date().toISOString(),
-			head: shared.normalize(i.head),
-			body: replacements(i.body),
-			user: uname,
-			scope: i.scope,
-			notes: [],
-			votes: {},
-			score: 0,
-		};
-		store.db.entries.push(this_entry);
-		ret(good({ entry: present(this_entry, uname) }));
-		emitter.emit('create', this_entry);
-	},
-);
+actions.create = (ret, i, uname) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_head = checks.nobomb(i.head);
+	if (e_head !== true) return ret(flip(`invalid field 'head': ${e_head}`));
+	const e_body = checks.nobomb(i.body);
+	if (e_body !== true) return ret(flip(`invalid field 'body': ${e_body}`));
+	const e_scope = checks.scope(i.scope);
+	if (e_scope !== true) return ret(flip(`invalid field 'scope': ${e_scope}`));
+
+	const id = shortid.generate();
+	const this_entry: Entry = {
+		id,
+		date: new Date().toISOString(),
+		head: shared.normalize(i.head),
+		body: replacements(i.body),
+		user: uname,
+		scope: i.scope,
+		notes: [],
+		votes: {},
+		score: 0,
+	};
+	store.db.entries.push(this_entry);
+	ret(good({ entry: present(this_entry, uname) }));
+	emitter.emit('create', this_entry);
+};
 
 actions.login = (ret, i) => {
 	const e_name = checks.present(i.name);
