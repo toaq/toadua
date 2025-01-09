@@ -342,18 +342,15 @@ actions.logout = guard(true, {}, (ret, i, uname) => {
 	ret(good());
 });
 
-actions.remove = guard(
-	true,
-	{
-		id: checks.goodid,
-	},
-	(ret, i, uname) => {
-		const index = index_of(i.id);
-		const entry = store.db.entries[index];
-		if (entry.user !== uname)
-			return ret(flip('you are not the owner of this entry'));
-		store.db.entries.splice(index, 1);
-		ret(good());
-		emitter.emit('remove', entry);
-	},
-);
+actions.remove = (ret: Ret, i: any, uname: string) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	const index = index_of(i.id);
+	const entry = store.db.entries[index];
+	if (entry.user !== uname)
+		return ret(flip('you are not the owner of this entry'));
+	store.db.entries.splice(index, 1);
+	ret(good());
+	emitter.emit('remove', entry);
+};
