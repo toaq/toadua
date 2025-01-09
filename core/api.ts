@@ -244,33 +244,32 @@ actions.edit = guard(
 	},
 );
 
-actions.removenote = guard(
-	true,
-	{
-		id: checks.goodid,
-		date: checks.present,
-	},
-	(ret, i, uname) => {
-		const word = by_id(i.id);
-		const keep = [];
-		const removed_notes = [];
-		for (const note of word.notes) {
-			if (note.user === uname && note.date === i.date) {
-				removed_notes.push(note);
-			} else {
-				keep.push(note);
-			}
+actions.removenote = (ret, i, uname) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	const e_date = checks.present(i.date);
+	if (e_date !== true) return ret(flip(`invalid field 'date': ${e_date}`));
+
+	const word = by_id(i.id);
+	const keep = [];
+	const removed_notes = [];
+	for (const note of word.notes) {
+		if (note.user === uname && note.date === i.date) {
+			removed_notes.push(note);
+		} else {
+			keep.push(note);
 		}
-		if (keep.length === word.notes.length) {
-			return ret(flip('no such note by you'));
-		}
-		word.notes = keep;
-		for (const note of removed_notes) {
-			emitter.emit('removenote', word, note);
-		}
-		ret(good({ entry: present(word, uname) }));
-	},
-);
+	}
+	if (keep.length === word.notes.length) {
+		return ret(flip('no such note by you'));
+	}
+	word.notes = keep;
+	for (const note of removed_notes) {
+		emitter.emit('removenote', word, note);
+	}
+	ret(good({ entry: present(word, uname) }));
+};
 
 export const replacements = (s: string): string =>
 	s.replace(/___/g, '▯').replace(/\s+$/g, '').normalize('NFC');
