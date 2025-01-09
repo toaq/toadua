@@ -145,9 +145,7 @@ function present(e: Entry, uname: string | undefined): PresentedEntry {
 	};
 }
 
-actions.welcome = guard(false, {}, (ret, i, uname) =>
-	ret(good({ name: uname })),
-);
+actions.welcome = (ret, i, uname) => ret(good({ name: uname }));
 
 actions.search = guard(
 	false,
@@ -165,9 +163,9 @@ actions.search = guard(
 	},
 );
 
-actions.count = guard(false, {}, (ret, i, uname) => {
+actions.count = (ret, i, uname) => {
 	ret(good({ count: store.db.entries.length }));
-});
+};
 
 actions.vote = (ret, i, uname) => {
 	if (!uname) return ret(flip('must be logged in'));
