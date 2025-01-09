@@ -84,25 +84,6 @@ const actions: Record<string, Action> = {};
 const flip = (e: string): ApiError => ({ success: false, error: e });
 const good = (d?: ApiBody): ApiResponse => ({ success: true, ...d });
 
-type Check = (x: any) => true | string;
-
-function guard(
-	logged_in: boolean,
-	conds: Record<string, Check>,
-	f: ActionFunction,
-): Action {
-	const res: Action = (ret, i: object, uname: string | undefined) => {
-		if (logged_in && !uname) return ret(flip('must be logged in'));
-		if (conds)
-			for (const [k, v] of Object.entries(conds)) {
-				const err = v(i[k]);
-				if (err !== true) return ret(flip(`invalid field '${k}'${`: ${err}`}`));
-			}
-		f(ret, i, uname);
-	};
-	return res;
-}
-
 const limit = (lim: number) => (i: unknown) =>
 	!i || typeof i !== 'string'
 		? 'absent'
