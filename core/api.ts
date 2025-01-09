@@ -218,31 +218,31 @@ actions.note = guard(
 	},
 );
 
-actions.edit = guard(
-	true,
-	{
-		id: checks.goodid,
-		body: checks.nobomb,
-		scope: checks.scope,
-	},
-	(ret, i, uname) => {
-		const word = by_id(i.id);
-		if (word.user !== uname) {
-			return ret(flip('you are not the owner of this entry'));
-		}
-		const new_body = replacements(i.body);
-		const body_changed = word.body !== new_body;
-		const scope_changed = word.scope !== i.scope;
-		word.body = new_body;
-		word.scope = i.scope;
-		ret(good({ entry: present(word, uname) }));
-		if (body_changed) {
-			emitter.emit('edit', word);
-		} else if (scope_changed) {
-			emitter.emit('move', word);
-		}
-	},
-);
+actions.edit = (ret, i, uname) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	const e_body = checks.nobomb(i.body);
+	if (e_body !== true) return ret(flip(`invalid field 'body': ${e_body}`));
+	const e_scope = checks.scope(i.scope);
+	if (e_scope !== true) return ret(flip(`invalid field 'scope': ${e_scope}`));
+
+	const word = by_id(i.id);
+	if (word.user !== uname) {
+		return ret(flip('you are not the owner of this entry'));
+	}
+	const new_body = replacements(i.body);
+	const body_changed = word.body !== new_body;
+	const scope_changed = word.scope !== i.scope;
+	word.body = new_body;
+	word.scope = i.scope;
+	ret(good({ entry: present(word, uname) }));
+	if (body_changed) {
+		emitter.emit('edit', word);
+	} else if (scope_changed) {
+		emitter.emit('move', word);
+	}
+};
 
 actions.removenote = (ret, i, uname) => {
 	if (!uname) return ret(flip('must be logged in'));
