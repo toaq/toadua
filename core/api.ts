@@ -126,7 +126,9 @@ function present(e: Entry, uname: string | undefined): PresentedEntry {
 	};
 }
 
-actions.welcome = (ret, i, uname) => ret(good({ name: uname }));
+actions.welcome = (ret, i, uname) => {
+	return ret(good({ name: uname }));
+};
 
 actions.search = (ret, i, uname) => {
 	const e_query = checks.present(i.query);
@@ -147,8 +149,8 @@ actions.search = (ret, i, uname) => {
 			flip(`invalid field 'preferred_scope_bias': ${e_preferred_scope_bias}`),
 		);
 	const data = search.search(i, uname);
-	if (typeof data === 'string') ret(flip(data));
-	else ret(good({ results: data }));
+	if (typeof data === 'string') return ret(flip(data));
+	return ret(good({ results: data }));
 };
 
 actions.count = (ret, i, uname) => {
@@ -296,8 +298,9 @@ actions.login = (ret, i) => {
 	if (bcrypt.compareSync(i.pass, expected)) {
 		const token = uuid.v4();
 		store.pass.tokens[token] = { name: i.name, last: +new Date() };
-		ret(good({ token }));
-	} else ret(flip("password doesn't match"));
+		return ret(good({ token }));
+	}
+	return ret(flip("password doesn't match"));
 };
 
 actions.register = (ret: Ret, i: any, uname: string) => {
@@ -305,7 +308,7 @@ actions.register = (ret: Ret, i: any, uname: string) => {
 		return ret(flip(`invalid field 'id': name must be 1-64 Latin characters`));
 	}
 	const e_pass = checks.limit(128)(i.pass);
-	if (e_pass !== true) ret(flip(`invalid field 'pass': ${e_pass}`));
+	if (e_pass !== true) return ret(flip(`invalid field 'pass': ${e_pass}`));
 
 	return ret(flip('registrations are temporarily disabled'));
 	// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
