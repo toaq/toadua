@@ -169,35 +169,34 @@ actions.count = guard(false, {}, (ret, i, uname) => {
 	ret(good({ count: store.db.entries.length }));
 });
 
-actions.vote = guard(
-	true,
-	{
-		id: checks.goodid,
-		vote: _ => [-1, 0, 1].includes(_) || 'invalid vote',
-	},
-	(ret, i, uname) => {
-		const e = by_id(i.id);
-		const old_vote = e.votes[uname] || 0;
-		e.votes[uname] = i.vote;
-		e.score += i.vote - old_vote;
-		ret(good({ entry: present(e, uname) }));
+actions.vote = (ret, i, uname) => {
+	if (!uname) return ret(flip('must be logged in'));
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	const e_vote = [-1, 0, 1].includes(i.vote) || 'invalid vote';
+	if (e_vote !== true) return ret(flip(`invalid field 'id': ${e_id}`));
 
-		const cleanup = config.modules['modules/cleanup.js'];
-		if (cleanup.enabled) {
-			const culpable = !cleanup.users || cleanup.users.includes(e.user);
-			const bad = e.score <= cleanup.vote_threshold;
-			if (culpable && bad) {
-				call(
-					{ action: 'remove', id: e.id },
-					() => console.log(`-- ${e.head} weeded out`),
-					e.user,
-				);
-			}
+	const e = by_id(i.id);
+	const old_vote = e.votes[uname] || 0;
+	e.votes[uname] = i.vote;
+	e.score += i.vote - old_vote;
+	ret(good({ entry: present(e, uname) }));
+
+	const cleanup = config.modules['modules/cleanup.js'];
+	if (cleanup.enabled) {
+		const culpable = !cleanup.users || cleanup.users.includes(e.user);
+		const bad = e.score <= cleanup.vote_threshold;
+		if (culpable && bad) {
+			call(
+				{ action: 'remove', id: e.id },
+				() => console.log(`-- ${e.head} weeded out`),
+				e.user,
+			);
 		}
+	}
 
-		emitter.emit('vote', e, uname);
-	},
-);
+	emitter.emit('vote', e, uname);
+};
 
 actions.note = (ret, i, uname) => {
 	if (!uname) return ret(flip('must be logged in'));
