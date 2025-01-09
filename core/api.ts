@@ -147,21 +147,28 @@ function present(e: Entry, uname: string | undefined): PresentedEntry {
 
 actions.welcome = (ret, i, uname) => ret(good({ name: uname }));
 
-actions.search = guard(
-	false,
-	{
-		query: checks.present,
-		ordering: checks.optional(checks.nobomb),
-		limit: checks.optional(checks.number),
-		preferred_scope: checks.optional(checks.scope),
-		preferred_scope_bias: checks.optional(checks.number),
-	},
-	(ret, i, uname) => {
-		const data = search.search(i, uname);
-		if (typeof data === 'string') ret(flip(data));
-		else ret(good({ results: data }));
-	},
-);
+actions.search = (ret, i, uname) => {
+	const e_query = checks.present(i.query);
+	if (e_query !== true) return ret(flip(`invalid field 'query': ${e_query}`));
+	const e_ordering = checks.optional(checks.nobomb)(i.ordering);
+	if (e_ordering !== true)
+		return ret(flip(`invalid field 'ordering': ${e_ordering}`));
+	const e_limit = checks.optional(checks.number)(i.limit);
+	if (e_limit !== true) return ret(flip(`invalid field 'limit': ${e_limit}`));
+	const e_preferred_scope = checks.optional(checks.scope)(i.preferred_scope);
+	if (e_preferred_scope !== true)
+		return ret(flip(`invalid field 'preferred_scope': ${e_preferred_scope}`));
+	const e_preferred_scope_bias = checks.optional(checks.number)(
+		i.preferred_scope_bias,
+	);
+	if (e_preferred_scope_bias !== true)
+		return ret(
+			flip(`invalid field 'preferred_scope_bias': ${e_preferred_scope_bias}`),
+		);
+	const data = search.search(i, uname);
+	if (typeof data === 'string') ret(flip(data));
+	else ret(good({ results: data }));
+};
 
 actions.count = (ret, i, uname) => {
 	ret(good({ count: store.db.entries.length }));
