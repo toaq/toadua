@@ -301,22 +301,20 @@ actions.create = guard(
 	},
 );
 
-actions.login = guard(
-	false,
-	{
-		name: checks.present,
-		pass: checks.present,
-	},
-	(ret, i) => {
-		const expected = store.pass.hashes[i.name];
-		if (!expected) return ret(flip('user not registered'));
-		if (bcrypt.compareSync(i.pass, expected)) {
-			const token = uuid.v4();
-			store.pass.tokens[token] = { name: i.name, last: +new Date() };
-			ret(good({ token }));
-		} else ret(flip("password doesn't match"));
-	},
-);
+actions.login = (ret, i) => {
+	const e_name = checks.present(i.name);
+	if (e_name !== true) return ret(flip(`invalid field 'name': ${e_name}`));
+	const e_pass = checks.present(i.pass);
+	if (e_pass !== true) return ret(flip(`invalid field 'pass': ${e_pass}`));
+
+	const expected = store.pass.hashes[i.name];
+	if (!expected) return ret(flip('user not registered'));
+	if (bcrypt.compareSync(i.pass, expected)) {
+		const token = uuid.v4();
+		store.pass.tokens[token] = { name: i.name, last: +new Date() };
+		ret(good({ token }));
+	} else ret(flip("password doesn't match"));
+};
 
 actions.register = (ret: Ret, i: any, uname: string) => {
 	if (!i.name.match(/^[a-zA-Z]{1,64}$/)) {
