@@ -119,8 +119,8 @@ export class DiskModule {
 	) {}
 
 	public up(store: commons.Store): void {
-		commons.setInterval(_ => save(store), this.save_interval);
-		commons.setInterval(_ => backup(store), this.backup_interval);
+		setInterval(_ => save(store), this.save_interval);
+		setInterval(_ => backup(store), this.backup_interval);
 		store.db = read('data/dict.json.gz', { entries: [] });
 		store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} });
 	}
