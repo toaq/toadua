@@ -28,7 +28,7 @@ export type ApiResponse = ApiError | ApiSuccess;
 type Ret = (response: ApiResponse) => any;
 
 type ActionFunction = (ret: Ret, i: any, uname?: string) => void;
-type Action = ActionFunction & { checks: Record<string, Check> };
+type Action = ActionFunction;
 
 // `sudoUname` is used to override the user – a kind of sudo mode
 export function call(i: any, baseRet: Ret, sudoUname?: string) {
@@ -58,7 +58,7 @@ export function call(i: any, baseRet: Ret, sudoUname?: string) {
 	const entries = Object.entries(i)
 		.filter(
 			([k, v]) =>
-				Object.keys({ ...(action.checks || {}), uname: uname }).includes(k) &&
+				// Object.keys({ ...(action.checks || {}), uname: uname }).includes(k) &&
 				k !== 'pass',
 		)
 		.map(([k, v]) => `${k}=${JSON.stringify(v)}`)
@@ -100,7 +100,6 @@ function guard(
 			}
 		f(ret, i, uname);
 	};
-	res.checks = conds;
 	return res;
 }
 
