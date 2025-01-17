@@ -186,10 +186,7 @@ export class UpdateModule {
 
 	public up(store: commons.Store) {
 		if (this.enabled) {
-			commons.setInterval(
-				() => this.sync_resources(store),
-				this.update_interval,
-			);
+			setInterval(() => this.sync_resources(store), this.update_interval);
 		}
 	}
 }

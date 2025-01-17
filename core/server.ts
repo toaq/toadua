@@ -251,7 +251,6 @@ function bye(error) {
 	if (error.stack) console.log(`uncaught exception: ${error.stack}`);
 	else console.log(`caught signal ${error}`);
 	console.log('trying to exit gracefully');
-	commons.clearAllIntervals();
 	server.close();
 	for (const connection of connections) {
 		connection.destroy();

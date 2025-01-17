@@ -62,32 +62,6 @@ export function deburrMatch(
 	return count;
 }
 
-const real_setInterval = global.setInterval;
-const real_clearInterval = global.clearInterval;
-
-const interval_cache = [];
-export function setInterval(
-	callback: (...args: any[]) => void,
-	ms?: number,
-): NodeJS.Timer {
-	const this_one = real_setInterval(callback, ms).unref();
-	interval_cache.push(this_one);
-	return this_one;
-}
-
-export function clearInterval(i: string | number | NodeJS.Timeout): void {
-	real_clearInterval(i);
-	const index = interval_cache.indexOf(i);
-	if (index !== -1) interval_cache.splice(index, 1);
-}
-
-export function clearAllIntervals(): void {
-	for (const interval of interval_cache) {
-		clearInterval(interval);
-	}
-	interval_cache.length = 0;
-}
-
 const emitter = new EventEmitter();
 emitter.setMaxListeners(Number.POSITIVE_INFINITY);
 const _emitter = emitter;
