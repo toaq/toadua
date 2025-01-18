@@ -94,9 +94,6 @@ const checks = {
 			? 'scope is not string'
 			: !!i.match(/^[a-z-]{1,24}$/) || 'scope must match [a-z-]{1,24}',
 	number: i => (i && typeof i === 'number') || 'not a valid number',
-	uuid: i =>
-		/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/.test(i) ||
-		'not a valid token UUID',
 	limit,
 	nobomb: limit(2048),
 	optional:
