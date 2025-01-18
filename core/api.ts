@@ -95,7 +95,6 @@ const checks = {
 			: !!i.match(/^[a-z-]{1,24}$/) || 'scope must match [a-z-]{1,24}',
 	number: i => (i && typeof i === 'number') || 'not a valid number',
 	limit,
-	nobomb: limit(2048),
 	optional:
 		<S>(f: (s: S) => true | string) =>
 		(s: S) =>
@@ -124,7 +123,7 @@ actions.welcome = async (i, uname) => {
 
 actions.search = async (i, uname) => {
 	if (!i.query) return flip(`invalid field 'query': absent`);
-	const e_ordering = checks.optional(checks.nobomb)(i.ordering);
+	const e_ordering = checks.optional(checks.limit(2048))(i.ordering);
 	if (e_ordering !== true)
 		return flip(`invalid field 'ordering': ${e_ordering}`);
 	const e_limit = checks.optional(checks.number)(i.limit);
@@ -175,7 +174,7 @@ actions.vote = async (i, uname) => {
 
 actions.note = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_content = checks.nobomb(i.content);
+	const e_content = checks.limit(2048)(i.content);
 	if (e_content !== true) return flip(`invalid field 'content': ${e_content}`);
 
 	const word = by_id(i.id);
@@ -192,7 +191,7 @@ actions.note = async (i, uname) => {
 
 actions.edit = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_body = checks.nobomb(i.body);
+	const e_body = checks.limit(2048)(i.body);
 	if (e_body !== true) return flip(`invalid field 'body': ${e_body}`);
 	const e_scope = checks.scope(i.scope);
 	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
@@ -245,9 +244,9 @@ export const replacements = (s: string): string =>
 
 actions.create = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_head = checks.nobomb(i.head);
+	const e_head = checks.limit(2048)(i.head);
 	if (e_head !== true) return flip(`invalid field 'head': ${e_head}`);
-	const e_body = checks.nobomb(i.body);
+	const e_body = checks.limit(2048)(i.body);
 	if (e_body !== true) return flip(`invalid field 'body': ${e_body}`);
 	const e_scope = checks.scope(i.scope);
 	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
