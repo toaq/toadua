@@ -25,21 +25,19 @@ export type ApiError = { success: false; error: string };
 export type ApiSuccess = { success: true } & ApiBody;
 export type ApiResponse = ApiError | ApiSuccess;
 
-type Ret = (response: ApiResponse) => any;
-
-type ActionFunction = (ret: Ret, i: any, uname?: string) => void;
+type ActionFunction = (i: any, uname?: string) => Promise<ApiResponse>;
 type Action = ActionFunction;
 
 // `sudoUname` is used to override the user – a kind of sudo mode
-export function call(i: any, baseRet: Ret, sudoUname?: string) {
+export async function call(i: any, sudoUname?: string): Promise<ApiResponse> {
 	const time = +new Date();
 	const action = Object.hasOwn(actions, i.action) && actions[i.action];
 	if (!action) {
 		console.log(`%% action '${i.action}' unknown`);
-		return baseRet(flip('unknown action'));
+		return flip('unknown action');
 	}
-	let ret: Ret = baseRet;
 	let uname: string | undefined = sudoUname;
+	let tokenExpired = false;
 	if (!uname && 'token' in i && typeof i.token === 'string') {
 		const token = store.pass.tokens[i.token];
 		if (token) {
@@ -47,11 +45,7 @@ export function call(i: any, baseRet: Ret, sudoUname?: string) {
 			const now = +new Date();
 			if (now > token.last + config.token_expiry) {
 				delete store.pass.tokens[i.token];
-				ret = (old_ret => data => {
-					if (data.success === false && data.error === 'must be logged in')
-						old_ret(flip('token has expired'));
-					else old_ret(data);
-				})(ret);
+				tokenExpired = true;
 			} else store.pass.tokens[i.token].last = now;
 		}
 	}
@@ -65,14 +59,19 @@ export function call(i: any, baseRet: Ret, sudoUname?: string) {
 		.join(', ');
 	console.log(`%% ${i.action}(${entries})`);
 	try {
-		ret = (old_ret => data => {
-			console.log(`${i.action} returned in ${Date.now() - time} ms`);
-			old_ret(data);
-		})(ret);
-		action(baseRet, i, uname);
+		const result = await action(i, uname);
+		console.log(`${i.action} returned in ${Date.now() - time} ms`);
+		if (
+			result.success === false &&
+			result.error === 'must be logged in' &&
+			tokenExpired
+		) {
+			result.error = 'token has expired';
+		}
+		return result;
 	} catch (e) {
 		console.log(`an error occurred: ${e.stack}`);
-		ret(flip('internal error'));
+		return flip('internal error');
 	}
 }
 
@@ -126,73 +125,69 @@ function present(e: Entry, uname: string | undefined): PresentedEntry {
 	};
 }
 
-actions.welcome = (ret, i, uname) => {
-	return ret(good({ name: uname }));
+actions.welcome = async (i, uname) => {
+	return good({ name: uname });
 };
 
-actions.search = (ret, i, uname) => {
+actions.search = async (i, uname) => {
 	const e_query = checks.present(i.query);
-	if (e_query !== true) return ret(flip(`invalid field 'query': ${e_query}`));
+	if (e_query !== true) return flip(`invalid field 'query': ${e_query}`);
 	const e_ordering = checks.optional(checks.nobomb)(i.ordering);
 	if (e_ordering !== true)
-		return ret(flip(`invalid field 'ordering': ${e_ordering}`));
+		return flip(`invalid field 'ordering': ${e_ordering}`);
 	const e_limit = checks.optional(checks.number)(i.limit);
-	if (e_limit !== true) return ret(flip(`invalid field 'limit': ${e_limit}`));
+	if (e_limit !== true) return flip(`invalid field 'limit': ${e_limit}`);
 	const e_preferred_scope = checks.optional(checks.scope)(i.preferred_scope);
 	if (e_preferred_scope !== true)
-		return ret(flip(`invalid field 'preferred_scope': ${e_preferred_scope}`));
+		return flip(`invalid field 'preferred_scope': ${e_preferred_scope}`);
 	const e_preferred_scope_bias = checks.optional(checks.number)(
 		i.preferred_scope_bias,
 	);
 	if (e_preferred_scope_bias !== true)
-		return ret(
-			flip(`invalid field 'preferred_scope_bias': ${e_preferred_scope_bias}`),
+		return flip(
+			`invalid field 'preferred_scope_bias': ${e_preferred_scope_bias}`,
 		);
 	const data = search.search(i, uname);
-	if (typeof data === 'string') return ret(flip(data));
-	return ret(good({ results: data }));
+	if (typeof data === 'string') return flip(data);
+	return good({ results: data });
 };
 
-actions.count = (ret, i, uname) => {
-	ret(good({ count: store.db.entries.length }));
+actions.count = async (i, uname) => {
+	return good({ count: store.db.entries.length });
 };
 
-actions.vote = (ret, i, uname) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.vote = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_vote = [-1, 0, 1].includes(i.vote) || 'invalid vote';
-	if (e_vote !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_vote !== true) return flip(`invalid field 'id': ${e_id}`);
 
 	const e = by_id(i.id);
 	const old_vote = e.votes[uname] || 0;
 	e.votes[uname] = i.vote;
 	e.score += i.vote - old_vote;
-	ret(good({ entry: present(e, uname) }));
 
 	const cleanup = config.modules['modules/cleanup.js'];
 	if (cleanup.enabled) {
 		const culpable = !cleanup.users || cleanup.users.includes(e.user);
 		const bad = e.score <= cleanup.vote_threshold;
 		if (culpable && bad) {
-			call(
-				{ action: 'remove', id: e.id },
-				() => console.log(`-- ${e.head} weeded out`),
-				e.user,
-			);
+			await call({ action: 'remove', id: e.id }, e.user);
+			console.log(`-- ${e.head} weeded out`);
 		}
 	}
 
 	emitter.emit('vote', e, uname);
+	return good({ entry: present(e, uname) });
 };
 
-actions.note = (ret, i, uname) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.note = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_content = checks.nobomb(i.content);
-	if (e_content !== true)
-		return ret(flip(`invalid field 'content': ${e_content}`));
+	if (e_content !== true) return flip(`invalid field 'content': ${e_content}`);
 
 	const word = by_id(i.id);
 	const this_note = {
@@ -201,42 +196,42 @@ actions.note = (ret, i, uname) => {
 		content: replacements(i.content),
 	};
 	word.notes.push(this_note);
-	ret(good({ entry: present(word, uname) }));
 	emitter.emit('note', word, this_note);
+	return good({ entry: present(word, uname) });
 };
 
-actions.edit = (ret, i, uname) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.edit = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_body = checks.nobomb(i.body);
-	if (e_body !== true) return ret(flip(`invalid field 'body': ${e_body}`));
+	if (e_body !== true) return flip(`invalid field 'body': ${e_body}`);
 	const e_scope = checks.scope(i.scope);
-	if (e_scope !== true) return ret(flip(`invalid field 'scope': ${e_scope}`));
+	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
 
 	const word = by_id(i.id);
 	if (word.user !== uname) {
-		return ret(flip('you are not the owner of this entry'));
+		return flip('you are not the owner of this entry');
 	}
 	const new_body = replacements(i.body);
 	const body_changed = word.body !== new_body;
 	const scope_changed = word.scope !== i.scope;
 	word.body = new_body;
 	word.scope = i.scope;
-	ret(good({ entry: present(word, uname) }));
 	if (body_changed) {
 		emitter.emit('edit', word);
 	} else if (scope_changed) {
 		emitter.emit('move', word);
 	}
+	return good({ entry: present(word, uname) });
 };
 
-actions.removenote = (ret, i, uname) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.removenote = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_date = checks.present(i.date);
-	if (e_date !== true) return ret(flip(`invalid field 'date': ${e_date}`));
+	if (e_date !== true) return flip(`invalid field 'date': ${e_date}`);
 
 	const word = by_id(i.id);
 	const keep = [];
@@ -249,26 +244,26 @@ actions.removenote = (ret, i, uname) => {
 		}
 	}
 	if (keep.length === word.notes.length) {
-		return ret(flip('no such note by you'));
+		return flip('no such note by you');
 	}
 	word.notes = keep;
 	for (const note of removed_notes) {
 		emitter.emit('removenote', word, note);
 	}
-	ret(good({ entry: present(word, uname) }));
+	return good({ entry: present(word, uname) });
 };
 
 export const replacements = (s: string): string =>
 	s.replace(/___/g, '▯').replace(/\s+$/g, '').normalize('NFC');
 
-actions.create = (ret, i, uname) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.create = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
 	const e_head = checks.nobomb(i.head);
-	if (e_head !== true) return ret(flip(`invalid field 'head': ${e_head}`));
+	if (e_head !== true) return flip(`invalid field 'head': ${e_head}`);
 	const e_body = checks.nobomb(i.body);
-	if (e_body !== true) return ret(flip(`invalid field 'body': ${e_body}`));
+	if (e_body !== true) return flip(`invalid field 'body': ${e_body}`);
 	const e_scope = checks.scope(i.scope);
-	if (e_scope !== true) return ret(flip(`invalid field 'scope': ${e_scope}`));
+	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
 
 	const id = shortid.generate();
 	const this_entry: Entry = {
@@ -283,35 +278,35 @@ actions.create = (ret, i, uname) => {
 		score: 0,
 	};
 	store.db.entries.push(this_entry);
-	ret(good({ entry: present(this_entry, uname) }));
 	emitter.emit('create', this_entry);
+	return good({ entry: present(this_entry, uname) });
 };
 
-actions.login = (ret, i) => {
+actions.login = async i => {
 	const e_name = checks.present(i.name);
-	if (e_name !== true) return ret(flip(`invalid field 'name': ${e_name}`));
+	if (e_name !== true) return flip(`invalid field 'name': ${e_name}`);
 	const e_pass = checks.present(i.pass);
-	if (e_pass !== true) return ret(flip(`invalid field 'pass': ${e_pass}`));
+	if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
 
 	const expected = store.pass.hashes[i.name];
-	if (!expected) return ret(flip('user not registered'));
+	if (!expected) return flip('user not registered');
 	if (bcrypt.compareSync(i.pass, expected)) {
 		const token = uuid.v4();
 		store.pass.tokens[token] = { name: i.name, last: +new Date() };
-		return ret(good({ token }));
+		return good({ token });
 	}
-	return ret(flip("password doesn't match"));
+	return flip("password doesn't match");
 };
 
-actions.register = (ret: Ret, i: any, uname: string) => {
+actions.register = async (i: any, uname: string) => {
 	if (!i.name.match(/^[a-zA-Z]{1,64}$/)) {
-		return ret(flip(`invalid field 'id': name must be 1-64 Latin characters`));
+		return flip(`invalid field 'id': name must be 1-64 Latin characters`);
 	}
 	const e_pass = checks.limit(128)(i.pass);
-	if (e_pass !== true) return ret(flip(`invalid field 'pass': ${e_pass}`));
+	if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
 
-	return ret(flip('registrations are temporarily disabled'));
-	// if (store.pass.hashes[i.name]) return ret(flip('already registered'));
+	return flip('registrations are temporarily disabled');
+	// if (store.pass.hashes[i.name]) return flip('already registered');
 	// store.pass.hashes[i.name] = bcrypt.hashSync(
 	// 	i.pass,
 	// 	config.password_rounds,
@@ -319,21 +314,20 @@ actions.register = (ret: Ret, i: any, uname: string) => {
 	// actions.login(ret, { name: i.name, pass: i.pass });
 };
 
-actions.logout = (ret: Ret, i: any, uname: string) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.logout = async (i: any, uname: string) => {
+	if (!uname) return flip('must be logged in');
 	delete store.pass.tokens[i.token];
-	ret(good());
+	return good();
 };
 
-actions.remove = (ret: Ret, i: any, uname: string) => {
-	if (!uname) return ret(flip('must be logged in'));
+actions.remove = async (i: any, uname: string) => {
+	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return ret(flip(`invalid field 'id': ${e_id}`));
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const index = index_of(i.id);
 	const entry = store.db.entries[index];
-	if (entry.user !== uname)
-		return ret(flip('you are not the owner of this entry'));
+	if (entry.user !== uname) return flip('you are not the owner of this entry');
 	store.db.entries.splice(index, 1);
-	ret(good());
 	emitter.emit('remove', entry);
+	return good();
 };

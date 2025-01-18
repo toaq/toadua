@@ -113,15 +113,13 @@ export class UpdateModule {
 				if (typeof s === 'string') {
 					console.log(`!! malformed query: ${s}`);
 				} else if (!s.length) {
-					api.call(
+					const res = await api.call(
 						{ action: 'create', head, body, scope: 'en' },
-						(res: any = {}) => {
-							if (!res.success)
-								console.log(`!! '${head}' caused error: ${res.error}`);
-							else console.log(`++ '${head}' added`);
-						},
 						user,
 					);
+					if (res.success === false)
+						console.log(`!! '${head}' caused error: ${res.error}`);
+					else console.log(`++ '${head}' added`);
 				}
 			}
 		}
