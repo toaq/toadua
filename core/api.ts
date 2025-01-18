@@ -97,9 +97,6 @@ const checks = {
 	uuid: i =>
 		/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/.test(i) ||
 		'not a valid token UUID',
-	shortid: i => (i && shortid.isValid(i)) || 'not a valid ID',
-	goodid: i =>
-		(checks.shortid(i) && index_of(i) !== -1) || 'not a recognised ID',
 	limit,
 	nobomb: limit(2048),
 	optional:
@@ -112,7 +109,7 @@ export function index_of(id: string): number {
 	return store.db.entries.findIndex(_ => _.id === id);
 }
 
-export function by_id(id: string): Entry {
+export function by_id(id: string): Entry | undefined {
 	return store.db.entries[index_of(id)];
 }
 
@@ -156,12 +153,11 @@ actions.count = async (i, uname) => {
 
 actions.vote = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_vote = [-1, 0, 1].includes(i.vote) || 'invalid vote';
-	if (e_vote !== true) return flip(`invalid field 'id': ${e_id}`);
+	if (e_vote !== true) return flip(`invalid field 'vote': ${e_vote}`);
 
 	const e = by_id(i.id);
+	if (!e) return flip(`no word with id ${i.id}`);
 	const old_vote = e.votes[uname] || 0;
 	e.votes[uname] = i.vote;
 	e.score += i.vote - old_vote;
@@ -182,12 +178,11 @@ actions.vote = async (i, uname) => {
 
 actions.note = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_content = checks.nobomb(i.content);
 	if (e_content !== true) return flip(`invalid field 'content': ${e_content}`);
 
 	const word = by_id(i.id);
+	if (!word) return flip(`no word with id ${i.id}`);
 	const this_note = {
 		date: new Date().toISOString(),
 		user: uname,
@@ -200,14 +195,13 @@ actions.note = async (i, uname) => {
 
 actions.edit = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const e_body = checks.nobomb(i.body);
 	if (e_body !== true) return flip(`invalid field 'body': ${e_body}`);
 	const e_scope = checks.scope(i.scope);
 	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
 
 	const word = by_id(i.id);
+	if (!word) return flip(`no word with id ${i.id}`);
 	if (word.user !== uname) {
 		return flip('you are not the owner of this entry');
 	}
@@ -226,11 +220,10 @@ actions.edit = async (i, uname) => {
 
 actions.removenote = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
-	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	if (!i.date) return flip(`invalid field 'date': absent`);
 
 	const word = by_id(i.id);
+	if (!word) return flip(`no word with id ${i.id}`);
 	const keep = [];
 	const removed_notes = [];
 	for (const note of word.notes) {
@@ -317,9 +310,8 @@ actions.logout = async (i: any, uname: string) => {
 
 actions.remove = async (i: any, uname: string) => {
 	if (!uname) return flip('must be logged in');
-	const e_id = checks.goodid(i.id);
-	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 	const index = index_of(i.id);
+	if (index === -1) return flip(`no word with id ${i.id}`);
 	const entry = store.db.entries[index];
 	if (entry.user !== uname) return flip('you are not the owner of this entry');
 	store.db.entries.splice(index, 1);
