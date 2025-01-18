@@ -89,7 +89,6 @@ const limit = (lim: number) => (i: unknown) =>
 		: i.length <= lim || `too long (max. ${lim} characters)`;
 
 const checks = {
-	present: i => !!i || 'absent',
 	scope: i =>
 		!(i && typeof i === 'string')
 			? 'scope is not string'
@@ -130,8 +129,7 @@ actions.welcome = async (i, uname) => {
 };
 
 actions.search = async (i, uname) => {
-	const e_query = checks.present(i.query);
-	if (e_query !== true) return flip(`invalid field 'query': ${e_query}`);
+	if (!i.query) return flip(`invalid field 'query': absent`);
 	const e_ordering = checks.optional(checks.nobomb)(i.ordering);
 	if (e_ordering !== true)
 		return flip(`invalid field 'ordering': ${e_ordering}`);
@@ -230,8 +228,7 @@ actions.removenote = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);
 	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
-	const e_date = checks.present(i.date);
-	if (e_date !== true) return flip(`invalid field 'date': ${e_date}`);
+	if (!i.date) return flip(`invalid field 'date': absent`);
 
 	const word = by_id(i.id);
 	const keep = [];
@@ -283,10 +280,8 @@ actions.create = async (i, uname) => {
 };
 
 actions.login = async i => {
-	const e_name = checks.present(i.name);
-	if (e_name !== true) return flip(`invalid field 'name': ${e_name}`);
-	const e_pass = checks.present(i.pass);
-	if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
+	if (!i.name) return flip(`invalid field 'name': absent`);
+	if (!i.pass) return flip(`invalid field 'pass': absent`);
 
 	const expected = store.pass.hashes[i.name];
 	if (!expected) return flip('user not registered');
