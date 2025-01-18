@@ -295,7 +295,7 @@ actions.register = async (i: any, uname: string) => {
 	// 	i.pass,
 	// 	config.password_rounds,
 	// );
-	// actions.login(ret, { name: i.name, pass: i.pass });
+	// await actions.login({ name: i.name, pass: i.pass });
 };
 
 actions.logout = async (i: any, uname: string) => {
