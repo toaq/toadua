@@ -80,7 +80,7 @@ function api_handler(r, s) {
 				r.connection.destroy();
 			}
 		});
-		r.on('end', () => {
+		r.on('end', async () => {
 			let json: unknown;
 			try {
 				json = JSON.parse(body);
@@ -92,13 +92,12 @@ function api_handler(r, s) {
 				return;
 			}
 			try {
-				api.call(json, data => {
-					const versioned = { version: VERSION, ...data };
-					s.writeHead(200, {
-						'content-type': 'application/json; charset=utf-8',
-					});
-					s.end(JSON.stringify(versioned));
+				const data = await api.call(json);
+				const versioned = { version: VERSION, ...data };
+				s.writeHead(200, {
+					'content-type': 'application/json; charset=utf-8',
 				});
+				s.end(JSON.stringify(versioned));
 			} catch (e) {
 				console.log(`unexpected uncaught error: ${e.stack}`);
 				flip(
