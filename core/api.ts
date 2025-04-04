@@ -305,13 +305,15 @@ actions.register = async (i: any, uname: string) => {
 	const e_pass = checks.limit(128)(i.pass);
 	if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
 
-	return flip('registrations are temporarily disabled');
-	// if (store.pass.hashes[i.name]) return flip('already registered');
-	// store.pass.hashes[i.name] = bcrypt.hashSync(
-	// 	i.pass,
-	// 	config.password_rounds,
-	// );
-	// actions.login(ret, { name: i.name, pass: i.pass });
+	if (process.env.NODE_ENV !== "development")
+		return flip('registrations are temporarily disabled');
+
+	if (store.pass.hashes[i.name]) return flip('already registered');
+	store.pass.hashes[i.name] = bcrypt.hashSync(
+		i.pass,
+		config.password_rounds,
+	);
+	return await actions.login({ name: i.name, pass: i.pass });
 };
 
 actions.logout = async (i: any, uname: string) => {
