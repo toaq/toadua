@@ -240,6 +240,12 @@ export default defineComponent({
 
 		normalize: shared.normalize,
 
+		focus_head(): void {
+			setTimeout(() => {
+				document.getElementById('create_name')?.focus();
+			}, 0);
+		},
+
 		focus_body(): void {
 			setTimeout(() => {
 				document.getElementById('create_body')?.focus();
@@ -413,9 +419,9 @@ export default defineComponent({
 		},
 
 		new_word(): void {
-			this.new_head = this.normalize(this.query, true);
+			this.new_head = this.normalize(this.query.replace(/#\S+/g, ""), true);
 			this.navigate('');
-			this.focus_body();
+			this.new_head ? this.focus_body() : this.focus_head();
 		},
 
 		fork(whom: Entry): void {
@@ -586,6 +592,12 @@ export default defineComponent({
 			if (this.store.getItem('user-theme') === null)
 				this.update_theme(this.dark_system_theme.matches ? 'dark' : 'light');
 		});
+		document.body.onkeydown = (e) => {
+			if (e.ctrlKey && e.key === 'd') {
+				e.preventDefault();
+				this.new_word();
+			}
+		}
 	},
 	updated() {
 		if (this.scroll_up) {
