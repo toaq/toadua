@@ -260,7 +260,7 @@ function bare_terms(o: any[]) {
 	}
 }
 
-type Order = (e: CachedEntry, deburrs: string[], bares: string[]) => number;
+type Order = (e: CachedEntry, deburrs: string[], bares: string[]) => any;
 
 const default_ordering: Order = (e, deburrs, bares) => {
 	const official = e.$.user === 'official' ? 1 : 0;
@@ -290,11 +290,18 @@ const default_ordering: Order = (e, deburrs, bares) => {
 };
 
 const base_orders = new Map<string, Order>([
-	['newest', e => +e.date],
-	['oldest', e => -e.date],
-	['highest', e => +e.score],
-	['lowest', e => -e.score],
+	['newest', e => -e.date],
+	['new', e => -e.date],
+	['oldest', e => +e.date],
+	['old', e => +e.date],
+	['highest', e => -e.score],
+	['high', e => -e.score],
+	['lowest', e => +e.score],
+	['low', e => +e.score],
 	['random', Math.random],
+	['alpha', e => e.head],
+	['alphabetic', e => e.head],
+	['alphabetical', e => e.head],
 ]);
 
 function interpret_ordering(
@@ -332,19 +339,19 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		preferred_scope_bias,
 	);
 
-	let results: [CachedEntry, number][];
+	let results: [CachedEntry, any][];
 	if (limit === undefined) {
 		// No limit: in this case it's best to filter everything, then sort
 		results = cache
 			.filter(filter)
-			.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, number])
-			.sort((e1, e2) => e2[1] - e1[1]);
+			.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, any])
+			.sort((e1, e2) => e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0);
 	} else {
 		// In case a limit is given, use a heap to extract the first n matching
 		// entries rather than sorting what would often be the entire dictionary
 		const heap = new Heap(
-			cache.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, number]),
-			(e1, e2) => e2[1] - e1[1],
+			cache.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, any]),
+			(e1, e2) => e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0,
 		);
 
 		results = [];
