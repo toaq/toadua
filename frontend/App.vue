@@ -291,6 +291,7 @@ export default defineComponent({
 				target.value,
 				true,
 				true,
+				this.theme,
 			);
 		},
 

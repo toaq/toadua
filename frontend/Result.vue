@@ -225,7 +225,7 @@ export default defineComponent({
 
 		set_input(e: Event): void {
 			const target = e.target as HTMLInputElement;
-			target.value = this.input = shared.replacements(target.value, true, true);
+			target.value = this.input = shared.replacements(target.value, true, true, this.theme);
 		},
 
 		note(): void {
@@ -245,6 +245,7 @@ export default defineComponent({
 				target.value,
 				true,
 				true,
+				this.theme,
 			);
 		},
 
@@ -264,14 +265,14 @@ export default defineComponent({
 	},
 	computed: {
 		fancy_body(): string {
-			return shared.replacements(this.result.body, false, false);
+			return shared.replacements(this.result.body, false, false, this.theme);
 		},
 		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
 			const result = this.result as Entry;
 			return result.notes.map(({ user, date, content }) => ({
 				user,
 				date,
-				fancy_content: shared.replacements(content, false, false),
+				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
 	},

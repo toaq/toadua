@@ -28,7 +28,6 @@ export interface Color {
 export function convert_hue(h: number, theme?: string): Color {
 	const l = theme === 'dark' ? 80 : 40;
 	const c = theme === 'dark' ? 40 : 60;
-	console.log(color_convert.lch.hex(l, c, h));
 	return {
 		hex: Number.parseInt(color_convert.lch.hex(l, c, h), 16),
 		css: `color: lch(${l}% ${c} ${h});`,
