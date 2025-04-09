@@ -95,7 +95,7 @@ defineProps<{
 				style="display: contents"
 				action="javascript:void('note')"
 				v-if="result.uncollapsed"
-				@keypress.13.prevent="note"
+				@keydown.enter.prevent="note"
 				autocomplete="off"
 			>
 				<div class="note">
@@ -111,8 +111,8 @@ defineProps<{
 					/>
 				</div>
 				<p class="note new_note">
-					<input
-						type="text"
+					<textarea
+						rows="1"
 						autofocus
 						autocomplete="off"
 						placeholder="comment here"
@@ -224,8 +224,11 @@ export default defineComponent({
 		},
 
 		set_input(e: Event): void {
-			const target = e.target as HTMLInputElement;
+			const target = e.target as HTMLTextAreaElement;
 			target.value = this.input = shared.replacements(target.value, true, true, this.theme);
+			target.style.height = "1px";
+			target.style.height = target.scrollHeight + "px";
+			target.style.overflowY = "hidden";
 		},
 
 		note(): void {
