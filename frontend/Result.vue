@@ -132,8 +132,7 @@ defineProps<{
 		</ul>
 		<ul class="controls" v-if="username && !editing">
 			<li v-if="!result.uncollapsed">
-				<input type="button" value="add note" @click="$emit('uncollapse')" />
-				<!-- TODO: for some reason this doesn't work on second, third… try. jfc -->
+				<input type="button" value="add note" @click="$emit('uncollapse'); focus_note()" />
 			</li>
 			<li>
 				<input
@@ -256,6 +255,10 @@ export default defineComponent({
 			this.$emit('edit', this.new_body, this.new_scope);
 			this.editing = false;
 		},
+
+		focus_note(): void {
+			window.setTimeout(() => document.querySelector('.note textarea')?.focus(), 0);
+		}
 	},
 	data() {
 		return {
