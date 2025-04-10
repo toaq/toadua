@@ -73,7 +73,7 @@
 		/>
 	</div>
 	<div class="card" v-if="query || results.length">
-		<h2 class="name">{{ what_should_i_say }}</h2>
+		<h2 class="end-of-results">{{ what_should_i_say }}</h2>
 		<ul
 			class="controls"
 			v-if="done_searching && username && !query.startsWith('#')"
