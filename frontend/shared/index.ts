@@ -89,7 +89,8 @@ export function normalize(s: string, trim?: boolean): string {
 			)
 			.join(' ')
 			.normalize('NFC')
-			.replace(/i/g, 'ı') + suffix
+			.replace(/i/g, 'ı')
+			.replace(/ị(?!\p{Diacritic})/gu, 'ı̣') + suffix
 	);
 }
 
