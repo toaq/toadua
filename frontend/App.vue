@@ -597,6 +597,20 @@ export default defineComponent({
 				e.preventDefault();
 				this.new_word();
 			}
+
+			const inputFocused = document.activeElement && (
+				document.activeElement.tagName === 'INPUT' ||
+				document.activeElement.tagName === 'TEXTAREA'
+			);
+			if (e.key === '/' && !inputFocused) {
+				e.preventDefault();
+				this.focus_search();
+				document.getElementById('search')?.select();
+			}
+
+			if (e.key === 'Escape') {
+				document.activeElement?.blur();
+			}
 		}
 	},
 	updated() {
