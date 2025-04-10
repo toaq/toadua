@@ -593,7 +593,8 @@ export default defineComponent({
 				this.update_theme(this.dark_system_theme.matches ? 'dark' : 'light');
 		});
 		document.body.onkeydown = (e) => {
-			if (e.ctrlKey && e.key === 'd') {
+			const mod = /Mac/.test(navigator.platform) ? e.metaKey : e.ctrlKey;
+			if (mod && e.key === 'd') {
 				e.preventDefault();
 				this.new_word();
 			}
