@@ -29,9 +29,9 @@ html.dark {
 	--pink: hsl(330deg, 100%, 73%);
 	--text-color: hsl(330deg, 25%, 90%);
 	--placeholder-color: hsl(330deg, 0%, 75%);
-	--page-color: hsl(0deg, 0%, 12%);
-	--card-color: hsl(330deg, 0%, 20%);
-	--card-border-color: hsl(330deg, 0%, 40%);
+	--page-color: hsl(0deg, 0%, 10%);
+	--card-color: hsl(330deg, 0%, 17%);
+	--card-border-color: hsl(330deg, 0%, 34%);
 	--menu-color: hsl(210deg, 30%, 30%);
 	--menu-border-color: hsl(210deg, 30%, 60%);
 	--search-text-color: hsl(210deg, 50%, 90%);
