@@ -179,9 +179,6 @@ export function replacements(
 		}
 	}
 	if (i < content.length) accum.push(content.substring(i));
-	if (!plain_text && !still_editing) {
-		return accum.join('').replace(/\\(.)/g, '$1');
-	}
 	return accum.join('');
 }
 
