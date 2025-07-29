@@ -33,12 +33,12 @@
 	},
 	"scripts": {
 		"prepare": "husky install",
-		"build": "npx -p typescript tsc --build",
+		"build": "tsc --build",
 		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js",
 		"check": "npm run prettier:check",
-		"test": "npx vitest",
-		"prettier:check": "npx -p prettier prettier -c .",
-		"prettier:format": "npx -p prettier prettier -w ."
+		"test": "vitest",
+		"prettier:check": "prettier -c .",
+		"prettier:format": "prettier -w ."
 	},
 	"repository": {
 		"type": "git",
