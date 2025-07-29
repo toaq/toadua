@@ -606,11 +606,11 @@ export default defineComponent({
 			if (e.key === '/' && !inputFocused) {
 				e.preventDefault();
 				this.focus_search();
-				document.getElementById('search')?.select();
+				(document.getElementById('search') as HTMLInputElement)?.select();
 			}
 
 			if (e.key === 'Escape') {
-				document.activeElement?.blur();
+				(document.activeElement as HTMLElement)?.blur();
 			}
 		};
 	},

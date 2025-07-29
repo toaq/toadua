@@ -270,7 +270,10 @@ export default defineComponent({
 
 		focus_note(): void {
 			window.setTimeout(
-				() => document.querySelector('.note textarea')?.focus(),
+				() =>
+					(
+						document.querySelector('.note textarea') as HTMLTextAreaElement
+					)?.focus(),
 				0,
 			);
 		},
