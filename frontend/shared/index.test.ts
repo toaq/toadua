@@ -16,15 +16,14 @@ describe('normalize', () => {
 		expect(normalize('rao4 2024')).toMatchInlineSnapshot(`"râo 2024"`);
 
 		// On its own, ı̣ should stay ı̣: a dotless ı with an underdot.
-		expect(normalize('ı̣')).toEqual("ı\u0323");
-		expect(normalize('ji-pai')).toEqual("jı\u0323paı");
+		expect(normalize('ı̣')).toEqual('ı\u0323');
+		expect(normalize('ji-pai')).toEqual('jı\u0323paı');
 		// But when combining a tone on top of that, we should use ị followed by a combining character.
-		expect(normalize('ji2-pai')).toEqual("jị\u0301paı");
+		expect(normalize('ji2-pai')).toEqual('jị\u0301paı');
 		// The same is true for other vowels:
-		expect(normalize('bu4-pai')).toEqual("bụ\u0302paı");
+		expect(normalize('bu4-pai')).toEqual('bụ\u0302paı');
 		// We use precomposed Vietnamese characters when possible:
-		expect(normalize('dâ\u0323')).toEqual("dạ\u0302".normalize());
-		expect(normalize('dê\u0323')).toEqual("d\u1ec7".normalize());
-		
+		expect(normalize('dâ\u0323')).toEqual('dạ\u0302'.normalize());
+		expect(normalize('dê\u0323')).toEqual('d\u1ec7'.normalize());
 	});
 });

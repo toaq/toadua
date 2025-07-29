@@ -345,13 +345,13 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		results = cache
 			.filter(filter)
 			.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, any])
-			.sort((e1, e2) => e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0);
+			.sort((e1, e2) => (e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0));
 	} else {
 		// In case a limit is given, use a heap to extract the first n matching
 		// entries rather than sorting what would often be the entire dictionary
 		const heap = new Heap(
 			cache.map(e => [e, ordering(e, deburrs, bares)] as [CachedEntry, any]),
-			(e1, e2) => e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0,
+			(e1, e2) => (e1[1] < e2[1] ? -1 : e1[1] > e2[1] ? 1 : 0),
 		);
 
 		results = [];

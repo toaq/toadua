@@ -419,7 +419,7 @@ export default defineComponent({
 		},
 
 		new_word(): void {
-			this.new_head = this.normalize(this.query.replace(/#\S+/g, ""), true);
+			this.new_head = this.normalize(this.query.replace(/#\S+/g, ''), true);
 			this.navigate('');
 			this.new_head ? this.focus_body() : this.focus_head();
 		},
@@ -592,17 +592,17 @@ export default defineComponent({
 			if (this.store.getItem('user-theme') === null)
 				this.update_theme(this.dark_system_theme.matches ? 'dark' : 'light');
 		});
-		document.body.onkeydown = (e) => {
+		document.body.onkeydown = e => {
 			const mod = /Mac/.test(navigator.platform) ? e.metaKey : e.ctrlKey;
 			if (mod && e.key === 'd') {
 				e.preventDefault();
 				this.new_word();
 			}
 
-			const inputFocused = document.activeElement && (
-				document.activeElement.tagName === 'INPUT' ||
-				document.activeElement.tagName === 'TEXTAREA'
-			);
+			const inputFocused =
+				document.activeElement &&
+				(document.activeElement.tagName === 'INPUT' ||
+					document.activeElement.tagName === 'TEXTAREA');
 			if (e.key === '/' && !inputFocused) {
 				e.preventDefault();
 				this.focus_search();
@@ -612,7 +612,7 @@ export default defineComponent({
 			if (e.key === 'Escape') {
 				document.activeElement?.blur();
 			}
-		}
+		};
 	},
 	updated() {
 		if (this.scroll_up) {

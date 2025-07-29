@@ -132,7 +132,14 @@ defineProps<{
 		</ul>
 		<ul class="controls" v-if="username && !editing">
 			<li v-if="!result.uncollapsed">
-				<input type="button" value="add note" @click="$emit('uncollapse'); focus_note()" />
+				<input
+					type="button"
+					value="add note"
+					@click="
+						$emit('uncollapse');
+						focus_note();
+					"
+				/>
 			</li>
 			<li>
 				<input
@@ -224,10 +231,15 @@ export default defineComponent({
 
 		set_input(e: Event): void {
 			const target = e.target as HTMLTextAreaElement;
-			target.value = this.input = shared.replacements(target.value, true, true, this.theme);
-			target.style.height = "1px";
-			target.style.height = target.scrollHeight + "px";
-			target.style.overflowY = "hidden";
+			target.value = this.input = shared.replacements(
+				target.value,
+				true,
+				true,
+				this.theme,
+			);
+			target.style.height = '1px';
+			target.style.height = target.scrollHeight + 'px';
+			target.style.overflowY = 'hidden';
 		},
 
 		note(): void {
@@ -257,8 +269,11 @@ export default defineComponent({
 		},
 
 		focus_note(): void {
-			window.setTimeout(() => document.querySelector('.note textarea')?.focus(), 0);
-		}
+			window.setTimeout(
+				() => document.querySelector('.note textarea')?.focus(),
+				0,
+			);
+		},
 	},
 	data() {
 		return {

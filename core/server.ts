@@ -48,8 +48,14 @@ const routes = {
 	'/api': api_handler,
 	'/': static_handler('frontend/index.html', 'text/html'),
 	'/style.css': static_handler('frontend/style.css', 'text/css'),
-	'/FiraSans-Regular-vy.woff2': static_handler('frontend/FiraSans-Regular-vy.woff2', 'font/woff2'),
-	'/FiraSans-Bold-vy.woff2': static_handler('frontend/FiraSans-Bold-vy.woff2', 'font/woff2'),
+	'/FiraSans-Regular-vy.woff2': static_handler(
+		'frontend/FiraSans-Regular-vy.woff2',
+		'font/woff2',
+	),
+	'/FiraSans-Bold-vy.woff2': static_handler(
+		'frontend/FiraSans-Bold-vy.woff2',
+		'font/woff2',
+	),
 	'/frontend.js': static_handler(
 		'frontend/dist/bundle.js',
 		'application/javascript',
