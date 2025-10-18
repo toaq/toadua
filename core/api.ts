@@ -265,12 +265,24 @@ actions.create = async (i, uname) => {
 	const e_scope = checks.scope(i.scope);
 	if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
 
+	// Abort if an entry with exactly the same head, body, and scope exists
+	const normalizedHead = shared.normalize(i.head);
+	const normalizedBody = replacements(i.body);
+	const scope = i.scope;
+	const exists = store.db.entries.some(
+		e =>
+			e.head === normalizedHead &&
+			e.body === normalizedBody &&
+			e.scope === scope,
+	);
+	if (exists) return flip('entry already exists');
+
 	const id = shortid.generate();
 	const this_entry: Entry = {
 		id,
 		date: new Date().toISOString(),
-		head: shared.normalize(i.head),
-		body: replacements(i.body),
+		head: normalizedHead,
+		body: normalizedBody,
 		user: uname,
 		scope: i.scope,
 		notes: [],
