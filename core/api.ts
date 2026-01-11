@@ -75,9 +75,6 @@ export async function call(i: any, sudoUname?: string): Promise<ApiResponse> {
 	}
 }
 
-if (!store.db) store.db = { entries: [] };
-if (!store.pass) store.pass = { hashes: {}, tokens: {} };
-
 const actions: Record<string, Action> = {};
 
 const flip = (e: string): ApiError => ({ success: false, error: e });

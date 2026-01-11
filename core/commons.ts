@@ -218,4 +218,7 @@ const default_config: ToaduaConfig = yaml.load(readFileSync(DEFAULT_CONFIG));
 export const config: ToaduaConfig = { ...default_config, ...main_config };
 
 // a store for stuff and things
-export const store: Store = {};
+export const store: Store = {
+	db: { entries: [] },
+	pass: { hashes: {}, tokens: {} },
+};
