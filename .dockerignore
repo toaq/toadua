@@ -6,4 +6,5 @@
 !/package.json
 !/package-lock.json
 !/tsconfig.json
+!/.git/HEAD
 */node_modules

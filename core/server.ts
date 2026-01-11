@@ -12,6 +12,7 @@ import { HousekeepModule } from '../modules/housekeep.js';
 import { DiskModule } from '../modules/disk.js';
 import { SourceConfig, UpdateModule } from '../modules/update.js';
 import { AnnounceModule } from '../modules/announce.js';
+import { HelloModule } from '../modules/hello.js';
 
 const argparser = new argparse.ArgumentParser({
 	description: 'Toaq dictionary',
@@ -200,11 +201,12 @@ class ToaduaModules {
 	private disk?: DiskModule;
 	private announce?: AnnounceModule;
 	private update?: UpdateModule;
+	private hello?: HelloModule;
 
 	constructor(
 		private store: Store,
 		private config: ToaduaConfig,
-		private search: Search,
+		search: Search,
 		private sources: Record<string, SourceConfig>,
 		private emitter: EventEmitter,
 	) {
@@ -241,6 +243,11 @@ class ToaduaModules {
 				this.announce,
 			);
 		}
+
+		const helloConfig = config.modules['modules/hello.js'];
+		if (helloConfig) {
+			this.hello = new HelloModule(helloConfig.enabled, helloConfig.hook);
+		}
 	}
 
 	public up(): void {
@@ -248,6 +255,7 @@ class ToaduaModules {
 		this.disk?.up(this.store);
 		this.housekeep?.up(this.store, this.config);
 		this.update?.up(this.store);
+		this.hello?.up();
 	}
 
 	public down(): void {

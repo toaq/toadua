@@ -3,10 +3,10 @@
 
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import * as yaml from 'js-yaml';
 import { EventEmitter } from 'node:events';
-import { spawnSync } from 'node:child_process';
+import { cwd } from 'node:process';
 
 const old_log = console.log;
 
@@ -72,21 +72,19 @@ emitter.emit = function (ev, ...args) {
 	return EventEmitter.prototype.emit.call(this, ev, ev, ...args);
 };
 
-function getRepositoryRootPath(): string {
-	const { stdout, error } = spawnSync('git worktree list --porcelain', {
-		encoding: 'utf8',
-		shell: true,
-	});
-	if (error) {
-		throw new Error(
-			`Couldn't use git to find repository root path:\n\n${error}`,
-		);
+export function getRepositoryRootPath(): string {
+	let potentialRoot = cwd();
+	while (true) {
+		if (existsSync(path.join(potentialRoot, '.git'))) {
+			return potentialRoot;
+		}
+
+		const { dir } = path.parse(potentialRoot);
+		if (dir === potentialRoot) {
+			throw new Error("Couldn't find git repository root.");
+		}
+		potentialRoot = dir;
 	}
-	for (const line of stdout.split('\n')) {
-		const m = line.match(/^worktree (.+)$/);
-		if (m) return m[1];
-	}
-	throw new Error('Failed to parse git worktree output');
 }
 
 /**
@@ -214,6 +212,7 @@ export interface ToaduaConfig {
 			users?: string[];
 		};
 		'modules/announce.js'?: { enabled: boolean; hook: string };
+		'modules/hello.js'?: { enabled: boolean; hook: string };
 	};
 }
 
