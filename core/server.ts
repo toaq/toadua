@@ -225,9 +225,9 @@ class ToaduaModules {
 	}
 
 	public up(): void {
-		this.housekeep?.up(this.store, this.config);
-		this.disk?.up(this.store);
 		this.announce?.up(this.emitter);
+		this.disk?.up(this.store);
+		this.housekeep?.up(this.store, this.config);
 		this.update?.up(this.store);
 	}
 
