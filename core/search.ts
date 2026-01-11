@@ -286,7 +286,7 @@ const default_ordering: Order = (e, deburrs, bares) => {
 	// Bonus points for "typographically exact" (no deburring required) matches:
 	if (bares.includes(e.$.head)) points += 30;
 
-	return voteMultiplier * points;
+	return -voteMultiplier * points;
 };
 
 const base_orders = new Map<string, Order>([
