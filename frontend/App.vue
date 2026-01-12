@@ -232,6 +232,18 @@ import * as shared from './shared/index';
 import type { Entry } from './shared/index';
 const version = package_info.version;
 
+function position_cursor(f: () => void, event: Event): void {
+	const target = event.target as HTMLTextAreaElement;
+	const cursor_index = target.selectionStart;
+	const target_length = target.value.length;
+	const position_offset = target_length - cursor_index;
+
+	f();
+
+	const position = target.value.length - position_offset;
+	target.setSelectionRange(position, position);
+}
+
 export default defineComponent({
 	methods: {
 		color_for(name: string): string {
@@ -287,18 +299,22 @@ export default defineComponent({
 		},
 
 		set_new_head(event: Event): void {
-			const target = event.target as HTMLInputElement;
-			target.value = this.new_head = shared.normalize(target.value, false);
+			position_cursor(() => {
+				const target = event.target as HTMLInputElement;
+				target.value = this.new_head = shared.normalize(target.value, false);
+			}, event);
 		},
 
 		set_new_body(event: Event): void {
-			const target = event.target as HTMLTextAreaElement;
-			target.value = this.new_body = shared.replacements(
-				target.value,
-				true,
-				true,
-				this.theme,
-			);
+			position_cursor(() => {
+				const target = event.target as HTMLTextAreaElement;
+				target.value = this.new_body = shared.replacements(
+					target.value,
+					true,
+					true,
+					this.theme,
+				);
+			}, event);
 		},
 
 		navigate(where: string): void {
