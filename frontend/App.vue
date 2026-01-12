@@ -62,10 +62,7 @@
 			@note="s => note(result, s)"
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"
-			@uncollapse="
-				for (const r of results) r.uncollapsed = false;
-				result.uncollapsed = true;
-			"
+			@uncollapse="uncollapseOnly(result)"
 			@vote="n => vote(result, n)"
 			@navigate="s => navigate(s)"
 			@remove="remove(result)"
@@ -372,6 +369,11 @@ export default defineComponent({
 				this.update_entry(whom, data.entry);
 				(document.activeElement as HTMLElement)?.blur();
 			});
+		},
+
+		uncollapseOnly(whom: Entry): void {
+			for (const r of this.results) r.uncollapsed = false;
+			whom.uncollapsed = true;
 		},
 
 		edit(whom: Entry, body: string, scope: string): void {
