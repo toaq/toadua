@@ -19,7 +19,7 @@ First, set up the config files:
 ```
 cp config/defaults.yml config/config.yml
 cp config/sources-example.yml config/sources.yml
-# Edit them both to suit your needs.
+# Then edit them both to suit your needs.
 ```
 
 ### With Docker
@@ -29,7 +29,7 @@ running Toadua:
 
 ```
 docker build -t toadua .
-docker run -p 9999:29138 toadua
+docker run --mount type=bind,src=./config,dst=/app/config -p 9999:29138 toadua
 ```
 
 ### Locally (good for dev env)
