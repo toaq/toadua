@@ -10,7 +10,9 @@ import * as yaml from 'js-yaml';
 import { readFileSync } from 'node:fs';
 
 import request from 'request-promise-native';
-const config = yaml.load(readFileSync('config/sources.yml'));
+const config = yaml.load(
+	readFileSync(commons.getToaduaPath() + '/config/sources.yml'),
+);
 
 interface UpdateFormatOptions {
 	skip: number;
