@@ -207,7 +207,9 @@ export function parse_query(query_string: string): {
 				} else
 					what = [
 						parts[0],
-						parts[0] === 'arity' ? parseInt(parts[1], 10) || 0 : parts[1],
+						['arity', 'myvote'].includes(parts[0])
+							? parseInt(parts[1], 10) || 0
+							: parts[1],
 					];
 			} else {
 				parts = b.split(/(?=[\/@#=])/);

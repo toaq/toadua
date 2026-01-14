@@ -109,7 +109,7 @@ enum OperationType {
 interface Operation {
 	type: OperationType;
 	check: (args: any[]) => boolean;
-	build: (args: any[]) => (entry: CachedEntry) => boolean;
+	build: (args: any[], uname?: string) => (entry: CachedEntry) => boolean;
 }
 
 const operations: Record<string, Operation> = {
@@ -163,6 +163,17 @@ const operations: Record<string, Operation> = {
 					deburrMatch(deburredW, entry.content, MatchMode.Containing) ===
 						deburredW.length);
 		},
+	},
+	myvote: {
+		type: OperationType.Other,
+		check: args =>
+			args.length === 1 &&
+			typeof args[0] === 'number' &&
+			[-1, 0, 1].includes(args[0]),
+		build:
+			([vote], uname) =>
+			entry =>
+				uname ? (entry.$.votes[uname] || 0) === vote : false,
 	},
 };
 
@@ -223,6 +234,7 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 search.parse_query = parse_query;
 function parse_query(
 	queryObject: any,
+	uname?: string,
 ): string | false | ((entry: CachedEntry) => boolean) {
 	if (!Array.isArray(queryObject)) return 'found non-array branch';
 	if (!queryObject.length) return 'found empty array node';
@@ -234,7 +246,7 @@ function parse_query(
 	try {
 		args = query.map(arg => {
 			if (typeof arg !== 'object') return arg;
-			const might_be_it = parse_query(arg);
+			const might_be_it = parse_query(arg, uname);
 			if (typeof might_be_it === 'string') throw might_be_it;
 			return might_be_it;
 		});
@@ -243,7 +255,7 @@ function parse_query(
 	}
 	const check = op.check(args);
 	if (check !== true) return check;
-	return op.build(args);
+	return op.build(args, uname);
 }
 
 search.bare_terms = bare_terms;
@@ -328,7 +340,7 @@ export function search(i: any, uname?: string): string | PresentedEntry[] {
 		query = parsed.query;
 		requested_ordering ??= parsed.ordering;
 	}
-	const filter = parse_query(query);
+	const filter = parse_query(query, uname);
 	if (typeof filter !== 'function') return `malformed query: ${filter}`;
 	const bares = bare_terms(query);
 	const deburrs = bares.flatMap(deburr);

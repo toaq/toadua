@@ -68,6 +68,7 @@ query := ["and" | "or", ...query]
        | ["not", query]
        | ["arity", number]
        | ["id" | "user" | "scope" | "term", string]
+       | ["myvote", number]
 ```
 
 Here are listed the semantics of each operator:
@@ -84,6 +85,7 @@ Here are listed the semantics of each operator:
   - `arity` (_Toaq-specific_): succeeds if the highest number of argument places
     in the parts of a definition is equal to the one supplied (must be a number,
     not a string representation thereof)
+  - `myvote`: succeeds if someone is logged in and their vote on the entry is the same as the value passed (`-1`, `0`, or `1`).
 - **Textual constraints**:
   - `term`: succeeds if the supplied string, after removing special characters,
     appears in either the head, the definition, or the comments of an entry
