@@ -76,11 +76,12 @@ defineProps<{
 		<p v-else class="body" v-html="fancy_body"></p>
 		<div class="notes">
 			<p class="note" v-for="note in fancy_notes">
-				<span
+				<a
+					:href="'#@' + note.user"
 					:style="color_for(note.user)"
 					class="note-author"
 					@click="navigate('@' + note.user)"
-					>{{ note.user }}</span
+					>{{ note.user }}</a
 				><span v-html="note.fancy_content"></span>
 				<span v-if="username === note.user" class="note-controls">
 					<input
