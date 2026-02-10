@@ -166,7 +166,7 @@ actions.vote = async (i, uname) => {
 	e.score += i.vote - old_vote;
 
 	const cleanup = config.modules['modules/cleanup.js'];
-	if (cleanup.enabled) {
+	if (cleanup?.enabled) {
 		const culpable = !cleanup.users || cleanup.users.includes(e.user);
 		const bad = e.score <= cleanup.vote_threshold;
 		if (culpable && bad) {

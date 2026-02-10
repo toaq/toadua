@@ -67,27 +67,28 @@ input[type='submit'] {
 	cursor: pointer;
 }
 
-input[type='button'].vote-button {
-	/**
-	 * Ubaı! Noto Sans has a horribly narrow MINUS SIGN:
-	 * https://github.com/notofonts/latin-greek-cyrillic/issues/396
-	 *
-	 * It's probably not worth loading a second web font just for the minus
-	 * sign, though. Replacing it with an en dash also looks bad. Let's just
-	 * switch to the user's favorite monospace font and hope it does a better
-	 * job at rendering "+ ± −" with reasonable widths. We can prefer a couple
-	 * of fonts that are known to do better:
-	 */
-	font-family: Menlo, Monaco, 'Droid Sans Mono', 'DejaVu Sans Mono',
-		'Source Code Pro', 'Ubuntu Mono', monospace;
+.vote-buttons {
+	display: inline-flex;
+	align-items: baseline;
+	font-variant-numeric: tabular-nums;
+	user-select: none;
+}
 
-	/**
-	 * Also, make the "hitbox" a little bigger so they're easier to click.
-	 */
-	position: relative;
-	padding: 1px 4px;
-	margin: 0 -3px;
-	z-index: 1;
+.vote-buttons label {
+	cursor: pointer;
+	padding: 2px 5px;
+}
+
+.vote-buttons input {
+	display: none;
+}
+
+.vote-buttons input + svg {
+	opacity: 0.3;
+}
+
+.vote-buttons input:checked + svg {
+	opacity: 1;
 }
 
 #cancel {

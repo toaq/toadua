@@ -112,7 +112,7 @@ export function score_color(n: number, theme?: string): Color {
 }
 
 export function score_number(n: number): string {
-	return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±';
+	return n >= 0 ? `+${n}` : `−${-n}`;
 }
 
 function escape(s: string): string {

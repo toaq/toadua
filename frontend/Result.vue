@@ -54,9 +54,50 @@ defineProps<{
 					@click="navigate('@' + result.user)"
 					>{{ result.user }}</a
 				>
-				<span :style="score_color(result.score)">{{
-					score_number(result.score)
-				}}</span>
+
+				<div class="vote-buttons">
+					<label v-if="username">
+						<input
+							type="checkbox"
+							:checked="result.vote == +1"
+							title="Upvote"
+							aria-label="Upvote"
+							@click="$emit('vote', result.vote == +1 ? 0 : +1)"
+						/>
+						<svg
+							viewBox="0 0 12 12"
+							width="12"
+							height="12"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<polyline points="2,8 6,4 10,8" />
+						</svg>
+					</label>
+					<span :style="score_color(result.score)">{{
+						score_number(result.score)
+					}}</span>
+					<label v-if="username">
+						<input
+							type="checkbox"
+							:checked="result.vote == -1"
+							title="Downvote"
+							aria-label="Downvote"
+							@click="$emit('vote', result.vote == -1 ? 0 : -1)"
+						/>
+						<svg
+							viewBox="0 0 12 12"
+							width="12"
+							height="12"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<polyline points="2,4 6,8 10,4" />
+						</svg>
+					</label>
+				</div>
 			</span>
 		</div>
 		<textarea
@@ -140,39 +181,6 @@ defineProps<{
 						$emit('uncollapse');
 						focus_note();
 					"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="+"
-					title="Upvote"
-					aria-label="Upvote"
-					@click="$emit('vote', +1)"
-					:disabled="result.vote == +1"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="±"
-					title="Retract vote"
-					aria-label="Retract vote"
-					@click="$emit('vote', 0)"
-					:disabled="result.vote == 0"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="−"
-					title="Downvote"
-					aria-label="Downvote"
-					@click="$emit('vote', -1)"
-					:disabled="result.vote == -1"
 				/>
 			</li>
 			<li v-if="username == result.user && !hesitating">
