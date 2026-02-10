@@ -10,6 +10,7 @@ import {
 	store,
 	MatchMode,
 	type Entry,
+	Note,
 } from './commons.js';
 
 // keep an own cache for entries
@@ -39,6 +40,8 @@ interface CachedEntry {
 	notes: string[];
 	date: number;
 	score: number;
+	pronominal_class?: string;
+	frame?: string;
 	content: string[];
 }
 
@@ -62,8 +65,44 @@ export function cacheify(e: Entry): CachedEntry {
 		notes: deburredNotes,
 		date: +new Date(e.date),
 		score: e.score,
+		pronominal_class: e.pronominal_class ?? extract_pronominal_class(e.notes),
+		frame: e.frame ?? extract_frame(e.notes),
 		content: [].concat(deburredHead, deburredBody, deburredNotes),
 	};
+}
+
+export function extract_pronominal_class(notes: Note[]): string | undefined {
+	for (let i = notes.length - 1; i >= 0; i--) {
+		const note = notes[i];
+		const match = note.content
+			.toLowerCase()
+			.match(/(?:pronominal.?)?class\s*:\s*(.*)/);
+		if (match) {
+			const value = match[1]
+				.trim()
+				.normalize('NFD')
+				.replace(/[\u0300-\u036f]/g, '')
+				.replace('i', 'ı');
+			if (['ho', 'maq', 'hoq', 'ta', 'raı'].includes(value)) {
+				return value;
+			}
+		}
+	}
+	return undefined;
+}
+
+export function extract_frame(notes: Note[]): string | undefined {
+	for (let i = notes.length - 1; i >= 0; i--) {
+		const note = notes[i];
+		const match = note.content.toLowerCase().match(/frame\s*:\s*(.*)/);
+		if (match) {
+			const value = [...match[1].matchAll(/[c\d]/g)];
+			if (value.length > 0) {
+				return value.join(' ');
+			}
+		}
+	}
+	return undefined;
 }
 
 function cached_index(id: string): number {

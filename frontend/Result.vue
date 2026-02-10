@@ -5,23 +5,13 @@ defineProps<{
 	result: Entry;
 	theme: string;
 	username: string | null;
+	limit_search: boolean;
 }>();
 </script>
 
 <template>
 	<div class="card" :lang="result.scope">
 		<div class="title">
-			<a
-				class="date"
-				:title="full_date(new Date(result.date))"
-				:href="'##' + result.id"
-				@click="navigate('#' + result.id)"
-			>
-				<span style="font-size: 24px">&ZeroWidthSpace;</span
-				><time :datetime="result.date">{{
-					pretty_date(new Date(result.date))
-				}}</time></a
-			>
 			<h2>
 				<a
 					:href="'#' + result.head"
@@ -30,7 +20,7 @@ defineProps<{
 					>{{ result.head }}</a
 				>
 			</h2>
-			<span class="info">
+			<div class="info">
 				<input
 					v-if="editing"
 					type="text"
@@ -42,22 +32,17 @@ defineProps<{
 					@keypress.enter.exact.prevent="submit_edit"
 				/>
 				<a
-					v-if="!editing"
+					v-if="!editing && !limit_search"
 					:href="'#scope:' + result.scope"
 					class="scope"
 					@click="navigate('scope:' + result.scope)"
 					>{{ result.scope }}</a
 				>
-				<a
-					:href="'#@' + result.user"
-					:style="color_for(result.user)"
-					@click="navigate('@' + result.user)"
-					>{{ result.user }}</a
-				>
-				<span :style="score_color(result.score)">{{
-					score_number(result.score)
+				<span v-if="result.pronominal_class">{{
+					result.pronominal_class.replace('a', 'á').replace('o', 'ó')
 				}}</span>
-			</span>
+				<span v-if="result.frame">({{ result.frame }})</span>
+			</div>
 		</div>
 		<textarea
 			v-if="editing"
@@ -74,7 +59,114 @@ defineProps<{
 			spellcheck="true"
 		></textarea>
 		<p v-else class="body" v-html="fancy_body"></p>
-		<div class="notes">
+
+		<div class="meta-row">
+			<div class="meta-info">
+				<a
+					:href="'#@' + result.user"
+					:style="{ color: 'inherit' }"
+					@click="navigate('@' + result.user)"
+					>{{ result.user }}</a
+				>
+				·
+				<a
+					class="date"
+					:title="full_date(new Date(result.date))"
+					:href="'##' + result.id"
+					@click="navigate('#' + result.id)"
+				>
+					<time :datetime="result.date">{{
+						pretty_date(new Date(result.date))
+					}}</time></a
+				>
+			</div>
+			<div class="meta-actions">
+				<div class="vote-buttons">
+					<label>
+						<input
+							type="checkbox"
+							:checked="result.vote == +1"
+							title="Upvote"
+							aria-label="Upvote"
+							:disabled="!username"
+							@click="username && $emit('vote', result.vote == +1 ? 0 : +1)"
+						/>
+						<font-awesome-icon icon="chevron-up" />
+					</label>
+					<span :style="score_color(result.score)">{{
+						score_number(result.score)
+					}}</span>
+					<label>
+						<input
+							type="checkbox"
+							:checked="result.vote == -1"
+							title="Downvote"
+							aria-label="Downvote"
+							:disabled="!username"
+							@click="username && $emit('vote', result.vote == -1 ? 0 : -1)"
+						/>
+						<font-awesome-icon icon="chevron-down" />
+					</label>
+				</div>
+				<div class="other-buttons">
+					<div v-if="username">
+						<button
+							type="button"
+							aria-label="Add a comment"
+							title="Add a comment"
+							:disabled="result.uncollapsed"
+							@click="
+								$emit('uncollapse');
+								focus_note();
+							"
+						>
+							<font-awesome-icon icon="comment-dots" />
+						</button>
+					</div>
+					<div v-if="username && editing">
+						<input type="button" value="submit" @click="submit_edit" />
+					</div>
+					<div v-if="username && editing">
+						<input type="button" value="cancel" @click="editing = false" />
+					</div>
+					<div v-if="!editing && username == result.user && !hesitating">
+						<button
+							type="button"
+							aria-label="Remove"
+							title="Remove"
+							@click="confirm_removal"
+						>
+							<font-awesome-icon icon="trash" />
+						</button>
+					</div>
+					<div v-if="!editing && username && hesitating">
+						<input type="button" value="sure?" @click="$emit('remove')" />
+					</div>
+					<div v-if="!editing && username">
+						<button
+							type="button"
+							aria-label="Fork"
+							title="Fork"
+							@click="$emit('fork')"
+						>
+							<font-awesome-icon icon="code-branch" />
+						</button>
+					</div>
+					<div v-if="!editing && username == result.user">
+						<button
+							type="button"
+							aria-label="Edit"
+							title="Edit"
+							@click="start_edit"
+						>
+							<font-awesome-icon icon="pen-to-square" />
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<hr v-if="fancy_notes.length > 0 || result.uncollapsed" />
+		<div class="notes" v-if="fancy_notes.length > 0 || result.uncollapsed">
 			<p class="note" v-for="note in fancy_notes">
 				<a
 					:href="'#@' + note.user"
@@ -87,7 +179,7 @@ defineProps<{
 					<input
 						type="button"
 						value="remove"
-						title="Remove this note"
+						title="Remove this comment"
 						@click="$emit('removenote', note.date)"
 					/>
 				</span>
@@ -123,71 +215,6 @@ defineProps<{
 				</p>
 			</form>
 		</div>
-		<ul class="controls" v-if="username && editing">
-			<li>
-				<input type="button" value="submit" @click="submit_edit" />
-			</li>
-			<li>
-				<input type="button" value="cancel" @click="editing = false" />
-			</li>
-		</ul>
-		<ul class="controls" v-if="username && !editing">
-			<li v-if="!result.uncollapsed">
-				<input
-					type="button"
-					value="add note"
-					@click="
-						$emit('uncollapse');
-						focus_note();
-					"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="+"
-					title="Upvote"
-					aria-label="Upvote"
-					@click="$emit('vote', +1)"
-					:disabled="result.vote == +1"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="±"
-					title="Retract vote"
-					aria-label="Retract vote"
-					@click="$emit('vote', 0)"
-					:disabled="result.vote == 0"
-				/>
-			</li>
-			<li>
-				<input
-					type="button"
-					class="vote-button"
-					value="−"
-					title="Downvote"
-					aria-label="Downvote"
-					@click="$emit('vote', -1)"
-					:disabled="result.vote == -1"
-				/>
-			</li>
-			<li v-if="username == result.user && !hesitating">
-				<input type="button" value="remove" @click="confirm_removal" />
-			</li>
-			<li v-if="hesitating">
-				<input type="button" value="sure?" @click="$emit('remove')" />
-			</li>
-			<li>
-				<input type="button" value="fork" @click="$emit('fork')" />
-			</li>
-			<li v-if="username == result.user">
-				<input type="button" value="edit" @click="start_edit" />
-			</li>
-		</ul>
 	</div>
 </template>
 

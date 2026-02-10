@@ -1,5 +1,6 @@
 * {
 	box-sizing: border-box;
+	font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -46,7 +47,8 @@ html.dark {
 }
 
 input,
-textarea {
+textarea,
+button {
 	background-color: inherit;
 	appearance: none;
 	-webkit-appearance: none;
@@ -67,27 +69,31 @@ input[type='submit'] {
 	cursor: pointer;
 }
 
-input[type='button'].vote-button {
-	/**
-	 * Ubaı! Noto Sans has a horribly narrow MINUS SIGN:
-	 * https://github.com/notofonts/latin-greek-cyrillic/issues/396
-	 *
-	 * It's probably not worth loading a second web font just for the minus
-	 * sign, though. Replacing it with an en dash also looks bad. Let's just
-	 * switch to the user's favorite monospace font and hope it does a better
-	 * job at rendering "+ ± −" with reasonable widths. We can prefer a couple
-	 * of fonts that are known to do better:
-	 */
-	font-family: Menlo, Monaco, 'Droid Sans Mono', 'DejaVu Sans Mono',
-		'Source Code Pro', 'Ubuntu Mono', monospace;
+.vote-buttons {
+	display: inline-flex;
+	align-items: baseline;
+	user-select: none;
+	margin: 0 -4px;
+}
 
-	/**
-	 * Also, make the "hitbox" a little bigger so they're easier to click.
-	 */
-	position: relative;
-	padding: 1px 4px;
-	margin: 0 -3px;
-	z-index: 1;
+.vote-buttons label {
+	padding: 0px 5px;
+}
+
+.vote-buttons input {
+	display: none;
+}
+
+.vote-buttons input:enabled + svg {
+	cursor: pointer;
+}
+
+.vote-buttons input + svg {
+	opacity: 0.4;
+}
+
+.vote-buttons input:checked + svg {
+	opacity: 1;
 }
 
 #cancel {
@@ -162,14 +168,13 @@ footer .controls {
 	width: 100%;
 	position: relative;
 	margin-top: -4px;
+	display: flex;
+	justify-content: space-between;
 }
 
 .card .info {
-	font-size: 16px;
-}
-
-.card .info > * {
-	margin-left: 0.25em;
+	display: flex;
+	gap: 0.5em;
 }
 
 .card .scope:not(.editing) {
@@ -181,18 +186,52 @@ footer .controls {
 	margin: 0;
 }
 
-.card .date {
-	color: inherit;
-	opacity: 0.5;
-	float: right;
+.card button:enabled {
+	cursor: pointer;
+	opacity: 0.4;
 }
 
-.notes {
-	padding-top: 16px;
+.card button:enabled:hover {
+	opacity: 1;
+}
+
+.card hr {
+	border: 1px solid black;
+	border-bottom: none;
+	margin: 12px auto 8px;
+	opacity: 0.15;
+}
+
+.card .meta-info {
+	opacity: 0.5;
+}
+
+.card .meta-row {
+	margin-top: 0.5em;
+	font-size: 14px;
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+.card .meta-actions {
+	text-align: right;
+	display: flex;
+	gap: 0.25em;
+}
+
+.card .other-buttons {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.25em;
+}
+
+.card .date {
+	color: inherit;
 }
 
 .notes .note:last-child {
-	padding-bottom: 16px;
+	padding-bottom: 8px;
 }
 
 #login > div > input[type='text'],
@@ -305,7 +344,7 @@ h2,
 .name {
 	margin-top: 0;
 	margin-bottom: 0;
-	font-size: 24px;
+	font-size: 22px;
 	font-family: var(--heading-font);
 	color: inherit;
 	display: inline;

@@ -166,7 +166,7 @@ actions.vote = async (i, uname) => {
 	e.score += i.vote - old_vote;
 
 	const cleanup = config.modules['modules/cleanup.js'];
-	if (cleanup.enabled) {
+	if (cleanup?.enabled) {
 		const culpable = !cleanup.users || cleanup.users.includes(e.user);
 		const bad = e.score <= cleanup.vote_threshold;
 		if (culpable && bad) {
@@ -285,6 +285,8 @@ actions.create = async (i, uname) => {
 		notes: [],
 		votes: {},
 		score: 0,
+		pronominal_class: i.pronominal_class,
+		frame: i.frame,
 	};
 	store.db.entries.push(this_entry);
 	emitter.emit('create', this_entry);

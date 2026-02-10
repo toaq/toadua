@@ -15,6 +15,8 @@ export interface Entry {
 	scope: string;
 	notes: Note[];
 	score: number;
+	pronominal_class?: string;
+	frame?: string;
 
 	uncollapsed?: boolean;
 	vote?: number;
@@ -112,7 +114,7 @@ export function score_color(n: number, theme?: string): Color {
 }
 
 export function score_number(n: number): string {
-	return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±';
+	return n >= 0 ? `+${n}` : `−${-n}`;
 }
 
 function escape(s: string): string {
