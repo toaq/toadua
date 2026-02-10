@@ -1,5 +1,6 @@
 * {
 	box-sizing: border-box;
+	font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -46,7 +47,8 @@ html.dark {
 }
 
 input,
-textarea {
+textarea,
+button {
 	background-color: inherit;
 	appearance: none;
 	-webkit-appearance: none;
@@ -70,21 +72,24 @@ input[type='submit'] {
 .vote-buttons {
 	display: inline-flex;
 	align-items: baseline;
-	font-variant-numeric: tabular-nums;
 	user-select: none;
+	margin: 0 -4px;
 }
 
 .vote-buttons label {
-	cursor: pointer;
-	padding: 2px 5px;
+	padding: 0px 5px;
 }
 
 .vote-buttons input {
 	display: none;
 }
 
+.vote-buttons input:enabled + svg {
+	cursor: pointer;
+}
+
 .vote-buttons input + svg {
-	opacity: 0.3;
+	opacity: 0.4;
 }
 
 .vote-buttons input:checked + svg {
@@ -163,14 +168,13 @@ footer .controls {
 	width: 100%;
 	position: relative;
 	margin-top: -4px;
+	display: flex;
+	justify-content: space-between;
 }
 
 .card .info {
-	font-size: 16px;
-}
-
-.card .info > * {
-	margin-left: 0.25em;
+	display: flex;
+	gap: 0.5em;
 }
 
 .card .scope:not(.editing) {
@@ -182,18 +186,52 @@ footer .controls {
 	margin: 0;
 }
 
-.card .date {
-	color: inherit;
-	opacity: 0.5;
-	float: right;
+.card button:enabled {
+	cursor: pointer;
+	opacity: 0.4;
 }
 
-.notes {
-	padding-top: 16px;
+.card button:enabled:hover {
+	opacity: 1;
+}
+
+.card hr {
+	border: 1px solid black;
+	border-bottom: none;
+	margin: 12px auto 8px;
+	opacity: 0.15;
+}
+
+.card .meta-info {
+	opacity: 0.5;
+}
+
+.card .meta-row {
+	margin-top: 0.5em;
+	font-size: 14px;
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+.card .meta-actions {
+	text-align: right;
+	display: flex;
+	gap: 0.25em;
+}
+
+.card .other-buttons {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.25em;
+}
+
+.card .date {
+	color: inherit;
 }
 
 .notes .note:last-child {
-	padding-bottom: 16px;
+	padding-bottom: 8px;
 }
 
 #login > div > input[type='text'],
@@ -306,7 +344,7 @@ h2,
 .name {
 	margin-top: 0;
 	margin-bottom: 0;
-	font-size: 24px;
+	font-size: 22px;
 	font-family: var(--heading-font);
 	color: inherit;
 	display: inline;

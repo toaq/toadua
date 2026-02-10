@@ -39,6 +39,8 @@ interface CachedEntry {
 	notes: string[];
 	date: number;
 	score: number;
+	pronominal_class?: string;
+	frame?: string;
 	content: string[];
 }
 
@@ -62,6 +64,8 @@ export function cacheify(e: Entry): CachedEntry {
 		notes: deburredNotes,
 		date: +new Date(e.date),
 		score: e.score,
+		pronominal_class: e.pronominal_class,
+		frame: e.frame,
 		content: [].concat(deburredHead, deburredBody, deburredNotes),
 	};
 }

@@ -59,6 +59,7 @@
 			:result="result"
 			:username="username"
 			:theme="theme"
+			:limit_search="limit_search"
 			@note="s => note(result, s)"
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"

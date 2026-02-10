@@ -285,6 +285,8 @@ actions.create = async (i, uname) => {
 		notes: [],
 		votes: {},
 		score: 0,
+		pronominal_class: i.pronominal_class,
+		frame: i.frame,
 	};
 	store.db.entries.push(this_entry);
 	emitter.emit('create', this_entry);

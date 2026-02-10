@@ -15,6 +15,8 @@ export interface Entry {
 	scope: string;
 	notes: Note[];
 	score: number;
+	pronominal_class?: string;
+	frame?: string;
 
 	uncollapsed?: boolean;
 	vote?: number;

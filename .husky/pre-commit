@@ -3,6 +3,6 @@
 
 npm run prettier:check
 
-if which nix; then
+if which nix 2>/dev/null; then
 	nix flake check
 fi
