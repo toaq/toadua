@@ -96,7 +96,7 @@ export function extract_frame(notes: Note[]): string | undefined {
 		const note = notes[i];
 		const match = note.content.toLowerCase().match(/frame\s*:\s*(.*)/);
 		if (match) {
-			const value = [...match[1].matchAll(/[c\d]/g)];
+			const value = [...match[1].matchAll(/[c\d][ijkx]*/g)];
 			if (value.length > 0) {
 				return value.join(' ');
 			}
