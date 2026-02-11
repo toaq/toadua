@@ -40,8 +40,8 @@ interface CachedEntry {
 	notes: string[];
 	date: number;
 	score: number;
-	pronominal_class?: string;
-	frame?: string;
+	pronominal_class: string | undefined;
+	frame: string | undefined;
 	content: string[];
 }
 
@@ -115,6 +115,9 @@ export function present(
 	relevance: number,
 ): PresentedEntry {
 	const { votes, ...rest } = e.$;
+	// `cacheify` may have extracted the pronominal class and frame from the notes:
+	rest.pronominal_class ??= e.pronominal_class;
+	rest.frame ??= e.frame;
 	const vote = uname ? votes[uname] || 0 : undefined;
 	return { ...rest, relevance, content: e.content, vote };
 }
