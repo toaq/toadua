@@ -76,15 +76,25 @@ defineProps<{
 					@change="submit_annotation"
 				>
 					<option value="c">(c)</option>
-					<option value="0">(0)</option>
 					<option value="c c">(c c)</option>
-					<option value="c 0">(c 0)</option>
-					<option value="c 1">(c 1)</option>
-					<option value="c 2">(c 2)</option>
 					<option value="c c c">(c c c)</option>
+					<hr />
+					<option value="0">(0)</option>
+					<option value="c 0">(c 0)</option>
 					<option value="c c 0">(c c 0)</option>
-					<option value="c c 1">(c c 1)</option>
-					<option value="c c 2">(c c 2)</option>
+					<hr />
+					<option value="c 1i">(c 1i)</option>
+					<option value="c 1x">(c 1x)</option>
+					<option value="c c 1i">(c c 1i)</option>
+					<option value="c c 1j">(c c 1j)</option>
+					<option value="c c 1x">(c c 1x)</option>
+					<hr />
+					<option value="c 2ii">(c 2ii)</option>
+					<option value="c 2ix">(c 2ix)</option>
+					<option value="c 2xi">(c 2xi)</option>
+					<option value="c 2xx">(c 2xx)</option>
+					<option value="c c 2ij">(c c 2ij)</option>
+					<option value="c c 2xx">(c c 2xx)</option>
 				</select>
 			</div>
 		</div>

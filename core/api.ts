@@ -226,17 +226,22 @@ actions.edit = async (i, uname) => {
 const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı'];
 const FRAMES = [
 	'c',
-	'0',
-	'1',
-	'2',
 	'c c',
-	'c 0',
-	'c 1',
-	'c 2',
 	'c c c',
+	'0',
+	'c 0',
+	'c 1i',
+	'c 1x',
+	'c 2ii',
+	'c 2ix',
+	'c 2xi',
+	'c 2xx',
 	'c c 0',
-	'c c 1',
-	'c c 2',
+	'c c 1i',
+	'c c 1j',
+	'c c 1x',
+	'c c 2ij',
+	'c c 2xx',
 ];
 
 // Edit metadata (pronominal class and frame) on a word.
