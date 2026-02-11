@@ -223,6 +223,42 @@ actions.edit = async (i, uname) => {
 	return good({ entry: present(word, uname) });
 };
 
+const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı'];
+const FRAMES = [
+	'c',
+	'0',
+	'1',
+	'2',
+	'c c',
+	'c 0',
+	'c 1',
+	'c 2',
+	'c c c',
+	'c c 0',
+	'c c 1',
+	'c c 2',
+];
+
+// Edit metadata (pronominal class and frame) on a word.
+// These can be edited by anyone, not just the owner.
+actions.annotate = async (i, uname) => {
+	if (!uname) return flip('must be logged in');
+	const e_id = checks.goodid(i.id);
+	if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
+	if (i.pronominal_class && !PRONOMINAL_CLASSES.includes(i.pronominal_class)) {
+		return flip(`invalid field 'pronominal_class': ${i.pronominal_class}`);
+	}
+	if (i.frame && !FRAMES.includes(i.frame)) {
+		return flip(`invalid field 'frame': ${i.frame}`);
+	}
+	const word = by_id(i.id);
+	if (!word) return flip('no such word');
+	word.pronominal_class = i.pronominal_class;
+	word.frame = i.frame;
+	emitter.emit('annotate', word);
+	return good({ entry: present(word, uname) });
+};
+
 actions.removenote = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
 	const e_id = checks.goodid(i.id);

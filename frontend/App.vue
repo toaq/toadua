@@ -63,6 +63,9 @@
 			@note="s => note(result, s)"
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"
+			@annotate="
+				(pronominal_class, frame) => annotate(result, pronominal_class, frame)
+			"
 			@uncollapse="uncollapseOnly(result)"
 			@vote="n => vote(result, n)"
 			@navigate="s => navigate(s)"
@@ -400,6 +403,18 @@ export default defineComponent({
 				// ...but let the API response have the final word:
 				this.update_entry(whom, data.entry);
 			});
+		},
+
+		annotate(whom: Entry, pronominal_class: string, frame: string): void {
+			// Update the entry early to prevent a flash of the old annotations...
+			this.update_entry(whom, { pronominal_class, frame });
+			this.apisend(
+				{ action: 'annotate', id: whom.id, pronominal_class, frame },
+				data => {
+					// ...but let the API response have the final word:
+					this.update_entry(whom, data.entry);
+				},
+			);
 		},
 
 		create(): void {

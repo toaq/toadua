@@ -38,10 +38,54 @@ defineProps<{
 					@click="navigate('scope:' + result.scope)"
 					>{{ result.scope }}</a
 				>
-				<span v-if="result.pronominal_class">{{
-					result.pronominal_class.replace('a', 'á').replace('o', 'ó')
-				}}</span>
-				<span v-if="result.frame">({{ result.frame }})</span>
+				<button
+					v-if="!editing_pronominal_class"
+					:disabled="!username"
+					@click="editing_pronominal_class = true"
+					:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
+				>
+					{{
+						result.pronominal_class
+							? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
+							: '—'
+					}}
+				</button>
+				<select
+					v-if="editing_pronominal_class"
+					v-model="result.pronominal_class"
+					class="editing"
+					@change="submit_annotation"
+				>
+					<option value="ho">hó</option>
+					<option value="maq">máq</option>
+					<option value="hoq">hóq</option>
+					<option value="ta">tá</option>
+				</select>
+				<button
+					v-if="!editing_frame"
+					:disabled="!username"
+					@click="editing_frame = true"
+					:style="{ opacity: result.frame ? 1 : 0.5 }"
+				>
+					({{ result.frame ?? '—' }})
+				</button>
+				<select
+					v-if="editing_frame"
+					v-model="result.frame"
+					class="editing"
+					@change="submit_annotation"
+				>
+					<option value="c">(c)</option>
+					<option value="0">(0)</option>
+					<option value="c c">(c c)</option>
+					<option value="c 0">(c 0)</option>
+					<option value="c 1">(c 1)</option>
+					<option value="c 2">(c 2)</option>
+					<option value="c c c">(c c c)</option>
+					<option value="c c 0">(c c 0)</option>
+					<option value="c c 1">(c c 1)</option>
+					<option value="c c 2">(c c 2)</option>
+				</select>
 			</div>
 		</div>
 		<textarea
@@ -296,6 +340,12 @@ export default defineComponent({
 			this.editing = false;
 		},
 
+		submit_annotation(): void {
+			this.$emit('annotate', this.result.pronominal_class, this.result.frame);
+			this.editing_pronominal_class = false;
+			this.editing_frame = false;
+		},
+
 		focus_note(): void {
 			window.setTimeout(
 				() =>
@@ -311,6 +361,8 @@ export default defineComponent({
 			hesitating: false,
 			input: '',
 			editing: false,
+			editing_pronominal_class: false,
+			editing_frame: false,
 			new_body: '',
 			new_scope: '',
 		};
