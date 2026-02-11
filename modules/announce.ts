@@ -53,6 +53,11 @@ export class AnnounceModule {
 			return;
 		}
 
+		if (ev === 'note' && note && note.content.match(/^discriminator\s*:/i)) {
+			// Avoid spamming #toashuaq with these.
+			return;
+		}
+
 		const scope =
 			ev === 'move'
 				? ` to scope __${entry.scope}__`
