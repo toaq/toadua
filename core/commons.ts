@@ -139,9 +139,9 @@ export interface Entry {
 	/// Total score of the entry, aggregated from votes.
 	score: number;
 	/// The pronominal class of the entry, e.g. `"maq"`.
-	pronominal_class?: string;
+	pronominal_class: string | undefined;
 	/// The frame of the entry, e.g. `"c 1"`.
-	frame?: string;
+	frame: string | undefined;
 }
 
 export interface Token {
