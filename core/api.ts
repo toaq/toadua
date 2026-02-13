@@ -259,7 +259,7 @@ const DISTRIBUTIONS = [
 	'n n d',
 	'n n n',
 ];
-const SUBJECTS = ['individual', 'event', 'predicate', 'free'];
+const SUBJECTS = ['agent', 'individual', 'event', 'predicate', 'free'];
 
 // Edit metadata (pronominal class, frame, distribution, subject) on a word.
 // These can be edited by anyone, not just the owner.

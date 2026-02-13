@@ -144,6 +144,7 @@ defineProps<{
 					@change="submit_annotation"
 					@blur="editing_subject = false"
 				>
+					<option value="agent">Sa (subj is agent)</option>
 					<option value="individual">Si (subj is non-event)</option>
 					<option v-if="!tangible" value="event">Se (subj is event)</option>
 					<option v-if="!tangible" value="predicate">
