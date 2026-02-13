@@ -142,6 +142,10 @@ export interface Entry {
 	pronominal_class: string | undefined;
 	/// The frame of the entry, e.g. `"c 1"`.
 	frame: string | undefined;
+	/// The distribution of the entry, e.g. `"d"`, `"n"`, `"d d"`.
+	distribution: string | undefined;
+	/// The subject of the entry: `"individual"`, `"event"`, `"predicate"`, or `"free"`.
+	subject: string | undefined;
 }
 
 export interface Token {

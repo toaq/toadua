@@ -17,6 +17,8 @@ export interface Entry {
 	score: number;
 	pronominal_class: string | undefined;
 	frame: string | undefined;
+	distribution: string | undefined;
+	subject: string | undefined;
 
 	uncollapsed?: boolean;
 	vote?: number;
