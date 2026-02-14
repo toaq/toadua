@@ -243,8 +243,25 @@ const FRAMES = [
 	'c c 2ij',
 	'c c 2xx',
 ];
+const DISTRIBUTIONS = [
+	'd',
+	'n',
+	'd d',
+	'd n',
+	'n d',
+	'n n',
+	'd d d',
+	'd d n',
+	'd n d',
+	'd n n',
+	'n d d',
+	'n d n',
+	'n n d',
+	'n n n',
+];
+const SUBJECTS = ['agent', 'individual', 'event', 'predicate', 'shape', 'free'];
 
-// Edit metadata (pronominal class and frame) on a word.
+// Edit metadata (pronominal class, frame, distribution, subject) on a word.
 // These can be edited by anyone, not just the owner.
 actions.annotate = async (i, uname) => {
 	if (!uname) return flip('must be logged in');
@@ -256,10 +273,18 @@ actions.annotate = async (i, uname) => {
 	if (i.frame && !FRAMES.includes(i.frame)) {
 		return flip(`invalid field 'frame': ${i.frame}`);
 	}
+	if (i.distribution && !DISTRIBUTIONS.includes(i.distribution)) {
+		return flip(`invalid field 'distribution': ${i.distribution}`);
+	}
+	if (i.subject && !SUBJECTS.includes(i.subject)) {
+		return flip(`invalid field 'subject': ${i.subject}`);
+	}
 	const word = by_id(i.id);
 	if (!word) return flip('no such word');
 	word.pronominal_class = i.pronominal_class;
 	word.frame = i.frame;
+	word.distribution = i.distribution;
+	word.subject = i.subject;
 	emitter.emit('annotate', word);
 	return good({ entry: present(word, uname) });
 };
@@ -328,6 +353,8 @@ actions.create = async (i, uname) => {
 		score: 0,
 		pronominal_class: i.pronominal_class,
 		frame: i.frame,
+		distribution: undefined,
+		subject: undefined,
 	};
 	store.db.entries.push(this_entry);
 	emitter.emit('create', this_entry);

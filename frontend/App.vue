@@ -64,7 +64,8 @@
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"
 			@annotate="
-				(pronominal_class, frame) => annotate(result, pronominal_class, frame)
+				(pronominal_class, frame, distribution, subject) =>
+					annotate(result, pronominal_class, frame, distribution, subject)
 			"
 			@uncollapse="uncollapseOnly(result)"
 			@vote="n => vote(result, n)"
@@ -405,11 +406,29 @@ export default defineComponent({
 			});
 		},
 
-		annotate(whom: Entry, pronominal_class: string, frame: string): void {
+		annotate(
+			whom: Entry,
+			pronominal_class: string,
+			frame: string,
+			distribution: string,
+			subject: string,
+		): void {
 			// Update the entry early to prevent a flash of the old annotations...
-			this.update_entry(whom, { pronominal_class, frame });
+			this.update_entry(whom, {
+				pronominal_class,
+				frame,
+				distribution,
+				subject,
+			});
 			this.apisend(
-				{ action: 'annotate', id: whom.id, pronominal_class, frame },
+				{
+					action: 'annotate',
+					id: whom.id,
+					pronominal_class,
+					frame,
+					distribution,
+					subject,
+				},
 				data => {
 					// ...but let the API response have the final word:
 					this.update_entry(whom, data.entry);
