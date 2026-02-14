@@ -130,11 +130,11 @@ defineProps<{
 				</select>
 				<button
 					v-if="!editing_subject && result.frame"
-					:disabled="!username || tangible"
+					:disabled="!username"
 					@click="editing_subject = true"
-					:style="{ opacity: !result.subject ? 0.5 : tangible ? 0.75 : 1 }"
+					:style="{ opacity: result.subject ? 1 : 0.5 }"
 				>
-					{{ result.subject ? 'S' + result.subject[0] : '—' }}
+					{{ result.subject ? result.subject[0].toUpperCase() : '—' }}
 				</button>
 				<select
 					v-if="editing_subject"
@@ -144,13 +144,14 @@ defineProps<{
 					@change="submit_annotation"
 					@blur="editing_subject = false"
 				>
-					<option value="agent">Sa (subj is agent)</option>
-					<option value="individual">Si (subj is non-event)</option>
-					<option v-if="!tangible" value="event">Se (subj is event)</option>
+					<option value="agent">A (subj is agent)</option>
+					<option value="individual">I (subj is non-event)</option>
+					<option v-if="!tangible" value="event">E (subj is event)</option>
 					<option v-if="!tangible" value="predicate">
-						Sp (subj is predicate)
+						P (subj is predicate)
 					</option>
-					<option v-if="!tangible" value="free">Sf (subj is anything)</option>
+					<option v-if="!tangible" value="shape">S (subj has a shape)</option>
+					<option v-if="!tangible" value="free">F (subj is anything)</option>
 				</select>
 			</div>
 		</div>
@@ -407,12 +408,6 @@ export default defineComponent({
 		},
 
 		submit_annotation(): void {
-			if (
-				this.result.pronominal_class === 'ho' ||
-				this.result.pronominal_class === 'maq'
-			) {
-				this.result.subject = 'individual';
-			}
 			this.$emit(
 				'annotate',
 				this.result.pronominal_class,
