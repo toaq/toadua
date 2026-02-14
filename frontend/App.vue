@@ -218,7 +218,7 @@
 	<footer>
 		<ul class="controls">
 			<li><a href="https://toaq.me/Toadua">help</a></li>
-			<li><a href="https://github.com/uakci/toadua">github</a></li>
+			<li><a href="https://github.com/toaq/toadua">github</a></li>
 			<li><a href="javascript:void(0)" @click="toggle_theme()">theme</a></li>
 		</ul>
 	</footer>
