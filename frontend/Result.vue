@@ -146,12 +146,16 @@ defineProps<{
 				>
 					<option value="agent">A (subj is agent)</option>
 					<option value="individual">I (subj is non-event)</option>
-					<option v-if="!tangible" value="event">E (subj is event)</option>
-					<option v-if="!tangible" value="predicate">
+					<option :disabled="tangible" value="event">E (subj is event)</option>
+					<option :disabled="tangible" value="predicate">
 						P (subj is predicate)
 					</option>
-					<option v-if="!tangible" value="shape">S (subj has a shape)</option>
-					<option v-if="!tangible" value="free">F (subj is anything)</option>
+					<option :disabled="tangible" value="shape">
+						S (subj has a shape)
+					</option>
+					<option :disabled="tangible" value="free">
+						F (subj is anything)
+					</option>
 				</select>
 			</div>
 		</div>
