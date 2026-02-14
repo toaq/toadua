@@ -3,10 +3,10 @@
 _Toadua_ is the/an online collaborative dictionary for the
 [Toaq](http://toaq.net) constructed language. It is also currently being
 remodelled to suit general usage. You can visit the current instance at
-<https://toadua.uakci.pl>.
+<https://toadua.uakci.space>.
 
-You can also use the public API exposed at <https://toadua.uakci.pl/api> (read
-the [docs](docs/api.md), too).
+You can also use the public API exposed at <https://toadua.uakci.space/api>
+(read the [docs](docs/api.md), too).
 
 **Please note:** Currently in the process of cleaning up, removing the
 unprofessional bits, and other groundbreaking changes. Please take the
