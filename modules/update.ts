@@ -144,17 +144,17 @@ export class UpdateModule {
 				head,
 				{ body, frame, pronominal_class, subject, distribution },
 			] of word_list.entries()) {
-				const s = search.search({
-					query: [
-						'and',
-						['user_raw', user],
-						['head_raw', head],
-						['body_raw', body],
-					],
-				});
-				if (typeof s === 'string') {
-					console.log(`!! malformed query: ${s}`);
-				} else if (!s.length) {
+				const exists = search.some(
+					entry =>
+						entry.$.scope === 'en' &&
+						entry.$.head === head &&
+						entry.$.body === body &&
+						entry.$.frame === frame &&
+						entry.$.pronominal_class === pronominal_class &&
+						entry.$.subject === subject &&
+						entry.$.distribution === distribution,
+				);
+				if (!exists) {
 					const res = await api.call(
 						{
 							action: 'create',

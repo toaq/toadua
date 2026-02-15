@@ -52,6 +52,10 @@ export interface PresentedEntry extends Omit<Entry, 'votes'> {
 	content?: string[];
 }
 
+export function some(predicate: (entry: CachedEntry) => boolean): boolean {
+	return cache.some(predicate);
+}
+
 // compute a few fields for faster processing
 export function cacheify(e: Entry): CachedEntry {
 	const deburredHead = deburr(e.head);
