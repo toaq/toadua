@@ -6,22 +6,36 @@ import * as search from '../core/search.js';
 import * as api from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
-import * as yaml from 'js-yaml';
-import { readFileSync } from 'node:fs';
 
 import request from 'request-promise-native';
-const config = yaml.load(
-	readFileSync(commons.getToaduaPath() + '/config/sources.yml'),
-);
 
-interface UpdateFormatOptions {
+export interface SourceConfig {
+	/**
+	 * The URL of the source file.
+	 */
+	source: string;
+	/**
+	 * The username under which the words will be published.
+	 */
+	user: string;
+	/**
+	 * The format of the source file.
+	 */
+	format: 'tsv' | 'json';
+	/**
+	 * The number of rows to skip before processing the file.
+	 */
 	skip: number;
+	/**
+	 * The patterns to use to shape the definitions of words based on the
+	 * values of the columns found in the source file.
+	 */
 	patterns: Record<string, string>[];
 }
 
 type UpdateFormat = (
 	data: string,
-	options: UpdateFormatOptions,
+	options: Omit<SourceConfig, 'source' | 'user' | 'format'>,
 ) => Record<string, string>[];
 
 const FORMATS: Record<string, UpdateFormat> = {
@@ -61,15 +75,16 @@ export class UpdateModule {
 
 	constructor(
 		private enabled: boolean,
+		private sources: Record<string, SourceConfig>,
 		private update_interval: number,
 		private announce?: announce.AnnounceModule,
 	) {}
 
 	// poll for new entries at remote TSV spreadsheets and add them to the
 	// dictionary every now and then
-	private async sync_resources(store: commons.Store) {
+	public async sync_resources(store: commons.Store) {
 		const time = Date.now();
-		const cf: Record<string, any> = config;
+		const cf = this.sources;
 		let changed = false;
 		await Promise.all(
 			Object.entries(cf).map(

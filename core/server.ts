@@ -6,10 +6,11 @@ console.log('-----------');
 import * as fs from 'node:fs';
 import * as argparse from 'argparse';
 import * as commons from './commons.js';
+import * as yaml from 'js-yaml';
 
 import { HousekeepModule } from '../modules/housekeep.js';
 import { DiskModule } from '../modules/disk.js';
-import { UpdateModule } from '../modules/update.js';
+import { SourceConfig, UpdateModule } from '../modules/update.js';
 import { AnnounceModule } from '../modules/announce.js';
 
 const argparser = new argparse.ArgumentParser({
@@ -42,6 +43,7 @@ import * as http from 'node:http';
 import * as api from './api.js';
 import type { Socket } from 'node:net';
 import type { EventEmitter } from 'node:stream';
+import { readFileSync } from 'node:fs';
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
@@ -191,6 +193,7 @@ class ToaduaModules {
 	constructor(
 		private store: commons.Store,
 		private config: commons.ToaduaConfig,
+		private sources: Record<string, SourceConfig>,
 		private emitter: EventEmitter,
 	) {
 		const housekeepConfig = config.modules['modules/housekeep.js'];
@@ -218,6 +221,7 @@ class ToaduaModules {
 		if (updateConfig) {
 			this.update = new UpdateModule(
 				updateConfig.enabled,
+				this.sources,
 				updateConfig.update_interval,
 				this.announce,
 			);
@@ -238,7 +242,15 @@ class ToaduaModules {
 	}
 }
 
-const modules = new ToaduaModules(commons.store, config, commons.emitter);
+const sources: Record<string, SourceConfig> = yaml.load(
+	readFileSync(commons.getToaduaPath() + '/config/sources.yml'),
+);
+const modules = new ToaduaModules(
+	commons.store,
+	config,
+	sources,
+	commons.emitter,
+);
 modules.up();
 
 const server = http.createServer(handler);

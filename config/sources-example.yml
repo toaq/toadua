@@ -9,8 +9,8 @@ example_source:
   # under what username to publish the words
   user: foobar
   # a URL to a downloadable TSV or JSON file
-  source: 'http(s)://example.com/my_dic'
-  format: tsv | json
+  source: 'https://example.com/my_dict.tsv'
+  format: tsv   # or 'json'
   # for TSV files: how many rows to skip before processing
   # this field can only be left empty in case of JSON files
   skip: 1
