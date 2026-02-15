@@ -56,14 +56,24 @@ const FORMATS: Record<string, UpdateFormat> = {
 			),
 	json: (data, options) =>
 		JSON.parse(data).flatMap(e =>
-			options.patterns.map(p =>
-				Object.fromEntries(
-					Object.entries(p).map(([k, v]) => [
-						k,
-						(v as string).replace(/%\((.*?)\)/g, (_, id) => e[id]),
-					]),
-				),
-			),
+			options.patterns.map(p => {
+				const filled = {};
+				for (const [k, v] of Object.entries(p)) {
+					let any_undefined = false;
+					const value = (v as string).replace(/%\((.*?)\)/g, (_, id) => {
+						const value = e[id];
+						if (value === undefined) {
+							any_undefined = true;
+							return '';
+						}
+						return value;
+					});
+					if (!any_undefined) {
+						filled[k] = value;
+					}
+				}
+				return filled;
+			}),
 		),
 };
 

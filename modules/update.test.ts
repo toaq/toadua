@@ -213,6 +213,19 @@ describe('UpdateModule', () => {
 					}),
 					'json_user',
 				);
+				expect(api.call).toHaveBeenCalledWith(
+					expect.objectContaining({
+						action: 'create',
+						head: 'word3',
+						body: 'verb: definition for word3',
+						scope: 'en',
+						frame: undefined,
+						pronominal_class: undefined,
+						subject: undefined,
+						distribution: undefined,
+					}),
+					'json_user',
+				);
 			});
 		});
 	});
