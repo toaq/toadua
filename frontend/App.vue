@@ -630,7 +630,8 @@ export default defineComponent({
 		});
 		this.perform_search();
 		this.token = this.store.getItem('token') || this.token;
-		this.limit_search = this.store.getItem('limit_search') || this.limit_search;
+		this.limit_search =
+			this.store.getItem('limit_search') === 'true' || this.limit_search;
 		this.scope = this.store.getItem('scope') || this.scope;
 		this.welcome(this.token);
 	},
