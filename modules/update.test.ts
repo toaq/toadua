@@ -15,6 +15,7 @@ vi.mock('../core/api.js', () => ({
 vi.mock('../core/search.js', () => ({
 	search: vi.fn(() => []),
 	recache: vi.fn(),
+	some: vi.fn(() => false),
 }));
 
 vi.mock('../frontend/shared/index.js', () => ({
