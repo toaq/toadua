@@ -42,6 +42,8 @@ interface CachedEntry {
 	score: number;
 	pronominal_class: string | undefined;
 	frame: string | undefined;
+	distribution: string | undefined;
+	subject: string | undefined;
 	content: string[];
 }
 
@@ -71,6 +73,8 @@ export function cacheify(e: Entry): CachedEntry {
 		score: e.score,
 		pronominal_class: e.pronominal_class ?? extract_pronominal_class(e.notes),
 		frame: e.frame ?? extract_frame(e.notes),
+		distribution: e.distribution ?? extract_distribution(e.notes),
+		subject: e.subject ?? extract_subject(e.notes),
 		content: [].concat(deburredHead, deburredBody, deburredNotes),
 	};
 }
@@ -109,6 +113,44 @@ export function extract_frame(notes: Note[]): string | undefined {
 	return undefined;
 }
 
+export function extract_distribution(notes: Note[]): string | undefined {
+	for (let i = notes.length - 1; i >= 0; i--) {
+		const note = notes[i];
+		const match = note.content
+			.toLowerCase()
+			.match(/distribution\s*:\s*([dn](\s*[dn]){1,2})/);
+		if (match) {
+			const value = [...match[1].matchAll(/[dn]/g)];
+			if (value.length > 0) {
+				return value.join(' ');
+			}
+		}
+	}
+	return undefined;
+}
+
+export function extract_subject(notes: Note[]): string | undefined {
+	const validSubjects = [
+		'agent',
+		'individual',
+		'event',
+		'predicate',
+		'shape',
+		'free',
+	];
+	for (let i = notes.length - 1; i >= 0; i--) {
+		const note = notes[i];
+		const match = note.content.toLowerCase().match(/subject\s*:\s*(.*)/);
+		if (match) {
+			const value = match[1].trim();
+			if (validSubjects.includes(value)) {
+				return value;
+			}
+		}
+	}
+	return undefined;
+}
+
 function cached_index(id: string): number {
 	return cache.findIndex(_ => _.id === id);
 }
@@ -119,9 +161,11 @@ export function present(
 	relevance: number,
 ): PresentedEntry {
 	const { votes, ...rest } = e.$;
-	// `cacheify` may have extracted the pronominal class and frame from the notes:
+	// `cacheify` may have extracted the pronominal class, frame, distribution, and subject from the notes:
 	rest.pronominal_class ??= e.pronominal_class;
 	rest.frame ??= e.frame;
+	rest.distribution ??= e.distribution;
+	rest.subject ??= e.subject;
 	const vote = uname ? votes[uname] || 0 : undefined;
 	return { ...rest, relevance, content: e.content, vote };
 }
