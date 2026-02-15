@@ -53,8 +53,10 @@ const FORMATS: Record<string, UpdateFormat> = {
 		),
 };
 
+type WordList = Map<string, { body: string }>;
+
 // Word list cache.
-const word_lists = {};
+const word_lists: Map<string, WordList> = new Map();
 
 export class UpdateModule {
 	constructor(
@@ -76,11 +78,13 @@ export class UpdateModule {
 					try {
 						data = await request.get(source);
 						console.log(`updating resource '${name}'`);
-						const word_list = Object.fromEntries(
-							FORMATS[format](data as string, rest)
-								.filter(_ => _.head && _.body)
-								.map(_ => [shared.normalize(_.head), api.replacements(_.body)]),
-						);
+						const word_list: WordList = new Map();
+						for (const entry of FORMATS[format](data as string, rest)) {
+							if (!entry.head || !entry.body) continue;
+							word_list.set(shared.normalize(entry.head), {
+								body: api.replacements(entry.body),
+							});
+						}
 						console.log(
 							`'${name}': entry count was ${
 								word_lists[name] ? Object.keys(word_lists[name]).length : 0
@@ -101,9 +105,9 @@ export class UpdateModule {
 			return;
 		}
 		console.log('adding...');
-		for (const [name, words] of Object.entries(word_lists)) {
+		for (const [name, word_list] of word_lists.entries()) {
 			const user = cf[name].user;
-			for (const [head, body] of Object.entries(words)) {
+			for (const [head, { body }] of word_list.entries()) {
 				const s = search.search({
 					query: [
 						'and',
@@ -127,25 +131,30 @@ export class UpdateModule {
 		}
 
 		const messages: Record<string, any> = {};
-		if (Object.keys(word_lists).length === Object.keys(cf).length) {
+		if (word_lists.size === Object.keys(cf).length) {
 			console.log('obsoleting...');
-			const unames = new Set(Object.values(cf).map(_ => _.user));
-			// ...I do have the right to write messy code, don't I?
-			const fetched = Object.fromEntries(
-				[...unames].map(uname => [
-					uname,
-					Object.fromEntries(
-						Object.entries(cf)
-							.filter(_ => _[1].user === uname)
-							.flatMap(_ => Object.entries(word_lists[_[0]])),
-					),
-				]),
+			const unames: Set<string> = new Set(
+				Object.values(cf).map(cfg => cfg.user),
 			);
+
+			// Word lists merged and grouped by username.
+			const fetched: Map<string, WordList> = new Map();
+			for (const uname of unames) {
+				const merged: WordList = new Map();
+				for (const name of Object.keys(cf)) {
+					if (cf[name].user === uname) {
+						for (const [head, value] of word_lists.get(name)?.entries() ?? []) {
+							merged.set(head, value);
+						}
+					}
+				}
+				fetched.set(uname, merged);
+			}
 
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
-				const found = fetched[e.user][e.head];
-				if (found && found === e.body) return;
+				const found = fetched.get(e.user)?.get(e.head);
+				if (found && found.body === e.body) return;
 				// we need to re-find the entry because `search` makes
 				// copies on output
 				e = api.by_id(e.id);
