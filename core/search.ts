@@ -265,7 +265,26 @@ const operations: Record<string, Operation> = {
 			entry =>
 				uname ? (entry.$.votes[uname] || 0) === vote : false,
 	},
+	before: {
+		type: OperationType.Other,
+		check: one_string,
+		build: ([dateStr]) => {
+			const timestamp = +new Date(dateStr);
+			return entry => entry.date < timestamp;
+		},
+	},
+	after: {
+		type: OperationType.Other,
+		check: one_string,
+		build: ([dateStr]) => {
+			const timestamp = +new Date(dateStr);
+			return entry => entry.date > timestamp;
+		},
+	},
 };
+
+operations.until = operations.before;
+operations.since = operations.after;
 
 search.operations = operations;
 
