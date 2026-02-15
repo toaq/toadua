@@ -336,6 +336,11 @@ actions.create = async (i, uname) => {
 		e =>
 			e.head === normalizedHead &&
 			e.body === normalizedBody &&
+			e.frame === i.frame &&
+			e.pronominal_class === i.pronominal_class &&
+			e.subject === i.subject &&
+			e.distribution === i.distribution &&
+			e.user === uname &&
 			e.scope === scope,
 	);
 	if (exists) return flip('entry already exists');
