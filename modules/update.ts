@@ -55,10 +55,10 @@ const FORMATS: Record<string, UpdateFormat> = {
 
 type WordList = Map<string, { body: string }>;
 
-// Word list cache.
-const word_lists: Map<string, WordList> = new Map();
-
 export class UpdateModule {
+	// Word list cache.
+	private word_lists: Map<string, WordList> = new Map();
+
 	constructor(
 		private enabled: boolean,
 		private update_interval: number,
@@ -87,12 +87,17 @@ export class UpdateModule {
 						}
 						console.log(
 							`'${name}': entry count was ${
-								word_lists[name] ? Object.keys(word_lists[name]).length : 0
-							}, is ${Object.keys(word_list).length}`,
+								this.word_lists.get(name)?.size ?? 0
+							}, is ${word_list.size}`,
 						);
-						if (JSON.stringify(word_lists[name]) !== JSON.stringify(word_list))
+						const prevList = this.word_lists.get(name);
+						if (
+							!prevList ||
+							prevList.size !== word_list.size ||
+							JSON.stringify([...prevList]) !== JSON.stringify([...word_list])
+						)
 							changed = true;
-						word_lists[name] = word_list;
+						this.word_lists.set(name, word_list);
 					} catch (err) {
 						console.log(`on resource '${name}': ${err.stack}`);
 					}
@@ -105,7 +110,7 @@ export class UpdateModule {
 			return;
 		}
 		console.log('adding...');
-		for (const [name, word_list] of word_lists.entries()) {
+		for (const [name, word_list] of this.word_lists.entries()) {
 			const user = cf[name].user;
 			for (const [head, { body }] of word_list.entries()) {
 				const s = search.search({
@@ -131,7 +136,7 @@ export class UpdateModule {
 		}
 
 		const messages: Record<string, any> = {};
-		if (word_lists.size === Object.keys(cf).length) {
+		if (this.word_lists.size === Object.keys(cf).length) {
 			console.log('obsoleting...');
 			const unames: Set<string> = new Set(
 				Object.values(cf).map(cfg => cfg.user),
@@ -143,7 +148,8 @@ export class UpdateModule {
 				const merged: WordList = new Map();
 				for (const name of Object.keys(cf)) {
 					if (cf[name].user === uname) {
-						for (const [head, value] of word_lists.get(name)?.entries() ?? []) {
+						const entries = this.word_lists.get(name)?.entries() ?? [];
+						for (const [head, value] of entries) {
 							merged.set(head, value);
 						}
 					}
