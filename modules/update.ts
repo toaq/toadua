@@ -67,7 +67,16 @@ const FORMATS: Record<string, UpdateFormat> = {
 		),
 };
 
-type WordList = Map<string, { body: string }>;
+type WordList = Map<
+	string,
+	{
+		body: string;
+		frame?: string;
+		pronominal_class?: string;
+		subject?: string;
+		distribution?: string;
+	}
+>;
 
 export class UpdateModule {
 	// Word list cache.
@@ -98,6 +107,10 @@ export class UpdateModule {
 							if (!entry.head || !entry.body) continue;
 							word_list.set(shared.normalize(entry.head), {
 								body: api.replacements(entry.body),
+								frame: entry.frame,
+								pronominal_class: entry.pronominal_class,
+								subject: entry.subject,
+								distribution: entry.distribution,
 							});
 						}
 						console.log(
@@ -127,7 +140,10 @@ export class UpdateModule {
 		console.log('adding...');
 		for (const [name, word_list] of this.word_lists.entries()) {
 			const user = cf[name].user;
-			for (const [head, { body }] of word_list.entries()) {
+			for (const [
+				head,
+				{ body, frame, pronominal_class, subject, distribution },
+			] of word_list.entries()) {
 				const s = search.search({
 					query: [
 						'and',
@@ -140,7 +156,16 @@ export class UpdateModule {
 					console.log(`!! malformed query: ${s}`);
 				} else if (!s.length) {
 					const res = await api.call(
-						{ action: 'create', head, body, scope: 'en' },
+						{
+							action: 'create',
+							head,
+							body,
+							scope: 'en',
+							frame,
+							pronominal_class,
+							subject,
+							distribution,
+						},
 						user,
 					);
 					if (res.success === false)
@@ -175,7 +200,15 @@ export class UpdateModule {
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
 				const found = fetched.get(e.user)?.get(e.head);
-				if (found && found.body === e.body) return;
+				if (
+					found &&
+					found.body === e.body &&
+					found.frame === e.frame &&
+					found.pronominal_class === e.pronominal_class &&
+					found.subject === e.subject &&
+					found.distribution === e.distribution
+				)
+					return;
 				// we need to re-find the entry because `search` makes
 				// copies on output
 				e = api.by_id(e.id);

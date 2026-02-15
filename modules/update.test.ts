@@ -47,10 +47,10 @@ describe('UpdateModule', () => {
 				notes: [],
 				votes: {},
 				score: 0,
-				pronominal_class: undefined,
-				frame: undefined,
-				distribution: undefined,
-				subject: undefined,
+				pronominal_class: params.pronominal_class,
+				frame: params.frame,
+				distribution: params.distribution,
+				subject: params.subject,
 			});
 			return { success: true };
 		});
@@ -100,6 +100,10 @@ describe('UpdateModule', () => {
 					head: 'word1',
 					body: 'verb: definition for word1',
 					scope: 'en',
+					frame: undefined,
+					pronominal_class: undefined,
+					subject: undefined,
+					distribution: undefined,
 				}),
 				'test_user',
 			);
@@ -109,6 +113,10 @@ describe('UpdateModule', () => {
 					head: 'word2',
 					body: 'verb: definition for word2',
 					scope: 'en',
+					frame: undefined,
+					pronominal_class: undefined,
+					subject: undefined,
+					distribution: undefined,
 				}),
 				'test_user',
 			);
@@ -118,6 +126,10 @@ describe('UpdateModule', () => {
 					head: 'word3',
 					body: 'verb: definition for word3',
 					scope: 'en',
+					frame: undefined,
+					pronominal_class: undefined,
+					subject: undefined,
+					distribution: undefined,
 				}),
 				'test_user',
 			);
@@ -126,8 +138,22 @@ describe('UpdateModule', () => {
 		describe('sync_resources with JSON format', () => {
 			test('should parse JSON data and add words to store', async () => {
 				const jsonData = JSON.stringify([
-					{ word: 'Word1', definition: 'definition for word1' },
-					{ word: 'Word2', definition: 'definition for word2' },
+					{
+						word: 'Word1',
+						definition: 'definition for word1',
+						frame: 'frame1',
+						pronominal_class: 'class1',
+						subject: 'subj1',
+						distribution: 'dist1',
+					},
+					{
+						word: 'Word2',
+						definition: 'definition for word2',
+						frame: 'frame2',
+						pronominal_class: 'class2',
+						subject: 'subj2',
+						distribution: 'dist2',
+					},
 					{ word: 'Word3', definition: 'definition for word3' },
 				]);
 
@@ -143,6 +169,10 @@ describe('UpdateModule', () => {
 							{
 								head: '%(word)',
 								body: 'verb: %(definition)',
+								frame: 'testy %(frame)',
+								pronominal_class: '%(pronominal_class)',
+								subject: '%(subject)',
+								distribution: '%(distribution)',
 							},
 						],
 					},
@@ -162,6 +192,10 @@ describe('UpdateModule', () => {
 						head: 'word1',
 						body: 'verb: definition for word1',
 						scope: 'en',
+						frame: 'testy frame1',
+						pronominal_class: 'class1',
+						subject: 'subj1',
+						distribution: 'dist1',
 					}),
 					'json_user',
 				);
@@ -171,6 +205,10 @@ describe('UpdateModule', () => {
 						head: 'word2',
 						body: 'verb: definition for word2',
 						scope: 'en',
+						frame: 'testy frame2',
+						pronominal_class: 'class2',
+						subject: 'subj2',
+						distribution: 'dist2',
 					}),
 					'json_user',
 				);
