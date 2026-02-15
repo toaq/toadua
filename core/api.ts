@@ -358,8 +358,8 @@ actions.create = async (i, uname) => {
 		score: 0,
 		pronominal_class: i.pronominal_class,
 		frame: i.frame,
-		distribution: undefined,
-		subject: undefined,
+		distribution: i.distribution,
+		subject: i.subject,
 	};
 	store.db.entries.push(this_entry);
 	emitter.emit('create', this_entry);
