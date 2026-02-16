@@ -223,6 +223,7 @@ class ToaduaModules {
 		if (updateConfig) {
 			this.update = new UpdateModule(
 				updateConfig.enabled,
+				api,
 				this.sources,
 				updateConfig.update_interval,
 				this.announce,
