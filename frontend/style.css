@@ -62,11 +62,11 @@ select {
 }
 
 select {
-	appearance: auto;
-	border: 1px solid color-mix(in srgb, var(--text-color), transparent);
-	border-radius: 3px;
-	padding: 3px 6px;
+	border-bottom: 1px solid var(--placeholder-color);
+	field-sizing: content;
+	padding: 3px 0px;
 	margin: -3px 0px;
+	cursor: pointer;
 }
 
 input[type='button'],
@@ -184,7 +184,20 @@ footer .controls {
 
 .card .info {
 	display: flex;
-	gap: 0.5em;
+	position: relative;
+	overflow: hidden;
+}
+
+.card .info button {
+	margin-left: 0.5em;
+}
+
+.card .info select {
+	opacity: 0;
+	width: 0;
+	left: 0;
+	position: absolute;
+	pointer-events: none;
 }
 
 .card .scope:not(.editing) {

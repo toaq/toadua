@@ -38,125 +38,134 @@ defineProps<{
 					@click="navigate('scope:' + result.scope)"
 					>{{ result.scope }}</a
 				>
-				<button
-					v-if="!editing_pronominal_class"
-					:disabled="!username"
-					@click="editing_pronominal_class = true"
-					:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
-				>
-					{{
-						result.pronominal_class
-							? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
-							: '—'
-					}}
-				</button>
-				<select
-					v-if="editing_pronominal_class"
-					v-model="result.pronominal_class"
-					class="editing"
-					@change="submit_annotation"
-					@blur="editing_pronominal_class = false"
-				>
-					<option value="ho">hó</option>
-					<option value="maq">máq</option>
-					<option value="hoq">hóq</option>
-					<option value="ta">tá</option>
-				</select>
-				<button
-					v-if="!editing_frame && any_metadata"
-					:disabled="!username"
-					@click="editing_frame = true"
-					:style="{ opacity: result.frame ? 1 : 0.5 }"
-				>
-					({{ result.frame ?? '—' }})
-				</button>
-				<select
-					v-if="editing_frame"
-					v-model="result.frame"
-					class="editing"
-					@change="submit_annotation"
-					@blur="editing_frame = false"
-				>
-					<option value="c">(c)</option>
-					<option value="c c">(c c)</option>
-					<option value="c c c">(c c c)</option>
-					<hr />
-					<option value="0">(0)</option>
-					<option value="c 0">(c 0)</option>
-					<option value="c c 0">(c c 0)</option>
-					<hr />
-					<option value="c 1i">(c 1i)</option>
-					<option value="c 1x">(c 1x)</option>
-					<option value="c c 1i">(c c 1i)</option>
-					<option value="c c 1j">(c c 1j)</option>
-					<option value="c c 1x">(c c 1x)</option>
-					<hr />
-					<option value="c 2ii">(c 2ii)</option>
-					<option value="c 2ix">(c 2ix)</option>
-					<option value="c 2xi">(c 2xi)</option>
-					<option value="c 2xx">(c 2xx)</option>
-					<option value="c c 2ij">(c c 2ij)</option>
-					<option value="c c 2xx">(c c 2xx)</option>
-				</select>
-				<button
-					v-if="!editing_distribution && result.frame"
-					:disabled="!username"
-					@click="editing_distribution = true"
-					:style="{ opacity: result.distribution ? 1 : 0.5 }"
-				>
-					({{ result.distribution ?? '—' }})
-				</button>
-				<select
-					v-if="editing_distribution"
-					v-model="result.distribution"
-					class="editing"
-					@change="submit_annotation"
-					@blur="editing_distribution = false"
-				>
-					<option v-if="slots === 1" value="d">(d)</option>
-					<option v-if="slots === 1 && last_c" value="n">(n)</option>
-					<option v-if="slots === 2" value="d d">(d d)</option>
-					<option v-if="slots === 2 && last_c" value="d n">(d n)</option>
-					<option v-if="slots === 2" value="n d">(n d)</option>
-					<option v-if="slots === 2 && last_c" value="n n">(n n)</option>
-					<option v-if="slots === 3" value="d d d">(d d d)</option>
-					<option v-if="slots === 3 && last_c" value="d d n">(d d n)</option>
-					<option v-if="slots === 3" value="d n d">(d n d)</option>
-					<option v-if="slots === 3 && last_c" value="d n n">(d n n)</option>
-					<option v-if="slots === 3" value="n d d">(n d d)</option>
-					<option v-if="slots === 3 && last_c" value="n d n">(n d n)</option>
-					<option v-if="slots === 3" value="n n d">(n n d)</option>
-					<option v-if="slots === 3 && last_c" value="n n n">(n n n)</option>
-				</select>
-				<button
-					v-if="!editing_subject && result.frame"
-					:disabled="!username"
-					@click="editing_subject = true"
-					:style="{ opacity: result.subject ? 1 : 0.5 }"
-				>
-					{{ result.subject ? result.subject[0].toUpperCase() : '—' }}
-				</button>
-				<select
-					v-if="editing_subject"
-					v-model="result.subject"
-					class="editing"
-					style="font-size: 0.8em"
-					@change="submit_annotation"
-					@blur="editing_subject = false"
-				>
-					<option value="agent">A (subj is agent)</option>
-					<option value="individual">I (subj is non-event)</option>
-					<option :disabled="tangible" value="event">E (subj is event)</option>
-					<option :disabled="tangible" value="predicate">
-						P (subj is predicate)
-					</option>
-					<option :disabled="tangible" value="shape">
-						S (subj has a shape)
-					</option>
-					<option :disabled="tangible" value="free">
-						F (subj is anything)
-					</option>
-				</select>
+				<div style="position: relative">
+					<button
+						:disabled="!username"
+						@click.prevent="username && show_picker($event)"
+						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
+					>
+						{{
+							result.pronominal_class
+								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
+								: '—'
+						}}
+					</button>
+					<select
+						v-model="result.pronominal_class"
+						:disabled="!username"
+						@change="submit_annotation"
+					>
+						<option value="ho">hó</option>
+						<option value="maq">máq</option>
+						<option value="hoq">hóq</option>
+						<option value="ta">tá</option>
+					</select>
+				</div>
+				<div style="position: relative">
+					<button
+						v-if="any_metadata"
+						:disabled="!username"
+						@click.prevent="username && show_picker($event)"
+						:style="{ opacity: result.frame ? 1 : 0.5 }"
+					>
+						({{ result.frame ?? '—' }})
+					</button>
+					<select
+						v-if="any_metadata"
+						v-model="result.frame"
+						:disabled="!username"
+						@change="submit_annotation"
+					>
+						<option value="c">(c)</option>
+						<option value="c c">(c c)</option>
+						<option value="c c c">(c c c)</option>
+						<hr />
+						<option value="0">(0)</option>
+						<option value="c 0">(c 0)</option>
+						<option value="c c 0">(c c 0)</option>
+						<hr />
+						<option value="c 1i">(c 1i)</option>
+						<option value="c 1x">(c 1x)</option>
+						<option value="c c 1i">(c c 1i)</option>
+						<option value="c c 1j">(c c 1j)</option>
+						<option value="c c 1x">(c c 1x)</option>
+						<hr />
+						<option value="c 2ii">(c 2ii)</option>
+						<option value="c 2ix">(c 2ix)</option>
+						<option value="c 2xi">(c 2xi)</option>
+						<option value="c 2xx">(c 2xx)</option>
+						<option value="c c 2ij">(c c 2ij)</option>
+						<option value="c c 2xx">(c c 2xx)</option>
+					</select>
+				</div>
+				<div style="position: relative">
+					<button
+						v-if="result.frame"
+						:disabled="!username"
+						@click.prevent="username && show_picker($event)"
+						:style="{ opacity: result.distribution ? 1 : 0.5 }"
+					>
+						({{ result.distribution ?? '—' }})
+					</button>
+					<select
+						v-if="result.frame"
+						v-model="result.distribution"
+						:disabled="!username"
+						@change="submit_annotation"
+					>
+						<option value="">(—)</option>
+						<option v-if="slots === 1" value="d">(d)</option>
+						<option v-if="slots === 1 && last_c" value="n">(n)</option>
+						<option v-if="slots === 2" value="d d">(d d)</option>
+						<option v-if="slots === 2 && last_c" value="d n">(d n)</option>
+						<option v-if="slots === 2" value="n d">(n d)</option>
+						<option v-if="slots === 2 && last_c" value="n n">(n n)</option>
+						<option v-if="slots === 3" value="d d d">(d d d)</option>
+						<option v-if="slots === 3 && last_c" value="d d n">(d d n)</option>
+						<option v-if="slots === 3" value="d n d">(d n d)</option>
+						<option v-if="slots === 3 && last_c" value="d n n">(d n n)</option>
+						<option v-if="slots === 3" value="n d d">(n d d)</option>
+						<option v-if="slots === 3 && last_c" value="n d n">(n d n)</option>
+						<option v-if="slots === 3" value="n n d">(n n d)</option>
+						<option v-if="slots === 3 && last_c" value="n n n">(n n n)</option>
+					</select>
+				</div>
+				<div style="position: relative">
+					<button
+						v-if="result.frame"
+						:disabled="!username"
+						@click.prevent="username && show_picker($event)"
+						:style="{ opacity: result.subject ? 1 : 0.5 }"
+					>
+						{{ result.subject ? result.subject[0].toUpperCase() : '—' }}
+					</button>
+					<select
+						v-if="result.frame"
+						v-model="result.subject"
+						:disabled="!username"
+						@change="submit_annotation"
+					>
+						<option value="">—</option>
+						<option value="agent" title="subj is agent">A</option>
+						<option value="individual" title="subj is non-event">I</option>
+						<option :disabled="tangible" value="event" title="subj is event">
+							E
+						</option>
+						<option
+							:disabled="tangible"
+							value="predicate"
+							title="subj is predicate"
+						>
+							P
+						</option>
+						<option :disabled="tangible" value="shape" title="subj has a shape">
+							S
+						</option>
+						<option :disabled="tangible" value="free" title="subj is anything">
+							F
+						</option>
+					</select>
+				</div>
 			</div>
 		</div>
 		<textarea
@@ -419,10 +428,6 @@ export default defineComponent({
 				this.result.distribution,
 				this.result.subject,
 			);
-			this.editing_pronominal_class = false;
-			this.editing_frame = false;
-			this.editing_distribution = false;
-			this.editing_subject = false;
 		},
 
 		focus_note(): void {
@@ -434,11 +439,13 @@ export default defineComponent({
 				0,
 			);
 		},
-		all_editing_false(): void {
-			this.editing_pronominal_class = false;
-			this.editing_frame = false;
-			this.editing_distribution = false;
-			this.editing_subject = false;
+
+		show_picker(e: Event): void {
+			e.preventDefault();
+			(
+				(e.currentTarget as HTMLButtonElement)
+					.nextElementSibling as HTMLSelectElement
+			)?.showPicker();
 		},
 	},
 	data() {
@@ -446,10 +453,6 @@ export default defineComponent({
 			hesitating: false,
 			input: '',
 			editing: false,
-			editing_pronominal_class: false,
-			editing_frame: false,
-			editing_distribution: false,
-			editing_subject: false,
 			new_body: '',
 			new_scope: '',
 		};
