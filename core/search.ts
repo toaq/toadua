@@ -7,7 +7,6 @@ import {
 	deburr,
 	deburrMatch,
 	emitter,
-	store,
 	MatchMode,
 	type Entry,
 	Note,
@@ -163,10 +162,10 @@ export function present(
 ): PresentedEntry {
 	const { votes, ...rest } = e.$;
 	// `cacheify` may have extracted the pronominal class, frame, distribution, and subject from the notes:
-	rest.pronominal_class ??= e.pronominal_class;
-	rest.frame ??= e.frame;
-	rest.distribution ??= e.distribution;
-	rest.subject ??= e.subject;
+	rest.pronominal_class ??= e.pronominal_class ?? "";
+	rest.frame ??= e.frame ?? "";
+	rest.distribution ??= e.distribution ?? "";
+	rest.subject ??= e.subject ?? "";
 	const vote = uname ? votes[uname] || 0 : undefined;
 	return { ...rest, relevance, content: e.content, vote };
 }
