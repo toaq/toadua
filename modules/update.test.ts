@@ -6,14 +6,6 @@ vi.mock('request-promise-native', () => ({
 	default: { get: vi.fn() },
 }));
 
-vi.mock('../core/api.js', () => ({
-	replacements: vi.fn((s: string) => s),
-	api: {
-		call: vi.fn(),
-		by_id: vi.fn(),
-	},
-}));
-
 vi.mock('../core/search.js', () => ({
 	search: vi.fn(() => []),
 	recache: vi.fn(),
@@ -25,11 +17,12 @@ vi.mock('../frontend/shared/index.js', () => ({
 }));
 
 import request from 'request-promise-native';
-import { api } from '../core/api.js';
 import * as search from '../core/search.js';
+import { Api } from '../core/api.js';
 
 describe('UpdateModule', () => {
 	let mockStore: commons.Store;
+	let api: Api;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -39,26 +32,18 @@ describe('UpdateModule', () => {
 			pass: { hashes: {}, tokens: {} },
 		};
 
-		(api.call as any).mockImplementation(async (params: any, user: string) => {
-			mockStore.db.entries.push({
-				id: `id_${mockStore.db.entries.length}`,
-				date: new Date().toISOString(),
-				head: params.head,
-				body: params.body,
-				user: user,
-				scope: params.scope || 'en',
-				notes: [],
-				votes: {},
-				score: 0,
-				pronominal_class: params.pronominal_class,
-				frame: params.frame,
-				distribution: params.distribution,
-				subject: params.subject,
-			});
-			return { success: true };
-		});
-
 		(search.search as any).mockReturnValue([]);
+
+		api = new Api(mockStore, {
+			entry_point: 'https://example.com',
+			request_body_size_limit: 1024 * 1024,
+			token_expiry: 1000 * 60 * 60 * 24,
+			modules: {},
+			production: false,
+			port: 0,
+			exit_on_module_load_error: false,
+			password_rounds: 1,
+		});
 	});
 
 	afterEach(() => {
@@ -91,15 +76,14 @@ describe('UpdateModule', () => {
 				},
 			};
 
-			const updateModule = new UpdateModule(true, sources, 60000);
+			const updateModule = new UpdateModule(true, api, sources, 60000);
 			await updateModule.sync_resources(mockStore);
 
 			expect(request.get).toHaveBeenCalledWith('https://example.com/test.tsv');
 
-			expect(api.call).toHaveBeenCalledTimes(3);
-			expect(api.call).toHaveBeenCalledWith(
+			expect(mockStore.db.entries).toHaveLength(3);
+			expect(mockStore.db.entries[0]).toEqual(
 				expect.objectContaining({
-					action: 'create',
 					head: 'word1',
 					body: 'verb: definition for word1',
 					scope: 'en',
@@ -108,11 +92,9 @@ describe('UpdateModule', () => {
 					subject: undefined,
 					distribution: undefined,
 				}),
-				'test_user',
 			);
-			expect(api.call).toHaveBeenCalledWith(
+			expect(mockStore.db.entries[1]).toEqual(
 				expect.objectContaining({
-					action: 'create',
 					head: 'word2',
 					body: 'verb: definition for word2',
 					scope: 'en',
@@ -121,11 +103,9 @@ describe('UpdateModule', () => {
 					subject: undefined,
 					distribution: undefined,
 				}),
-				'test_user',
 			);
-			expect(api.call).toHaveBeenCalledWith(
+			expect(mockStore.db.entries[2]).toEqual(
 				expect.objectContaining({
-					action: 'create',
 					head: 'word3',
 					body: 'verb: definition for word3',
 					scope: 'en',
@@ -134,7 +114,6 @@ describe('UpdateModule', () => {
 					subject: undefined,
 					distribution: undefined,
 				}),
-				'test_user',
 			);
 		});
 
@@ -181,17 +160,16 @@ describe('UpdateModule', () => {
 					},
 				};
 
-				const updateModule = new UpdateModule(true, sources, 60000);
+				const updateModule = new UpdateModule(true, api, sources, 60000);
 				await updateModule.sync_resources(mockStore);
 
 				expect(request.get).toHaveBeenCalledWith(
 					'https://example.com/test.json',
 				);
 
-				expect(api.call).toHaveBeenCalledTimes(3);
-				expect(api.call).toHaveBeenCalledWith(
+				expect(mockStore.db.entries).toHaveLength(3);
+				expect(mockStore.db.entries[0]).toEqual(
 					expect.objectContaining({
-						action: 'create',
 						head: 'word1',
 						body: 'verb: definition for word1',
 						scope: 'en',
@@ -200,11 +178,9 @@ describe('UpdateModule', () => {
 						subject: 'subj1',
 						distribution: 'dist1',
 					}),
-					'json_user',
 				);
-				expect(api.call).toHaveBeenCalledWith(
+				expect(mockStore.db.entries[1]).toEqual(
 					expect.objectContaining({
-						action: 'create',
 						head: 'word2',
 						body: 'verb: definition for word2',
 						scope: 'en',
@@ -213,11 +189,9 @@ describe('UpdateModule', () => {
 						subject: 'subj2',
 						distribution: 'dist2',
 					}),
-					'json_user',
 				);
-				expect(api.call).toHaveBeenCalledWith(
+				expect(mockStore.db.entries[2]).toEqual(
 					expect.objectContaining({
-						action: 'create',
 						head: 'word3',
 						body: 'verb: definition for word3',
 						scope: 'en',
@@ -226,7 +200,6 @@ describe('UpdateModule', () => {
 						subject: undefined,
 						distribution: undefined,
 					}),
-					'json_user',
 				);
 			});
 		});

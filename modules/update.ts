@@ -3,7 +3,7 @@
 
 import * as commons from '../core/commons.js';
 import * as search from '../core/search.js';
-import { api, replacements } from '../core/api.js';
+import { Api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 
@@ -94,6 +94,7 @@ export class UpdateModule {
 
 	constructor(
 		private enabled: boolean,
+		private api: Api,
 		private sources: Record<string, SourceConfig>,
 		private update_interval: number,
 		private announce?: announce.AnnounceModule,
@@ -165,7 +166,7 @@ export class UpdateModule {
 						entry.$.distribution === distribution,
 				);
 				if (!exists) {
-					const res = await api.call(
+					const res = await this.api.call(
 						{
 							action: 'create',
 							head,
@@ -221,7 +222,7 @@ export class UpdateModule {
 					return;
 				// we need to re-find the entry because `search` makes
 				// copies on output
-				e = api.by_id(e.id);
+				e = this.api.by_id(e.id);
 				e.user = `old${e.user}`;
 				e.votes[e.user] = -1;
 				e.score--;

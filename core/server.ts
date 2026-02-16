@@ -40,10 +40,12 @@ const VERSION = JSON.parse(
 console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
-import { api } from './api.js';
+import { Api } from './api.js';
 import type { Socket } from 'node:net';
 import type { EventEmitter } from 'node:stream';
 import { readFileSync } from 'node:fs';
+
+const api = new Api(commons.store, config);
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
