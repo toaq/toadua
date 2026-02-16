@@ -40,6 +40,7 @@ defineProps<{
 				>
 				<div style="position: relative">
 					<button
+						title="Pronominal class"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
@@ -53,7 +54,10 @@ defineProps<{
 					<select
 						v-model="result.pronominal_class"
 						:disabled="!username"
-						@change="submit_annotation"
+						@change="
+							guess_other_metadata();
+							submit_annotation();
+						"
 					>
 						<option value="ho">hó</option>
 						<option value="maq">máq</option>
@@ -63,6 +67,7 @@ defineProps<{
 				</div>
 				<div style="position: relative">
 					<button
+						title="Frame"
 						v-if="any_metadata"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
@@ -71,6 +76,7 @@ defineProps<{
 						({{ result.frame ?? '—' }})
 					</button>
 					<select
+						title="Frame"
 						v-if="any_metadata"
 						v-model="result.frame"
 						:disabled="!username"
@@ -100,6 +106,7 @@ defineProps<{
 				</div>
 				<div style="position: relative">
 					<button
+						title="Distribution"
 						v-if="result.frame"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
@@ -113,7 +120,6 @@ defineProps<{
 						:disabled="!username"
 						@change="submit_annotation"
 					>
-						<option value="">(—)</option>
 						<option v-if="slots === 1" value="d">(d)</option>
 						<option v-if="slots === 1 && last_c" value="n">(n)</option>
 						<option v-if="slots === 2" value="d d">(d d)</option>
@@ -132,6 +138,7 @@ defineProps<{
 				</div>
 				<div style="position: relative">
 					<button
+						title="Subject type"
 						v-if="result.frame"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
@@ -145,25 +152,25 @@ defineProps<{
 						:disabled="!username"
 						@change="submit_annotation"
 					>
-						<option value="">—</option>
-						<option value="agent" title="subj is agent">A</option>
-						<option value="individual" title="subj is non-event">I</option>
-						<option :disabled="tangible" value="event" title="subj is event">
-							E
+						<option value="agent">A</option>
+						<option value="" disabled>Subject is a deliberate agent</option>
+						<hr />
+						<option value="individual">I</option>
+						<option value="" disabled>Subject is a non-event</option>
+						<hr />
+						<option :disabled="tangible" value="event">E</option>
+						<option value="" disabled>Subject is an event</option>
+						<hr />
+						<option :disabled="tangible" value="predicate">P</option>
+						<option value="" disabled>Subject is a proposition</option>
+						<hr />
+						<option :disabled="tangible" value="shape">S</option>
+						<option value="" disabled>
+							Subject is spatial (thing or event)
 						</option>
-						<option
-							:disabled="tangible"
-							value="predicate"
-							title="subj is predicate"
-						>
-							P
-						</option>
-						<option :disabled="tangible" value="shape" title="subj has a shape">
-							S
-						</option>
-						<option :disabled="tangible" value="free" title="subj is anything">
-							F
-						</option>
+						<hr />
+						<option :disabled="tangible" value="free">F</option>
+						<option value="" disabled>Subject is anything</option>
 					</select>
 				</div>
 			</div>
@@ -418,6 +425,26 @@ export default defineComponent({
 		submit_edit(): void {
 			this.$emit('edit', this.new_body, this.new_scope);
 			this.editing = false;
+		},
+
+		guess_other_metadata(): void {
+			this.result.frame ??= [
+				...this.result.body
+					.toLowerCase()
+					.replace(/\d/g, '')
+					.replace(/▯ (\S+ ){0,2}the case/g, '0')
+					.replace(/satisf\w+ (property )?▯/g, '1')
+					.replace(/property ▯/g, '1')
+					.replace(/relation ▯/g, '2')
+					.replace(/[^012▯]/g, '')
+					.replace(/▯/g, 'c'),
+			].join(' ');
+			this.result.distribution ??= this.result.frame.replaceAll(/[c012]/g, 'd');
+			this.result.subject ??= this.tangible
+				? 'individual'
+				: this.result.frame.startsWith('c')
+				? 'free'
+				: 'predicate';
 		},
 
 		submit_annotation(): void {
