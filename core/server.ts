@@ -40,7 +40,7 @@ const VERSION = JSON.parse(
 console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
-import * as api from './api.js';
+import { api } from './api.js';
 import type { Socket } from 'node:net';
 import type { EventEmitter } from 'node:stream';
 import { readFileSync } from 'node:fs';

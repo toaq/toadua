@@ -3,7 +3,7 @@
 
 import * as commons from '../core/commons.js';
 import * as search from '../core/search.js';
-import * as api from '../core/api.js';
+import { api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 
@@ -116,7 +116,7 @@ export class UpdateModule {
 						for (const entry of FORMATS[format](data as string, rest)) {
 							if (!entry.head || !entry.body) continue;
 							word_list.set(shared.normalize(entry.head), {
-								body: api.replacements(entry.body),
+								body: replacements(entry.body),
 								frame: entry.frame,
 								pronominal_class: entry.pronominal_class,
 								subject: entry.subject,

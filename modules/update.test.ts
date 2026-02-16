@@ -7,9 +7,11 @@ vi.mock('request-promise-native', () => ({
 }));
 
 vi.mock('../core/api.js', () => ({
-	call: vi.fn(),
 	replacements: vi.fn((s: string) => s),
-	by_id: vi.fn(),
+	api: {
+		call: vi.fn(),
+		by_id: vi.fn(),
+	},
 }));
 
 vi.mock('../core/search.js', () => ({
@@ -23,7 +25,7 @@ vi.mock('../frontend/shared/index.js', () => ({
 }));
 
 import request from 'request-promise-native';
-import * as api from '../core/api.js';
+import { api } from '../core/api.js';
 import * as search from '../core/search.js';
 
 describe('UpdateModule', () => {
