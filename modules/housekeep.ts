@@ -41,6 +41,6 @@ export class HousekeepModule {
 		}
 		if (reformed) console.log(`reformed ${reformed} entries`);
 
-		search.recache();
+		search.recache(store);
 	}
 }

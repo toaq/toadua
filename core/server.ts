@@ -44,8 +44,15 @@ import { Api } from './api.js';
 import type { Socket } from 'node:net';
 import type { EventEmitter } from 'node:stream';
 import { readFileSync } from 'node:fs';
+import type { Store, ToaduaConfig } from './commons.js';
 
-const api = new Api(commons.store, config);
+// a store for stuff and things
+const store: Store = {
+	db: { entries: [] },
+	pass: { hashes: {}, tokens: {} },
+};
+
+const api = new Api(store, config);
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
@@ -193,8 +200,8 @@ class ToaduaModules {
 	private update?: UpdateModule;
 
 	constructor(
-		private store: commons.Store,
-		private config: commons.ToaduaConfig,
+		private store: Store,
+		private config: ToaduaConfig,
 		private sources: Record<string, SourceConfig>,
 		private emitter: EventEmitter,
 	) {
@@ -248,12 +255,7 @@ class ToaduaModules {
 const sources: Record<string, SourceConfig> = yaml.load(
 	readFileSync(commons.getToaduaPath() + '/config/sources.yml'),
 );
-const modules = new ToaduaModules(
-	commons.store,
-	config,
-	sources,
-	commons.emitter,
-);
+const modules = new ToaduaModules(store, config, sources, commons.emitter);
 modules.up();
 
 const server = http.createServer(handler);

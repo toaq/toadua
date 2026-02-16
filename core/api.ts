@@ -1,7 +1,7 @@
 // api.ts
 // implementation for the API
 
-import { config, emitter, store } from './commons.js';
+import { config, emitter } from './commons.js';
 import type { Entry, Store, ToaduaConfig } from './commons.js';
 import * as search from './search.js';
 import * as shared from '../frontend/shared/index.js';
@@ -465,5 +465,3 @@ export class Api {
 		};
 	}
 }
-
-export const api = new Api(store, config);

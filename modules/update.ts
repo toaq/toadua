@@ -237,7 +237,7 @@ export class UpdateModule {
 			}
 		}
 
-		search.recache();
+		search.recache(store);
 
 		for (const [user, msgs] of Object.entries(messages)) {
 			if (msgs.length > 5)

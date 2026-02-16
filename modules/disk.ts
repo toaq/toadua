@@ -124,7 +124,7 @@ export class DiskModule {
 		setInterval(_ => backup(store), this.backup_interval);
 		store.db = read('data/dict.json.gz', { entries: [] });
 		store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} });
-		search.recache();
+		search.recache(store);
 	}
 	public down(store: commons.Store): void {
 		console.log('trying to save data...');

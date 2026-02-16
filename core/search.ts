@@ -11,6 +11,7 @@ import {
 	MatchMode,
 	type Entry,
 	Note,
+	Store,
 } from './commons.js';
 
 // keep an own cache for entries
@@ -182,7 +183,7 @@ for (const k of ['vote', 'note', 'removenote', 'edit', 'move'])
 		cache.splice(cached_index(entry.id), 1, cacheify(entry)),
 	);
 
-export function recache(): void {
+export function recache(store: Store): void {
 	cache = store.db.entries.map(cacheify);
 	re_cache = empty_re_cache();
 }
