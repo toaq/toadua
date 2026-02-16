@@ -2,7 +2,7 @@
 // load from disk, save to disk, do backups
 
 import * as commons from '../core/commons.js';
-import * as search from '../core/search.js';
+import { Search } from '../core/search.js';
 
 import * as fs from 'node:fs';
 import * as zlib from 'node:zlib';
@@ -115,6 +115,7 @@ function save(store: commons.Store) {
 
 export class DiskModule {
 	constructor(
+		private search: Search,
 		private save_interval: number,
 		private backup_interval: number,
 	) {}
@@ -124,7 +125,7 @@ export class DiskModule {
 		setInterval(_ => backup(store), this.backup_interval);
 		store.db = read('data/dict.json.gz', { entries: [] });
 		store.pass = read('data/accounts.json.gz', { hashes: {}, tokens: {} });
-		search.recache(store);
+		this.search.recache();
 	}
 	public down(store: commons.Store): void {
 		console.log('trying to save data...');

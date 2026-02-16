@@ -66,6 +66,7 @@ const emitter = new EventEmitter();
 emitter.setMaxListeners(Number.POSITIVE_INFINITY);
 const _emitter = emitter;
 export { _emitter as emitter };
+export type Emitter = typeof emitter;
 emitter.emit = function (ev, ...args) {
 	// add event name as first arg
 	return EventEmitter.prototype.emit.call(this, ev, ev, ...args);

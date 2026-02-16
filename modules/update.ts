@@ -2,7 +2,7 @@
 // download word definitions from remote sources
 
 import * as commons from '../core/commons.js';
-import * as search from '../core/search.js';
+import { Search } from '../core/search.js';
 import { Api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
@@ -95,6 +95,7 @@ export class UpdateModule {
 	constructor(
 		private enabled: boolean,
 		private api: Api,
+		private search: Search,
 		private sources: Record<string, SourceConfig>,
 		private update_interval: number,
 		private announce?: announce.AnnounceModule,
@@ -155,7 +156,7 @@ export class UpdateModule {
 				head,
 				{ body, frame, pronominal_class, subject, distribution },
 			] of word_list.entries()) {
-				const exists = search.some(
+				const exists = this.search.some(
 					entry =>
 						entry.$.scope === 'en' &&
 						entry.$.head === head &&
@@ -237,7 +238,7 @@ export class UpdateModule {
 			}
 		}
 
-		search.recache(store);
+		this.search.recache();
 
 		for (const [user, msgs] of Object.entries(messages)) {
 			if (msgs.length > 5)

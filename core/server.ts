@@ -41,6 +41,7 @@ console.log(`starting up v${VERSION}...`);
 
 import * as http from 'node:http';
 import { Api } from './api.js';
+import { Search } from './search.js';
 import type { Socket } from 'node:net';
 import type { EventEmitter } from 'node:stream';
 import { readFileSync } from 'node:fs';
@@ -52,7 +53,8 @@ const store: Store = {
 	pass: { hashes: {}, tokens: {} },
 };
 
-const api = new Api(store, config);
+const search = new Search(store, commons.emitter);
+const api = new Api(store, config, search);
 
 const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
 const routes = {
@@ -202,17 +204,19 @@ class ToaduaModules {
 	constructor(
 		private store: Store,
 		private config: ToaduaConfig,
+		private search: Search,
 		private sources: Record<string, SourceConfig>,
 		private emitter: EventEmitter,
 	) {
 		const housekeepConfig = config.modules['modules/housekeep.js'];
 		if (housekeepConfig) {
-			this.housekeep = new HousekeepModule();
+			this.housekeep = new HousekeepModule(search);
 		}
 
 		const diskConfig = config.modules['modules/disk.js'];
 		if (diskConfig) {
 			this.disk = new DiskModule(
+				search,
 				diskConfig.save_interval,
 				diskConfig.backup_interval,
 			);
@@ -231,6 +235,7 @@ class ToaduaModules {
 			this.update = new UpdateModule(
 				updateConfig.enabled,
 				api,
+				search,
 				this.sources,
 				updateConfig.update_interval,
 				this.announce,
@@ -255,7 +260,13 @@ class ToaduaModules {
 const sources: Record<string, SourceConfig> = yaml.load(
 	readFileSync(commons.getToaduaPath() + '/config/sources.yml'),
 );
-const modules = new ToaduaModules(store, config, sources, commons.emitter);
+const modules = new ToaduaModules(
+	store,
+	config,
+	search,
+	sources,
+	commons.emitter,
+);
 modules.up();
 
 const server = http.createServer(handler);

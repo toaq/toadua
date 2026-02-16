@@ -6,23 +6,20 @@ vi.mock('request-promise-native', () => ({
 	default: { get: vi.fn() },
 }));
 
-vi.mock('../core/search.js', () => ({
-	search: vi.fn(() => []),
-	recache: vi.fn(),
-	some: vi.fn(() => false),
-}));
-
 vi.mock('../frontend/shared/index.js', () => ({
 	normalize: vi.fn((s: string) => s.toLowerCase()),
 }));
 
 import request from 'request-promise-native';
-import * as search from '../core/search.js';
+import { Search } from '../core/search.js';
 import { Api } from '../core/api.js';
+import { EventEmitter } from 'node:events';
 
 describe('UpdateModule', () => {
 	let mockStore: commons.Store;
 	let api: Api;
+	let search: Search;
+	let emitter: EventEmitter;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -32,18 +29,23 @@ describe('UpdateModule', () => {
 			pass: { hashes: {}, tokens: {} },
 		};
 
-		(search.search as any).mockReturnValue([]);
+		emitter = new EventEmitter();
+		search = new Search(mockStore, emitter);
 
-		api = new Api(mockStore, {
-			entry_point: 'https://example.com',
-			request_body_size_limit: 1024 * 1024,
-			token_expiry: 1000 * 60 * 60 * 24,
-			modules: {},
-			production: false,
-			port: 0,
-			exit_on_module_load_error: false,
-			password_rounds: 1,
-		});
+		api = new Api(
+			mockStore,
+			{
+				entry_point: 'https://example.com',
+				request_body_size_limit: 1024 * 1024,
+				token_expiry: 1000 * 60 * 60 * 24,
+				modules: {},
+				production: false,
+				port: 0,
+				exit_on_module_load_error: false,
+				password_rounds: 1,
+			},
+			search,
+		);
 	});
 
 	afterEach(() => {
@@ -76,7 +78,7 @@ describe('UpdateModule', () => {
 				},
 			};
 
-			const updateModule = new UpdateModule(true, api, sources, 60000);
+			const updateModule = new UpdateModule(true, api, search, sources, 60000);
 			await updateModule.sync_resources(mockStore);
 
 			expect(request.get).toHaveBeenCalledWith('https://example.com/test.tsv');
@@ -160,7 +162,13 @@ describe('UpdateModule', () => {
 					},
 				};
 
-				const updateModule = new UpdateModule(true, api, sources, 60000);
+				const updateModule = new UpdateModule(
+					true,
+					api,
+					search,
+					sources,
+					60000,
+				);
 				await updateModule.sync_resources(mockStore);
 
 				expect(request.get).toHaveBeenCalledWith(

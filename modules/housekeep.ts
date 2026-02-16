@@ -3,10 +3,12 @@
 
 import type * as commons from '../core/commons.js';
 import type { Token } from '../core/commons.js';
-import * as search from '../core/search.js';
+import { Search } from '../core/search.js';
 import * as shared from '../frontend/shared/index.js';
 
 export class HousekeepModule {
+	constructor(private search: Search) {}
+
 	public up(store: commons.Store, config: commons.ToaduaConfig) {
 		console.log(`~~ housekeeping ${store.db.entries.length} entries`);
 		const now = +new Date();
@@ -41,6 +43,6 @@ export class HousekeepModule {
 		}
 		if (reformed) console.log(`reformed ${reformed} entries`);
 
-		search.recache(store);
+		this.search.recache();
 	}
 }

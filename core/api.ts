@@ -3,7 +3,7 @@
 
 import { config, emitter } from './commons.js';
 import type { Entry, Store, ToaduaConfig } from './commons.js';
-import * as search from './search.js';
+import { Search } from './search.js';
 import * as shared from '../frontend/shared/index.js';
 import * as shortid from 'shortid';
 import * as uuid from 'uuid';
@@ -88,6 +88,7 @@ export const replacements = (s: string): string =>
 export class Api {
 	private readonly store: Store;
 	private readonly config: ToaduaConfig;
+	private readonly searchInstance: Search;
 	private readonly actions: Record<string, Action>;
 
 	public index_of(id: string): number {
@@ -159,7 +160,7 @@ export class Api {
 			return flip(
 				`invalid field 'preferred_scope_bias': ${e_preferred_scope_bias}`,
 			);
-		const data = search.search(i, uname);
+		const data = this.searchInstance.search(i, uname);
 		if (typeof data === 'string') return flip(data);
 		return good({ results: data });
 	}
@@ -445,9 +446,10 @@ export class Api {
 		}
 	}
 
-	constructor(store: Store, config: ToaduaConfig) {
+	constructor(store: Store, config: ToaduaConfig, searchInstance: Search) {
 		this.store = store;
 		this.config = config;
+		this.searchInstance = searchInstance;
 		this.actions = {
 			welcome: this.welcome.bind(this),
 			create: this.create.bind(this),
