@@ -29,27 +29,38 @@ export class HousekeepModule {
 
 	private reform_entries(store: commons.Store) {
 		let reformed = 0;
-		const reform = (
-			e: commons.Entry | commons.Note,
-			p: string,
-			f: (value: string) => string,
-		) => {
-			const normalized = f(e[p]);
-			const retval = normalized !== e[p];
-			e[p] = normalized;
-			return retval;
-		};
 		for (const entry of store.db.entries) {
-			// update to modern Toaq
-			let didReform = reform(entry, 'head', shared.normalize);
-			if (entry.scope === 'toa')
-				didReform = reform(entry, 'body', shared.normalize) || didReform;
+			let didReform = false;
 
-			const normalizePlaceholders = s =>
-				s.replace(/___|◌(?!\p{Diacritic})/gu, '▯');
-			didReform = reform(entry, 'body', normalizePlaceholders) || didReform;
-			for (const note of entry.notes)
-				didReform = reform(note, 'content', normalizePlaceholders) || didReform;
+			// update to modern Toaq
+			const normalizedHead = shared.normalize(entry.head);
+			if (normalizedHead !== entry.head) {
+				entry.head = normalizedHead;
+				didReform = true;
+			}
+
+			if (entry.scope === 'toa') {
+				const normalizedBody = shared.normalize(entry.body);
+				if (normalizedBody !== entry.body) {
+					entry.body = normalizedBody;
+					didReform = true;
+				}
+			}
+
+			const placeholderRegex = /___|◌(?!\p{Diacritic})/gu;
+			const normalizedBody = entry.body.replace(placeholderRegex, '▯');
+			if (normalizedBody !== entry.body) {
+				entry.body = normalizedBody;
+				didReform = true;
+			}
+
+			for (const note of entry.notes) {
+				const normalizedContent = note.content.replace(placeholderRegex, '▯');
+				if (normalizedContent !== note.content) {
+					note.content = normalizedContent;
+					didReform = true;
+				}
+			}
 
 			if (didReform) reformed++;
 		}
@@ -60,13 +71,11 @@ export class HousekeepModule {
 		const newest_version = new Map<string, commons.Entry>();
 		for (const e of store.db.entries) {
 			const key = `${e.user}\0${e.head}\0${e.body}\0${e.scope}`;
-			const current = newest_version.get(key);
-			if (current && e.date > current.date) {
-				newest_version.set(key, e);
-				current.scope = '';
-			} else if (current && current.date >= e.date) {
+			const other = newest_version.get(key);
+			if (other && other.date >= e.date) {
 				e.scope = '';
 			} else {
+				if (other) other.scope = '';
 				newest_version.set(key, e);
 			}
 		}
