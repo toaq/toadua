@@ -31,13 +31,13 @@ export class HousekeepModule {
 			// update to modern Toaq
 			let didReform = reform(entry, 'head', shared.normalize);
 			if (entry.scope === 'toa')
-				didReform ||= reform(entry, 'body', shared.normalize);
+				didReform = reform(entry, 'body', shared.normalize) || didReform;
 
 			const normalizePlaceholders = s =>
 				s.replace(/___|◌(?!\p{Diacritic})/gu, '▯');
-			didReform ||= reform(entry, 'body', normalizePlaceholders);
+			didReform = reform(entry, 'body', normalizePlaceholders) || didReform;
 			for (const note of entry.notes)
-				didReform ||= reform(note, 'content', normalizePlaceholders);
+				didReform = reform(note, 'content', normalizePlaceholders) || didReform;
 
 			if (didReform) reformed++;
 		}
