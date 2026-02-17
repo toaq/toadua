@@ -76,4 +76,49 @@ describe('HousekeepModule', () => {
 			]);
 		});
 	});
+
+	describe('duplicate entry removal', () => {
+		test('removes duplicate entries', () => {
+			store.db.entries = [
+				makeEntry({
+					head: 'bao',
+					body: '___ is off-white',
+					user: 'bob',
+					scope: 'en',
+					date: '2024-01-01T00:00:00.000Z',
+				}),
+				makeEntry({
+					head: 'bao',
+					body: '___ is white',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-01T00:00:00.000Z',
+				}),
+				makeEntry({
+					head: 'bao',
+					body: '___ is white',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
+			];
+			housekeep.up(store, makeConfig());
+			expect(store.db.entries).toEqual([
+				makeEntry({
+					head: 'bao',
+					body: '▯ is off-white',
+					user: 'bob',
+					scope: 'en',
+					date: '2024-01-01T00:00:00.000Z',
+				}),
+				makeEntry({
+					head: 'bao',
+					body: '▯ is white',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
+			]);
+		});
+	});
 });
