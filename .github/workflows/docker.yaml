@@ -3,7 +3,6 @@ on:
   pull_request:
   workflow_dispatch:
   push:
-    branches: [main]
 
 jobs:
   build:
@@ -25,11 +24,19 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ghcr.io/${{ github.repository }}
+      - name: Get current commit description
+        id: git_description
+        shell: bash
+        run: |
+          git log -1 --format='description=%s' ${{ github.sha }} >> $GITHUB_OUTPUT
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
+          build-args:
+            GIT_HASH: ${{ github.sha }}
+            GIT_DESCRIPTION: ${{ steps.git_description.outputs.description }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
