@@ -89,7 +89,7 @@ export class HousekeepModule {
 	private remove_invalid_entries(store: commons.Store) {
 		// A previous bug caused the string "undefined" to show up in this field.
 		store.db.entries = store.db.entries.filter(
-			e => e.pronominal_class === 'undefined',
+			e => e.pronominal_class !== 'undefined',
 		);
 	}
 
