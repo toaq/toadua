@@ -11,9 +11,13 @@ export class HousekeepModule {
 
 	public up(store: commons.Store, config: commons.ToaduaConfig) {
 		console.log(`~~ housekeeping ${store.db.entries.length} entries`);
+
 		this.remove_old_tokens(store, config);
 		this.reform_entries(store);
 		this.remove_duplicates(store);
+		this.remove_invalid_entries(store);
+		this.remove_unnecessary_oldofficial(store);
+
 		this.search.recache();
 	}
 
@@ -80,5 +84,18 @@ export class HousekeepModule {
 			}
 		}
 		store.db.entries = store.db.entries.filter(e => e.scope);
+	}
+
+	private remove_invalid_entries(store: commons.Store) {
+		// A previous bug caused the string "undefined" to show up in this field.
+		store.db.entries = store.db.entries.filter(
+			e => e.pronominal_class === 'undefined',
+		);
+	}
+
+	private remove_unnecessary_oldofficial(store: commons.Store) {
+		store.db.entries = store.db.entries.filter(
+			e => e.user !== 'oldofficial' || e.notes.length > 0,
+		);
 	}
 }
