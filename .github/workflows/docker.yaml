@@ -35,8 +35,8 @@ jobs:
         with:
           context: .
           build-args:
-            GIT_HASH: ${{ github.sha }}
-            GIT_DESCRIPTION: ${{ steps.git_description.outputs.description }}
+            - GIT_HASH=${{ github.sha }}
+            - GIT_DESCRIPTION=${{ steps.git_description.outputs.description }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
