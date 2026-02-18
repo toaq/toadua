@@ -28,7 +28,10 @@ This maps port 9999 on your computer to port 29138 inside a Docker container
 running Toadua:
 
 ```
-docker build -t toadua .
+docker build \
+  --build-arg GIT_HASH=$(git rev-parse --short HEAD) \
+  --build-arg GIT_DESCRIPTION="$(git log -1 --pretty=%s)" \
+  -t toadua .
 docker run --mount type=bind,src=./config,dst=/app/config -p 9999:29138 toadua
 ```
 

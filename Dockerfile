@@ -8,6 +8,10 @@ ADD frontend .
 RUN bun run build
 
 FROM base AS final
+ARG GIT_HASH
+ENV GIT_HASH=$GIT_HASH
+ARG GIT_DESCRIPTION
+ENV GIT_DESCRIPTION=$GIT_DESCRIPTION
 WORKDIR /app
 ADD package.json package-lock.json .
 RUN bun install --no-save
