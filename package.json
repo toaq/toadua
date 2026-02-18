@@ -38,6 +38,7 @@
 		"check": "npm run prettier:check",
 		"test": "vitest",
 		"prettier:check": "prettier -c .",
+		"format": "prettier -w .",
 		"prettier:format": "prettier -w ."
 	},
 	"repository": {

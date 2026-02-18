@@ -1,7 +1,8 @@
 import type { WebhookPayload } from './types.js';
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
-import { getRepositoryRootPath } from '../core/commons.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 export class HelloModule {
 	constructor(
@@ -11,20 +12,22 @@ export class HelloModule {
 
 	public up() {
 		if (!this.enabled) return;
-
-		try {
-			const gitRoot = getRepositoryRootPath();
-			this.sayHello(gitRoot);
-		} catch (e) {
-			console.error('Could not find git repository root:', e);
-		}
+		this.sayHello();
 	}
 
-	async sayHello(gitRoot: string) {
-		const head = await readFile(path.join(gitRoot, '.git', 'HEAD')).catch(e =>
-			console.error('Could not read git HEAD:', e),
-		);
-		if (!head) return;
+	async sayHello() {
+		let hash: string;
+		try {
+			const { stdout } = await execFileAsync('git', [
+				'rev-parse',
+				'--short',
+				'HEAD',
+			]);
+			hash = stdout.trim();
+		} catch (e) {
+			console.error('Could not get git commit hash:', e);
+			return;
+		}
 
 		await fetch(this.hook, {
 			method: 'POST',
@@ -34,7 +37,7 @@ export class HelloModule {
 					{
 						color: 0,
 						title: 'starting up',
-						description: `commit ${head.toString()}`,
+						description: `[commit ${hash}](https://github.com/toaq/toadua/commit/${hash})`,
 					},
 				],
 			}),
