@@ -417,7 +417,7 @@ export class Search {
 			this.cache.splice(this.cached_index(entry.id), 1),
 		);
 		this.emitter.on('create', (_, entry) => this.cache.push(cacheify(entry)));
-		for (const k of ['vote', 'note', 'removenote', 'edit', 'move'])
+		for (const k of ['vote', 'note', 'removenote', 'edit', 'move', 'annotate'])
 			this.emitter.on(k, (_, entry) =>
 				this.cache.splice(this.cached_index(entry.id), 1, cacheify(entry)),
 			);
