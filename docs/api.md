@@ -115,8 +115,10 @@ which is then interpreted as in the Toadua frontend. See
 > **Outputs:**
 >
 > - `count` number
+> - `annotated` number
 
-Returns the total number of entries in Toadua's database.
+Returns the total number of entries in Toadua's database, and how many of
+them have a `pronominal_class` set.
 
 ### `note` (L)
 

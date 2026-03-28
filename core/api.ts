@@ -69,7 +69,7 @@ export type ApiBody =
 	| { entry: PresentedEntry }
 	| { results: PresentedEntry[] }
 	| { token: string }
-	| { count: number };
+	| { count: number; annotated: number };
 
 export type ApiError = { success: false; error: string };
 export type ApiSuccess = { success: true } & ApiBody;
@@ -174,7 +174,11 @@ export class Api {
 	}
 
 	public async count(i: any, uname: string): Promise<ApiResponse> {
-		return good({ count: this.store.db.entries.length });
+		const count = this.store.db.entries.length;
+		const annotated = this.store.db.entries.filter(
+			e => e.pronominal_class !== undefined,
+		).length;
+		return good({ count, annotated });
 	}
 
 	public async vote(i: any, uname: string): Promise<ApiResponse> {
