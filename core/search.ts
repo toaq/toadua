@@ -64,7 +64,9 @@ export function extract_pronominal_class(notes: Note[]): string | undefined {
 				.normalize('NFD')
 				.replace(/[\u0300-\u036f]/g, '')
 				.replace('i', 'ı');
-			if (['ho', 'maq', 'hoq', 'ta', 'raı', 'particle'].includes(value)) {
+			if (
+				['ho', 'maq', 'hoq', 'ta', 'raı', 'particle', 'phrase'].includes(value)
+			) {
 				return value;
 			}
 		}

@@ -15,7 +15,15 @@ import type { PresentedEntry } from './search.js';
 // Workaround for bcryptjs' broken types
 const bcrypt = bcryptjs as typeof bcryptjs_types;
 
-const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı', 'particle'];
+const PRONOMINAL_CLASSES = [
+	'ho',
+	'maq',
+	'hoq',
+	'ta',
+	'raı',
+	'particle',
+	'phrase',
+];
 
 const FRAMES = [
 	'c',
