@@ -216,6 +216,13 @@
 			</li>
 		</ul>
 	</form>
+	<div class="annotation-progress card" v-if="!query && total_count !== null">
+		<progress :value="annotation_count" :max="total_count"></progress>
+		<span class="annotation-progress-label">
+			{{ annotation_count.toLocaleString('en-US') }} /
+			{{ total_count.toLocaleString('en-US') }} words annotated
+		</span>
+	</div>
 	<footer>
 		<ul class="controls">
 			<li><a href="https://toaq.me/Toadua">help</a></li>
@@ -600,6 +607,8 @@ export default defineComponent({
 			token: null as string | null,
 			username: null as string | null,
 			version,
+			total_count: null as number | null,
+			annotation_count: null as number | null,
 		};
 	},
 	computed: {
@@ -634,6 +643,10 @@ export default defineComponent({
 			this.store.getItem('limit_search') === 'true' || this.limit_search;
 		this.scope = this.store.getItem('scope') || this.scope;
 		this.welcome(this.token);
+		this.apisend({ action: 'count' }, data => {
+			this.total_count = data.count;
+			this.annotation_count = data.annotated;
+		});
 	},
 	mounted() {
 		this.focus_search();
