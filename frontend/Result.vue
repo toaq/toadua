@@ -442,6 +442,7 @@ export default defineComponent({
 			this.result.frame ??= [
 				...this.result.body
 					.toLowerCase()
+					.split(';')[0]
 					.replace(/\d/g, '')
 					.replace(/▯ (\S+ ){0,2}the case/g, '0')
 					.replace(/satisf\w+ (property )?▯/g, '1')
