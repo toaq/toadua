@@ -46,7 +46,9 @@ defineProps<{
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
 						{{
-							result.pronominal_class
+							result.pronominal_class === 'particle'
+								? 'particle'
+								: result.pronominal_class
 								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
 								: '—'
 						}}
@@ -63,12 +65,13 @@ defineProps<{
 						<option value="maq">máq</option>
 						<option value="hoq">hóq</option>
 						<option value="ta">tá</option>
+						<option value="particle">particle</option>
 					</select>
 				</div>
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_metadata"
+						v-if="any_metadata && !is_particle"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
@@ -77,7 +80,7 @@ defineProps<{
 					</button>
 					<select
 						title="Frame"
-						v-if="any_metadata"
+						v-if="any_metadata && !is_particle"
 						v-model="result.frame"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -428,6 +431,12 @@ export default defineComponent({
 		},
 
 		guess_other_metadata(): void {
+			if (this.result.pronominal_class === 'particle') {
+				this.result.frame = undefined;
+				this.result.distribution = undefined;
+				this.result.subject = undefined;
+				return;
+			}
 			this.result.frame ??= [
 				...this.result.body
 					.toLowerCase()
@@ -509,6 +518,9 @@ export default defineComponent({
 		},
 		last_c(): boolean {
 			return this.result.frame?.endsWith('c');
+		},
+		is_particle(): boolean {
+			return this.result.pronominal_class === 'particle';
 		},
 		tangible(): boolean {
 			return (
