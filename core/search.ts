@@ -356,6 +356,44 @@ export class Search {
 		this.operations.until = this.operations.before;
 		this.operations.since = this.operations.after;
 
+		// Metadata field operations (pronominal_class, frame, distribution, subject)
+		// Value 'none' matches entries where the field is not set.
+		// Spaces are stripped for comparison, so e.g. frame:c1i matches stored "c 1i".
+		const metaFieldAliases: [
+			string,
+			'pronominal_class' | 'frame' | 'distribution' | 'subject',
+		][] = [
+			['pronominal_class', 'pronominal_class'],
+			['pronoun', 'pronominal_class'],
+			['animacy', 'pronominal_class'],
+			['pro', 'pronominal_class'],
+			['class', 'pronominal_class'],
+			['frame', 'frame'],
+			['distribution', 'distribution'],
+			['subject', 'subject'],
+		];
+		const deburr_meta = (s: string) =>
+			s
+				.normalize('NFD')
+				.replace(/\p{M}+/gu, '')
+				.toLowerCase()
+				.replace(/i/g, 'ı')
+				.replace(/\s+/g, '');
+		for (const [alias, field] of metaFieldAliases) {
+			this.operations[alias] = {
+				type: OperationType.Other,
+				check: one_string,
+				build: ([s]) => {
+					if (s === 'none') return entry => entry[field] === undefined;
+					const normalized = deburr_meta(s);
+					return entry => {
+						const val = entry[field];
+						return val !== undefined && deburr_meta(val) === normalized;
+					};
+				},
+			};
+		}
+
 		for (const trait of RE_TRAITS) {
 			this.operations[trait] = {
 				type: OperationType.Other,
