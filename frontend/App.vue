@@ -217,10 +217,23 @@
 		</ul>
 	</form>
 	<div class="annotation-progress card" v-if="!query && total_count !== null">
-		<progress :value="annotation_count" :max="total_count"></progress>
+		<div class="annotation-progress-bar">
+			<div
+				:style="{ width: (100 * annotation_count) / total_count + '%' }"
+			></div>
+		</div>
 		<span class="annotation-progress-label">
-			{{ annotation_count.toLocaleString('en-US') }} /
-			{{ total_count.toLocaleString('en-US') }} words annotated
+			{{ annotation_count.toLocaleString('en-US') }} out of
+			{{ total_count.toLocaleString('en-US') }} words annotated ({{
+				((100 * annotation_count) / total_count).toFixed(1)
+			}}%)
+			<a
+				v-if="username"
+				style="float: right"
+				href="javascript:void(0)"
+				@click="navigate('pronoun:none')"
+				>help out</a
+			>
 		</span>
 	</div>
 	<footer>

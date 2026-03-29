@@ -465,19 +465,17 @@ h2,
 	color: var(--pink);
 }
 
-.annotation-progress progress {
-	display: block;
+.annotation-progress-bar {
 	width: 100%;
 	height: 6px;
-	border: none;
 	border-radius: 3px;
 	overflow: hidden;
-	accent-color: var(--pink);
+	background-color: color-mix(var(--placeholder-color), transparent 75%);
 }
 
-.annotation-progress progress::-webkit-progress-value,
-.annotation-progress progress::-moz-progress-bar {
-	background-color: var(--pink);
+.annotation-progress-bar > div {
+	height: 100%;
+	background-color: var(--placeholder-color);
 }
 
 .annotation-progress-label {
