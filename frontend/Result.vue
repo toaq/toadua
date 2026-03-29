@@ -450,8 +450,13 @@ export default defineComponent({
 					.replace(/relation ▯/g, '2')
 					.replace(/[^012▯]/g, '')
 					.replace(/▯/g, 'c'),
-			].join(' ');
-			this.result.distribution ??= this.result.frame.replaceAll(/[c012]/g, 'd');
+			]
+				.join(' ')
+				.replace(/1/g, '1i')
+				.replace(/2/g, '2ij');
+			this.result.distribution ??= this.result.frame
+				.replace(/[c012]/g, 'd')
+				.replace(/[ijk]/g, '');
 			this.result.subject ??= this.tangible
 				? 'individual'
 				: this.result.frame.startsWith('c')
