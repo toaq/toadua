@@ -439,10 +439,13 @@ export default defineComponent({
 				this.result.subject = undefined;
 				return;
 			}
-			this.result.frame ??= [
-				...this.result.body
+			const definition =
+				this.result.body
 					.toLowerCase()
-					.split(';')[0]
+					.split(';')
+					.find(x => x.includes('▯')) ?? '';
+			this.result.frame ??= [
+				...definition
 					.replace(/\d/g, '')
 					.replace(/▯ (\S+ ){0,2}the case/g, '0')
 					.replace(/satisf\w+ (property )?▯/g, '1')
