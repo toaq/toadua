@@ -457,11 +457,11 @@ export default defineComponent({
 			this.result.distribution ??= this.result.frame
 				.replace(/[c012]/g, 'd')
 				.replace(/[ijk]/g, '');
-			this.result.subject ??= this.tangible
-				? 'individual'
-				: this.result.frame.startsWith('c')
+			this.result.subject ??= !this.result.frame.startsWith('c')
+				? 'predicate'
+				: this.result.pronominal_class === 'ta'
 				? 'free'
-				: 'predicate';
+				: 'individual';
 		},
 
 		submit_annotation(): void {
