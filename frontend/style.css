@@ -194,7 +194,7 @@ footer .controls {
 
 .card .info select {
 	opacity: 0;
-	width: 0;
+	width: 1px;
 	left: 0;
 	position: absolute;
 	pointer-events: none;
