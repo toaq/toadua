@@ -470,7 +470,11 @@ h2,
 	height: 6px;
 	border-radius: 3px;
 	overflow: hidden;
-	background-color: color-mix(var(--placeholder-color), transparent 75%);
+	background-color: color-mix(
+		in oklab,
+		var(--placeholder-color),
+		transparent 75%
+	);
 }
 
 .annotation-progress-bar > div {
