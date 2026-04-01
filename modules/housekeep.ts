@@ -15,8 +15,7 @@ export class HousekeepModule {
 		this.remove_old_tokens(store, config);
 		this.reform_entries(store);
 		this.remove_duplicates(store);
-		this.remove_invalid_entries(store);
-		this.remove_unnecessary_oldofficial(store);
+		this.remove_bad_entries(store);
 
 		this.search.recache();
 	}
@@ -86,16 +85,15 @@ export class HousekeepModule {
 		store.db.entries = store.db.entries.filter(e => e.scope);
 	}
 
-	private remove_invalid_entries(store: commons.Store) {
-		// A previous bug caused the string "undefined" to show up in this field.
+	private remove_bad_entries(store: commons.Store) {
 		store.db.entries = store.db.entries.filter(
-			e => e.pronominal_class !== 'undefined',
-		);
-	}
-
-	private remove_unnecessary_oldofficial(store: commons.Store) {
-		store.db.entries = store.db.entries.filter(
-			e => e.user !== 'oldofficial' || e.notes.length > 0,
+			e =>
+				// A previous bug caused the string "undefined" to show up in this field. Clean that up:
+				e.pronominal_class !== 'undefined' &&
+				// Don't keep oldofficial entries around unless they have notes.
+				(e.user !== 'oldofficial' || e.notes.length > 0) &&
+				// Don't keep oldcountries at all.
+				e.user !== 'oldcountries',
 		);
 	}
 }
