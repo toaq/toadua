@@ -1,0 +1,45 @@
+delta_examples:
+  user: examples
+  source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=955667013'
+  format: tsv
+  skip: 2
+  patterns:
+    - head: '%(1)'
+      body: '%(2)'
+a_examples:
+  user: examples
+  source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=1211677603'
+  format: tsv
+  skip: 2
+  patterns:
+    - head: '%(1)'
+      body: '%(2)'
+b_examples:
+  user: examples
+  source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=574044693'
+  format: tsv
+  skip: 2
+  patterns:
+    - head: '%(1)'
+      body: '(%(0)) %(2)'
+countries:
+  user: countries
+  source: 'https://docs.google.com/spreadsheets/d/1P9p1D38p364JSiNqLMGwY3zDRPQ_f6Yob_OL-uku28Q/export?format=tsv&id=1P9p1D38p364JSiNqLMGwY3zDRPQ_f6Yob_OL-uku28Q&gid=637793855'
+  format: tsv
+  skip: 2
+  patterns:
+    - head: '%(1)'
+      body: '___ pertains to the culture of %(0).'
+    - head: '%(2)'
+      body: '___ is the country %(0).'
+official:
+  user: official
+  source: 'https://raw.githubusercontent.com/toaq/dictionary/master/dictionary.json'
+  format: json
+  patterns:
+    - head: '%(toaq)'
+      body: '%(type): ‘%(gloss)’; %(english)'
+      frame: '%(frame)'
+      pronominal_class: '%(pronominal_class)'
+      subject: '%(subject)'
+      distribution: '%(distribution)'
