@@ -93,7 +93,9 @@ export class HousekeepModule {
 				// Don't keep oldofficial entries around unless they have notes.
 				(e.user !== 'oldofficial' || e.notes.length > 0) &&
 				// Don't keep oldcountries at all.
-				e.user !== 'oldcountries',
+				e.user !== 'oldcountries' &&
+				// Don't keep oldexamples at all.
+				e.user !== 'oldexamples',
 		);
 	}
 }
