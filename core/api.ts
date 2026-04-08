@@ -375,7 +375,7 @@ export class Api {
 
 	public async register(i: any, uname: string): Promise<ApiResponse> {
 		if (!i.name.match(/^[a-zA-Z]{1,64}$/)) {
-			return flip(`invalid field 'id': name must be 1-64 Latin characters`);
+			return flip(`invalid field 'name': name must be 1-64 Latin characters`);
 		}
 		const e_pass = limit(128)(i.pass);
 		if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
