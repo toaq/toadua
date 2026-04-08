@@ -181,6 +181,26 @@ Returns the new state of the entry.
 - `id` - ID errors
 - `content` - Length errors
 
+## `removenote` (L)
+
+> **Inputs:**
+>
+> - `id` string
+> - `date` string
+>
+> **Outputs:**
+>
+> - `entry` entry
+
+Removes the entries made at the given `date` under the entry with the given ID, provided they were authored by the logged in user. If, under some strange circumstance, multiple notes by the same user had the same `date` (which includes not only date but also time), then all of them would be deleted.
+
+Returns the entry as it is after having the notes deleted.
+
+#### Errors
+- `id` - ID errors
+- `date` - Absence errors
+- `no such note by you` logged in user has not sent a note under the given entry at the given date.
+
 ### `create` (L)
 
 > **Inputs:**
@@ -198,11 +218,65 @@ Creates a new entry with the given Toaq word and definition in the given scope
 Note that the head–body pair must be unique; note also that there is a
 restriction of 2048 characters on each of the head and the body. Don't go crazy.
 
+Returns the created entry.
+
 #### Errors
 - `head` - Length errors
 - `body` - Length errors
 - `scope` - Scope errors if present (otherwise, field defauts to "en" which is a valid scope)
 - `entry already exists` - If the database already contains an entry which is exactly identical to the one being inserted - specifically if head, body, frame, pronominal_class, subject, distribution, user and scope are all identical.
+
+### Edit (L)
+> **Inputs:**
+>
+> - `id` string
+> - `body` string
+> - `scope` string
+>
+> **Outputs:**
+>
+> - `entry` entry
+
+Edits the entry with the given ID to have the given body and scope. The entry must be owned by the logged in user (i.e. its `user` field and the user the session belongs to are the same.)
+
+Returns the entry in its new state after editing.
+
+#### Errors
+- `id` - ID errors
+- `body` - Length errors
+- `scope` - Scope errors
+- `you are not the owner of this entry` - The given ID's `user` field does not correspond to the user the given token belongs to.
+
+### Annotate (L)
+> **Inputs:**
+>
+> - `id` string
+> - `pronominal_class` string?
+> - `frame` string?
+> - `distribution` string?
+> - `subject` string?
+>
+> **Outputs:**
+>
+> - `entry` entry
+
+Edits the entry with the given ID to have the given pronominal class, frame, distribution and subject, if they are given. Absent fields will remove the values.
+
+The entry must be owned by the logged in user (i.e. its `user` field and the user the session belongs to must be the same.)
+
+Returns the entry in its new state after editing.
+
+### `remove`
+> **Inputs:**
+>
+> - `id` string
+
+Removes the entry with the given ID, provider that it is authored by the logged in user.
+
+### Errors
+
+- `id` - ID errors
+- `you are not the owner of this entry` - The logged in user is not the author of the entry with the given ID.
 
 ### `login`
 
