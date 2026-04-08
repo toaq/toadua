@@ -42,7 +42,15 @@ In addition, if an action requires the sender to be logged in – as marked with
 `(L)` – a `token` field containing a valid UUID token must be present in the
 object. `(L?)` indicates an action that behaves differently when logged in.
 
-All requests error with "unknown action" if the action is not recognized or is not present.
+All requests error with `unknown action` if the action is not recognized or is not present.
+
+All requests error with `The request body could not be parsed as JSON.` if the request body is not valid JSON.
+
+All requests that require the sender to be logged in fail with `must be logged in` if a token is not sent or if the token does not correspond to any session, including actions that are said to never error.
+
+Requests may error with `internal error` if the request caused a failure that toadua was not prepared to or report, including actions that are said to never error.
+
+See the bottom of this document for a description of various common errors relating to fields in the request JSON. The `Errors` section of each action will use them as a reference.
 
 ### `search` (L?)
 
@@ -126,6 +134,16 @@ which is then interpreted as it would be in the Toadua frontend. See
 
 `limit` describes the maximum number of entries that should be returned.
 
+#### Errors
+- `invalid field 'query': absent` - If `query` is missing or falsy.
+- `invalid field 'query': found non-array branch` - If `query` is not a string or a valid query structure.
+- `ordering` - Length errors.
+- `limit` - Number errors.
+- `scope` - Scope errors.
+- `preferred_scope` - Scope errors. This field is unused.
+- `preferred_scope_bias` - Scope errors. This field is unused.
+- `unknown operation {op name}` - If the query contains an unknown operation.
+
 ### `count`
 
 > **Inputs:**
@@ -139,6 +157,9 @@ which is then interpreted as it would be in the Toadua frontend. See
 
 Returns the total number of entries in Toadua's database, and how many of
 them have a `pronominal_class` set.
+
+#### Errors
+Never.
 
 ### `note` (L)
 
@@ -155,6 +176,10 @@ Adds a note to the entry with the given ID authored by
 the user to whom the given token corresponds. Note that
 `content` may not be over 2048 characters long.
 Returns the new state of the entry.
+
+#### Errors
+- `id` - ID errors
+- `content` - Length errors
 
 ### `create` (L)
 
@@ -173,6 +198,12 @@ Creates a new entry with the given Toaq word and definition in the given scope
 Note that the head–body pair must be unique; note also that there is a
 restriction of 2048 characters on each of the head and the body. Don't go crazy.
 
+#### Errors
+- `head` - Length errors
+- `body` - Length errors
+- `scope` - Scope errors if present (otherwise, field defauts to "en" which is a valid scope)
+- `entry already exists` - If the database already contains an entry which is exactly identical to the one being inserted - specifically if head, body, frame, pronominal_class, subject, distribution, user and scope are all identical.
+
 ### `login`
 
 > **Inputs:**
@@ -187,9 +218,18 @@ restriction of 2048 characters on each of the head and the body. Don't go crazy.
 Attempts to log in with the given credentials. If credentials correspond to a user,
 the token is returned.
 
+#### Errors
+- `name` - Absence errors
+- `pass` - Absence errors
+- `user not registered` - The name is not in the database
+- `password doesn't match` - The name is in the database but the password does not match
+
 ### `logout` (L)
 
 Invalidates the token passed as input.
+
+#### Errors
+Never.
 
 ### `register`
 
@@ -205,6 +245,11 @@ Invalidates the token passed as input.
 Attempts to register with the given credentials. Note that `name` may only
 contain letters from the Latin alphabet, and must contain at least 1 character,
 and at most 64. Similarly, the password can have at most 128 characters.
+
+- `invalid field 'name': name must be 1-64 Latin characters` - If the name is not comprised of 1 to 64 ascii-alphabetic characters
+- `pass` - Length errors (for 128 instead of 1024)
+- `registrations are temporarily disabled` - The server does not allow registrations at this time
+- `already registered` - Name already exists in the database
 
 ### `vote` (L)
 
@@ -222,6 +267,10 @@ with the given ID. Possible values of `vote` are `-1`, `0`, and `1`.
 
 Sending `0` effectively cancels your previous vote.
 
+# Errors
+- `id` - ID errors
+- `invalid field 'vote': invalid vote` - if `vote` is absent or a value other than -1, 0 or 1
+
 ### `welcome`
 
 > **Inputs:**
@@ -235,3 +284,27 @@ Sending `0` effectively cancels your previous vote.
 Make `welcome` the first message you send to the server. If you send a valid
 token, you will get your username back in `user`; otherwise, `user` will not
 be in the output, and you will know your token is invalid or has expired.
+
+Notice that this action _does not require the user to be logged in_, it simply may have a token as a field.
+
+#### Errors
+Never
+
+## Errors
+### Absence error
+- `invalid field 'FIELD': absent`
+
+### Length errors
+Toadua rejects some fields if they are too long.
+
+- `ìnvalid field 'FIELD': too long (max. 2048 characters)` - If the field is present and exceeds 2048 characters
+
+### Number errors
+- `invalid field 'FIELD': not a valid number` - If the field is present and not a number.
+
+### Scope errors
+- `invalid field 'FIELD': scope must match [a-z-]{1,24}` - If the field is not a string of at least 1 and at most 24 lowercase ascii-alphabetic characters
+
+### ID errors
+- `invalid field 'FIELD': invalid ID` - if field is missing, or present and not a valid ID
+- `invalid field 'FIELD': not a recognized ID` - if field is a valid ID, but doesn't correspond to a word
