@@ -186,7 +186,7 @@ export class Api {
 		const e_id = this.is_goodid(i.id);
 		if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 		const e_vote = [-1, 0, 1].includes(i.vote) || 'invalid vote';
-		if (e_vote !== true) return flip(`invalid field 'id': ${e_id}`);
+		if (e_vote !== true) return flip(`invalid field 'vote': ${e_vote}`);
 
 		const e = this.by_id(i.id);
 		const old_vote = e.votes[uname] || 0;
