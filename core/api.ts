@@ -186,7 +186,7 @@ export class Api {
 		const e_id = this.is_goodid(i.id);
 		if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
 		const e_vote = [-1, 0, 1].includes(i.vote) || 'invalid vote';
-		if (e_vote !== true) return flip(`invalid field 'id': ${e_id}`);
+		if (e_vote !== true) return flip(`invalid field 'vote': ${e_vote}`);
 
 		const e = this.by_id(i.id);
 		const old_vote = e.votes[uname] || 0;
@@ -375,7 +375,7 @@ export class Api {
 
 	public async register(i: any, uname: string): Promise<ApiResponse> {
 		if (!i.name.match(/^[a-zA-Z]{1,64}$/)) {
-			return flip(`invalid field 'id': name must be 1-64 Latin characters`);
+			return flip(`invalid field 'name': name must be 1-64 Latin characters`);
 		}
 		const e_pass = limit(128)(i.pass);
 		if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
