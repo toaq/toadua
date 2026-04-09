@@ -30,6 +30,8 @@ const FRAMES = [
 	'c c',
 	'c c c',
 	'0',
+	'1x',
+	'2xx',
 	'c 0',
 	'c 1i',
 	'c 1x',
@@ -41,7 +43,14 @@ const FRAMES = [
 	'c c 1i',
 	'c c 1j',
 	'c c 1x',
+	'c c 2ii',
 	'c c 2ij',
+	'c c 2ix',
+	'c c 2ji',
+	'c c 2jj',
+	'c c 2jx',
+	'c c 2xi',
+	'c c 2xj',
 	'c c 2xx',
 ];
 
