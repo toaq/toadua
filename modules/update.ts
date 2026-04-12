@@ -209,6 +209,7 @@ export class UpdateModule {
 				fetched.set(uname, merged);
 			}
 
+			const to_delete: Set<string> = new Set();
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
 				const found = fetched.get(e.user)?.get(e.head);
@@ -221,20 +222,29 @@ export class UpdateModule {
 					found.distribution === e.distribution
 				)
 					continue;
-				// we need to re-find the entry because `search` makes
-				// copies on output
-				e = this.api.by_id(e.id);
-				e.user = `old${e.user}`;
-				e.votes[e.user] = -1;
-				e.score--;
+				const originalUser = e.user;
 				console.log(`~~ '${e.head}' obsoleted`);
-				messages[e.user] ||= [];
-				messages[e.user].push({
+				messages[originalUser] ||= [];
+				messages[originalUser].push({
 					title: `definition for **${e.head}** obsoleted`,
 					description: e.body,
 					url: `${commons.config.entry_point}#%23${e.id}`,
 					head: e.head,
 				});
+				if (originalUser === 'official' && e.notes.length > 0) {
+					// Keep oldofficial entries around if they carry notes.
+					// we need to re-find the entry because `search` makes
+					// copies on output
+					e = this.api.by_id(e.id);
+					e.user = `old${originalUser}`;
+					e.votes[e.user] = -1;
+					e.score--;
+				} else {
+					to_delete.add(e.id);
+				}
+			}
+			if (to_delete.size > 0) {
+				store.db.entries = store.db.entries.filter(e => !to_delete.has(e.id));
 			}
 		}
 

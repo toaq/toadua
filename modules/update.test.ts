@@ -214,7 +214,7 @@ describe('UpdateModule', () => {
 	});
 
 	describe('sync_resources obsoleting', () => {
-		test('renames stale official/examples entries to oldofficial/oldexamples', async () => {
+		test('renames stale annotated official entries to oldofficial and deletes other stale entries', async () => {
 			const stale = (
 				id: string,
 				user: string,
@@ -255,7 +255,16 @@ describe('UpdateModule', () => {
 					distribution: 'd',
 					subject: 'agent',
 				},
-				stale('off2', 'official', 'geo', 'verb: ‘old’; to be old'),
+				{
+					...stale('off2', 'official', 'geo', 'verb: ‘old’; to be old'),
+					notes: [
+						{
+							date: '2024-06-01T00:00:00.000Z',
+							user: 'someone',
+							content: 'this note keeps the obsoleted entry alive',
+						},
+					],
+				},
 				stale('off3', 'official', 'gone', 'verb: ‘gone’; to no longer exist'),
 				stale('ex1', 'examples', 'phrase1', 'old body 1'),
 				stale('ex2', 'examples', 'phrase2', 'old body 2'),
@@ -333,14 +342,17 @@ describe('UpdateModule', () => {
 			const updateModule = new UpdateModule(true, api, search, sources, 60000);
 			await updateModule.sync_resources(mockStore);
 
-			const byId = (id: string) => mockStore.db.entries.find(e => e.id === id)!;
+			const byId = (id: string) => mockStore.db.entries.find(e => e.id === id);
 
 			// off0 was already up to date and should be left alone.
-			expect(byId('off0').user).toBe('official');
-			expect(byId('off2').user).toBe('oldofficial');
-			expect(byId('off3').user).toBe('oldofficial');
-			expect(byId('ex1').user).toBe('oldexamples');
-			expect(byId('ex2').user).toBe('oldexamples');
+			expect(byId('off0')?.user).toBe('official');
+			// Stale official entry with notes is renamed to oldofficial.
+			expect(byId('off2')?.user).toBe('oldofficial');
+			// Stale official entry without notes is deleted.
+			expect(byId('off3')).toBeUndefined();
+			// Stale non-official entries are deleted entirely.
+			expect(byId('ex1')).toBeUndefined();
+			expect(byId('ex2')).toBeUndefined();
 
 			const fresh = mockStore.db.entries.filter(
 				e => e.user === 'official' || e.user === 'examples',
