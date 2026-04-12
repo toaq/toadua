@@ -212,4 +212,174 @@ describe('UpdateModule', () => {
 			});
 		});
 	});
+
+	describe('sync_resources obsoleting', () => {
+		test('renames stale official/examples entries to oldofficial/oldexamples', async () => {
+			const stale = (
+				id: string,
+				user: string,
+				head: string,
+				body: string,
+			): commons.Entry => ({
+				id,
+				date: '2024-01-01T00:00:00.000Z',
+				head,
+				body,
+				user,
+				scope: 'en',
+				notes: [],
+				votes: {},
+				score: 0,
+				pronominal_class: undefined,
+				frame: undefined,
+				distribution: undefined,
+				subject: undefined,
+			});
+
+			mockStore.db.entries.push(
+				// Already up-to-date (carries metadata identical to the source).
+				// Sits at the front of the db so a buggy "return" in the
+				// obsoleting loop would bail out before processing the rest.
+				{
+					id: 'off0',
+					date: '2023-01-01T00:00:00.000Z',
+					head: 'choa',
+					body: 'verb: ‘speak’; to speak',
+					user: 'official',
+					scope: 'en',
+					notes: [],
+					votes: {},
+					score: 0,
+					pronominal_class: 'ta',
+					frame: 'c 1',
+					distribution: 'd',
+					subject: 'agent',
+				},
+				stale('off2', 'official', 'geo', 'verb: ‘old’; to be old'),
+				stale('off3', 'official', 'gone', 'verb: ‘gone’; to no longer exist'),
+				stale('ex1', 'examples', 'phrase1', 'old body 1'),
+				stale('ex2', 'examples', 'phrase2', 'old body 2'),
+			);
+			search.recache();
+
+			const officialJson = JSON.stringify([
+				{
+					toaq: 'choa',
+					type: 'verb',
+					gloss: 'speak',
+					english: 'to speak',
+					pronominal_class: 'ta',
+					frame: 'c 1',
+					distribution: 'd',
+					subject: 'agent',
+				},
+				{
+					toaq: 'geo',
+					type: 'verb',
+					gloss: 'old',
+					english: 'to be old',
+					pronominal_class: 'ta',
+					frame: 'c',
+					distribution: 'd',
+					subject: 'individual',
+				},
+			]);
+
+			const examplesTsv = [
+				'header1\theader2',
+				'header1\theader2',
+				'phrase1\tnew body 1',
+				'phrase2\tnew body 2',
+			].join('\n');
+
+			(request.get as any).mockImplementation((url: string) => {
+				if (url.endsWith('official.json')) return Promise.resolve(officialJson);
+				if (url.endsWith('examples.tsv')) return Promise.resolve(examplesTsv);
+				return Promise.reject(new Error(`unexpected url ${url}`));
+			});
+
+			const sources = {
+				official: {
+					source: 'https://example.com/official.json',
+					user: 'official',
+					format: 'json' as const,
+					skip: 0,
+					patterns: [
+						{
+							head: '%(toaq)',
+							body: '%(type): ‘%(gloss)’; %(english)',
+							frame: '%(frame)',
+							pronominal_class: '%(pronominal_class)',
+							subject: '%(subject)',
+							distribution: '%(distribution)',
+						},
+					],
+				},
+				examples: {
+					source: 'https://example.com/examples.tsv',
+					user: 'examples',
+					format: 'tsv' as const,
+					skip: 2,
+					patterns: [
+						{
+							head: '%(0)',
+							body: '%(1)',
+							pronominal_class: 'phrase',
+						},
+					],
+				},
+			};
+
+			const updateModule = new UpdateModule(true, api, search, sources, 60000);
+			await updateModule.sync_resources(mockStore);
+
+			const byId = (id: string) => mockStore.db.entries.find(e => e.id === id)!;
+
+			// off0 was already up to date and should be left alone.
+			expect(byId('off0').user).toBe('official');
+			expect(byId('off2').user).toBe('oldofficial');
+			expect(byId('off3').user).toBe('oldofficial');
+			expect(byId('ex1').user).toBe('oldexamples');
+			expect(byId('ex2').user).toBe('oldexamples');
+
+			const fresh = mockStore.db.entries.filter(
+				e => e.user === 'official' || e.user === 'examples',
+			);
+			expect(fresh).toHaveLength(4);
+			expect(fresh).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						user: 'official',
+						head: 'choa',
+						body: 'verb: ‘speak’; to speak',
+						pronominal_class: 'ta',
+						frame: 'c 1',
+						distribution: 'd',
+						subject: 'agent',
+					}),
+					expect.objectContaining({
+						user: 'official',
+						head: 'geo',
+						body: 'verb: ‘old’; to be old',
+						pronominal_class: 'ta',
+						frame: 'c',
+						distribution: 'd',
+						subject: 'individual',
+					}),
+					expect.objectContaining({
+						user: 'examples',
+						head: 'phrase1',
+						body: 'new body 1',
+						pronominal_class: 'phrase',
+					}),
+					expect.objectContaining({
+						user: 'examples',
+						head: 'phrase2',
+						body: 'new body 2',
+						pronominal_class: 'phrase',
+					}),
+				]),
+			);
+		});
+	});
 });
