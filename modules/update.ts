@@ -220,7 +220,7 @@ export class UpdateModule {
 					found.subject === e.subject &&
 					found.distribution === e.distribution
 				)
-					return;
+					continue;
 				// we need to re-find the entry because `search` makes
 				// copies on output
 				e = this.api.by_id(e.id);
