@@ -389,8 +389,8 @@ export class Api {
 		const e_pass = limit(128)(i.pass);
 		if (e_pass !== true) return flip(`invalid field 'pass': ${e_pass}`);
 
-		if (process.env.NODE_ENV !== 'development')
-			return flip('registrations are temporarily disabled');
+		// if (process.env.NODE_ENV !== 'development')
+		// 	return flip('registrations are temporarily disabled');
 
 		if (this.store.pass.hashes[i.name]) return flip('already registered');
 		this.store.pass.hashes[i.name] = bcrypt.hashSync(
