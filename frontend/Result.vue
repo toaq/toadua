@@ -149,7 +149,7 @@ defineProps<{
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.subject ? 1 : 0.5 }"
 					>
-						{{ result.subject ? result.subject[0].toUpperCase() : '—' }}
+						{{ result.subject ? 's' + result.subject[0].toUpperCase() : '—' }}
 					</button>
 					<select
 						v-if="result.frame"
@@ -157,24 +157,24 @@ defineProps<{
 						:disabled="!username"
 						@change="submit_annotation"
 					>
-						<option value="agent">A</option>
+						<option value="agent">sA</option>
 						<option value="" disabled>Subject is a deliberate agent</option>
 						<hr />
-						<option value="individual">I</option>
+						<option value="individual">sI</option>
 						<option value="" disabled>Subject is a non-event</option>
 						<hr />
-						<option :disabled="tangible" value="event">E</option>
+						<option :disabled="tangible" value="event">sE</option>
 						<option value="" disabled>Subject is an event</option>
 						<hr />
-						<option :disabled="tangible" value="predicate">P</option>
+						<option :disabled="tangible" value="predicate">sP</option>
 						<option value="" disabled>Subject is a proposition</option>
 						<hr />
-						<option :disabled="tangible" value="shape">S</option>
+						<option :disabled="tangible" value="shape">sS</option>
 						<option value="" disabled>
 							Subject is spatial (thing or event)
 						</option>
 						<hr />
-						<option :disabled="tangible" value="free">F</option>
+						<option :disabled="tangible" value="free">sF</option>
 						<option value="" disabled>Subject is anything</option>
 					</select>
 				</div>
