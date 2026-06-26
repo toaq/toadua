@@ -262,8 +262,6 @@ Returns the entry in its new state after editing.
 
 Edits the entry with the given ID to have the given pronominal class, frame, distribution and subject, if they are given. Absent fields will remove the values.
 
-The entry must be owned by the logged in user (i.e. its `user` field and the user the session belongs to must be the same.)
-
 Returns the entry in its new state after editing.
 
 ### `remove`
