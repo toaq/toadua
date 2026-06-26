@@ -73,6 +73,8 @@ const DISTRIBUTIONS = [
 
 const SUBJECTS = ['agent', 'individual', 'event', 'predicate', 'shape', 'free'];
 
+const ANNOTATION_FIELDS = ["gloss", "type", "pronominal_class", "frame", "distribution", "subject"];
+
 export type ApiBody =
 	| { name: string }
 	| { entry: PresentedEntry }
@@ -185,7 +187,7 @@ export class Api {
 	public async count(i: any, uname: string): Promise<ApiResponse> {
 		const count = this.store.db.entries.length;
 		const annotated = this.store.db.entries.filter(
-			e => e.pronominal_class !== undefined,
+			e => ANNOTATION_FIELDS.every((field) => e[field] !== undefined),
 		).length;
 		return good({ count, annotated });
 	}

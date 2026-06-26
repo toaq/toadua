@@ -125,6 +125,8 @@ export interface Entry {
 	date: string;
 	/// The Toaq word this entry is for.
 	head: string;
+	/// The gloss of the word.
+	// gloss?: string;
 	/// The definition of the word.
 	body: string;
 	/// The name of the user that added the entry.
@@ -137,6 +139,8 @@ export interface Entry {
 	votes: Record<string, -1 | 0 | 1>;
 	/// Total score of the entry, aggregated from votes.
 	score: number;
+	/// The type of the entry, e.g. `"predicate"`.
+	// type: string | undefined;
 	/// The pronominal class of the entry, e.g. `"maq"`.
 	pronominal_class: string | undefined;
 	/// The frame of the entry, e.g. `"c 1"`.
