@@ -234,6 +234,8 @@ describe('UpdateModule', () => {
 				frame: undefined,
 				distribution: undefined,
 				subject: undefined,
+				gloss: undefined,
+				type: undefined,
 			});
 
 			mockStore.db.entries.push(
@@ -254,6 +256,8 @@ describe('UpdateModule', () => {
 					frame: 'c 1',
 					distribution: 'd',
 					subject: 'agent',
+					gloss: 'utter',
+					type: 'predicate'
 				},
 				{
 					...stale('off2', 'official', 'geo', 'verb: ‘old’; to be old'),
