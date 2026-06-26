@@ -19,6 +19,8 @@ const makeEntry = (overrides: Partial<commons.Entry> = {}): commons.Entry => ({
 	frame: undefined,
 	distribution: undefined,
 	subject: undefined,
+	gloss: undefined,
+	type: undefined,
 	...overrides,
 });
 
