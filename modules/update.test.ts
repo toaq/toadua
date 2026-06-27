@@ -124,7 +124,9 @@ describe('UpdateModule', () => {
 				const jsonData = JSON.stringify([
 					{
 						word: 'Word1',
+						gloss: 'gloss1',
 						definition: 'definition for word1',
+						type: 'type1',
 						frame: 'frame1',
 						pronominal_class: 'class1',
 						subject: 'subj1',
@@ -132,7 +134,9 @@ describe('UpdateModule', () => {
 					},
 					{
 						word: 'Word2',
+						gloss: 'gloss2',
 						definition: 'definition for word2',
+						type: 'type2',
 						frame: 'frame2',
 						pronominal_class: 'class2',
 						subject: 'subj2',
@@ -152,7 +156,9 @@ describe('UpdateModule', () => {
 						patterns: [
 							{
 								head: '%(word)',
+								gloss: '%(gloss)',
 								body: 'verb: %(definition)',
+								type: '%(type)',
 								frame: 'testy %(frame)',
 								pronominal_class: '%(pronominal_class)',
 								subject: '%(subject)',
@@ -179,8 +185,10 @@ describe('UpdateModule', () => {
 				expect(mockStore.db.entries[0]).toEqual(
 					expect.objectContaining({
 						head: 'word1',
+						gloss: 'gloss1',
 						body: 'verb: definition for word1',
 						scope: 'en',
+						type: 'type1',
 						frame: 'testy frame1',
 						pronominal_class: 'class1',
 						subject: 'subj1',
@@ -190,8 +198,10 @@ describe('UpdateModule', () => {
 				expect(mockStore.db.entries[1]).toEqual(
 					expect.objectContaining({
 						head: 'word2',
+						gloss: 'gloss2',
 						body: 'verb: definition for word2',
 						scope: 'en',
+						type: 'type2',
 						frame: 'testy frame2',
 						pronominal_class: 'class2',
 						subject: 'subj2',
@@ -201,8 +211,10 @@ describe('UpdateModule', () => {
 				expect(mockStore.db.entries[2]).toEqual(
 					expect.objectContaining({
 						head: 'word3',
+						gloss: undefined,
 						body: 'verb: definition for word3',
 						scope: 'en',
+						type: undefined,
 						frame: undefined,
 						pronominal_class: undefined,
 						subject: undefined,
@@ -246,7 +258,7 @@ describe('UpdateModule', () => {
 					id: 'off0',
 					date: '2023-01-01T00:00:00.000Z',
 					head: 'choa',
-					body: 'verb: ‘speak’; to speak',
+					body: 'to speak',
 					user: 'official',
 					scope: 'en',
 					notes: [],
@@ -256,11 +268,11 @@ describe('UpdateModule', () => {
 					frame: 'c 1',
 					distribution: 'd',
 					subject: 'agent',
-					gloss: 'utter',
-					type: 'predicate'
+					gloss: 'speak',
+					type: 'verb',
 				},
 				{
-					...stale('off2', 'official', 'geo', 'verb: ‘old’; to be old'),
+					...stale('off2', 'official', 'geo', 'to be old'),
 					notes: [
 						{
 							date: '2024-06-01T00:00:00.000Z',
@@ -269,7 +281,7 @@ describe('UpdateModule', () => {
 						},
 					],
 				},
-				stale('off3', 'official', 'gone', 'verb: ‘gone’; to no longer exist'),
+				stale('off3', 'official', 'gone', 'to no longer exist'),
 				stale('ex1', 'examples', 'phrase1', 'old body 1'),
 				stale('ex2', 'examples', 'phrase2', 'old body 2'),
 			);
@@ -320,7 +332,9 @@ describe('UpdateModule', () => {
 					patterns: [
 						{
 							head: '%(toaq)',
-							body: '%(type): ‘%(gloss)’; %(english)',
+							gloss: '%(gloss)',
+							body: '%(english)',
+							type: '%(type)',
 							frame: '%(frame)',
 							pronominal_class: '%(pronominal_class)',
 							subject: '%(subject)',
@@ -367,7 +381,9 @@ describe('UpdateModule', () => {
 					expect.objectContaining({
 						user: 'official',
 						head: 'choa',
-						body: 'verb: ‘speak’; to speak',
+						gloss: 'speak',
+						body: 'to speak',
+						type: 'verb',
 						pronominal_class: 'ta',
 						frame: 'c 1',
 						distribution: 'd',
@@ -376,7 +392,9 @@ describe('UpdateModule', () => {
 					expect.objectContaining({
 						user: 'official',
 						head: 'geo',
-						body: 'verb: ‘old’; to be old',
+						gloss: 'old',
+						body: 'to be old',
+						type: 'verb',
 						pronominal_class: 'ta',
 						frame: 'c',
 						distribution: 'd',

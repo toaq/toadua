@@ -355,12 +355,12 @@ export class Api {
 		// Abort if an entry with exactly the data exists
 		const normalizedHead = shared.normalize(i.head);
 		let normalizedGloss =
-			i.gloss !== undefined ? replacements(i.gloss) : undefined;
+			i.gloss !== undefined ? i.gloss.normalize('NFC') : undefined;
 		const normalizedBody = replacements(i.body);
 		const scope = i.scope;
 
 		const normalizedType =
-			i.type !== undefined ? replacements(i.type) : undefined;
+			i.type !== undefined ? i.type.normalize('NFC') : undefined;
 
 		const exists = this.store.db.entries.some(
 			e =>

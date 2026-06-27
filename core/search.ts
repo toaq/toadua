@@ -18,10 +18,12 @@ interface CachedEntry {
 	$: Entry;
 	id: string;
 	head: string[];
+	gloss: string | undefined;
 	body: string[];
 	notes: string[];
 	date: number;
 	score: number;
+	type: string | undefined;
 	pronominal_class: string | undefined;
 	frame: string | undefined;
 	distribution: string | undefined;
@@ -36,6 +38,7 @@ export interface PresentedEntry extends Omit<Entry, 'votes'> {
 	content?: string[];
 }
 
+// should this include metadata fields? (- Démbım)
 const RE_TRAITS = [
 	'id',
 	'user',
@@ -126,6 +129,16 @@ export function extract_subject(notes: Note[]): string | undefined {
 	return undefined;
 }
 
+// stub
+export function extract_gloss(notes: Note[]): string | undefined {
+	return undefined;
+}
+
+// stub
+export function extract_type(notes: Note[]): string | undefined {
+	return undefined;
+}
+
 export function score(entry: Entry): number {
 	const votes: [string, number][] = Object.entries(entry.votes);
 	return votes.reduce((a, b) => a + b[1], 0);
@@ -140,10 +153,12 @@ export function cacheify(e: Entry): CachedEntry {
 		$: e,
 		id: e.id,
 		head: deburredHead,
+		gloss: e.gloss ?? extract_gloss(e.notes),
 		body: deburredBody,
 		notes: deburredNotes,
 		date: +new Date(e.date),
 		score: e.score,
+		type: e.type ?? extract_type(e.notes),
 		pronominal_class: e.pronominal_class ?? extract_pronominal_class(e.notes),
 		frame: e.frame ?? extract_frame(e.notes),
 		distribution: e.distribution ?? extract_distribution(e.notes),
@@ -163,6 +178,10 @@ export function present(
 	rest.frame ??= e.frame;
 	rest.distribution ??= e.distribution;
 	rest.subject ??= e.subject;
+
+	rest.gloss ??= e.gloss;
+	rest.type ??= e.type;
+
 	const vote = uname ? votes[uname] || 0 : undefined;
 	return { ...rest, relevance, content: e.content, vote };
 }
@@ -363,8 +382,9 @@ export class Search {
 		// Spaces are stripped for comparison, so e.g. frame:c1i matches stored "c 1i".
 		const metaFieldAliases: [
 			string,
-			'pronominal_class' | 'frame' | 'distribution' | 'subject',
+			'type' | 'pronominal_class' | 'frame' | 'distribution' | 'subject',
 		][] = [
+			['type', 'type'],
 			['pronominal_class', 'pronominal_class'],
 			['pronoun', 'pronominal_class'],
 			['animacy', 'pronominal_class'],
