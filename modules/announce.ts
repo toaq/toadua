@@ -3,7 +3,6 @@
 
 import * as commons from '../core/commons.js';
 
-import request from 'request-promise-native';
 import type { Entry, Note } from '../core/commons.js';
 import * as shared from '../frontend/shared/index.js';
 import type { EventEmitter } from 'node:stream';
@@ -31,8 +30,35 @@ function trim(max: number, str: string): string {
 	return `${str.substring(0, max - 1)}…`;
 }
 
+function fetch_request(options: any): Promise<any> {
+	return fetch(options.url, {
+		method: options.method,
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(options.body),
+	}).then(async result => {
+		if (!result.ok) {
+			let errorData: any = {};
+			try {
+				errorData = await result.json();
+			} catch {}
+
+			const error: any = new Error(`HTTP ${result.status}`);
+			error.statusCode = result.status;
+			error.stack = error.stack;
+
+			error.error = {
+				...errorData,
+				// Discord gives retry_after in seconds (why?), but setTimeout needs milliseconds
+				retryAfter: (errorData.retry_after ?? 0) * 1000,
+			};
+			throw error;
+		}
+		return result;
+	});
+}
+
 export class AnnounceModule {
-	private queue: request.Options[] = [];
+	private queue: any[] = [];
 
 	constructor(
 		private enabled: boolean,
@@ -90,7 +116,9 @@ export class AnnounceModule {
 		if (!url) return;
 		const color = what.color ?? 0;
 		const entrypoint = what.url ?? commons.config.entry_point;
-		const req: request.Options = {
+
+		// Retained the same object structure as request.Options
+		const req = {
 			url,
 			method: 'POST',
 			json: true,
@@ -107,7 +135,7 @@ export class AnnounceModule {
 				const title = trim(200, top.body.embeds[0].title);
 				const n = this.queue.length - 1;
 				top.body.embeds[0].title = `${title} (+ ${n} other events)`;
-				request(top);
+				fetch_request(top);
 			} else {
 				this.message({ title: `${this.queue.length} events omitted` });
 			}
@@ -115,7 +143,7 @@ export class AnnounceModule {
 			return;
 		}
 		const m = this.queue.shift();
-		request(m).then(
+		fetch_request(m).then(
 			() => {
 				console.log(`-> '${m.body.embeds[0].title}' announced`);
 				setTimeout(() => this.send_off(), 0);

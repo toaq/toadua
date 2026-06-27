@@ -7,8 +7,6 @@ import { Api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 
-import request from 'request-promise-native';
-
 export interface SourceConfig {
 	/**
 	 * The URL of the source file.
@@ -112,7 +110,14 @@ export class UpdateModule {
 				async ([name, { source, user, format, ...rest }]) => {
 					let data: unknown;
 					try {
-						data = await request.get(source);
+						const response = await fetch(source);
+						if (!response.ok) {
+							throw new Error(
+								`Failed to fetch ${source}: ${response.status} ${response.statusText}`,
+							);
+						}
+						data = await response.text();
+
 						console.log(`updating resource '${name}'`);
 						const word_list: WordList = new Map();
 						for (const entry of FORMATS[format](data as string, rest)) {
