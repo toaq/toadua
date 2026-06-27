@@ -171,7 +171,7 @@ export class UpdateModule {
 					entry =>
 						entry.$.scope === 'en' &&
 						entry.$.head === head &&
-						entry.$.gloss === gloss && // this is the first thing to break the tests (expected 4 entries; got 5)
+						entry.$.gloss === gloss &&
 						entry.$.body === body &&
 						entry.$.type === type &&
 						entry.$.frame === frame &&
@@ -224,22 +224,14 @@ export class UpdateModule {
 				fetched.set(uname, merged);
 			}
 
-			// console.log(fetched);
-
 			const to_delete: Set<string> = new Set();
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
 				const found = fetched.get(e.user)?.get(e.head);
 
-				if (found) {
-					console.log('\n' + e.head + ':  ');
-					console.log(found.gloss, e.gloss, found.gloss == e.gloss);
-					console.log(found.type, e.type, found.type == e.type);
-				}
-
 				if (
 					found &&
-					found.gloss === e.gloss && // this is the second thing: expect "official"; got undefined
+					found.gloss === e.gloss &&
 					found.body === e.body &&
 					found.type === e.type &&
 					found.frame === e.frame &&
@@ -249,8 +241,6 @@ export class UpdateModule {
 				) {
 					continue;
 				}
-
-				// console.log(found);
 
 				const originalUser = e.user;
 				console.log(`~~ '${e.head}' obsoleted`);
