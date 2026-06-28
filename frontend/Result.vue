@@ -543,7 +543,7 @@ export default defineComponent({
 			return this.result.frame?.endsWith('c');
 		},
 		is_non_verb(): boolean {
-			return this.result.type !== 'predicate';
+			return this.result.type && this.result.type !== 'predicate';
 		},
 		tangible(): boolean {
 			return (
