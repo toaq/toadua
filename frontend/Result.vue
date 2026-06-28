@@ -73,7 +73,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_metadata && !is_non_verb"
+						v-if="any_editable_metadata && !is_non_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
@@ -82,7 +82,7 @@ defineProps<{
 					</button>
 					<select
 						title="Frame"
-						v-if="any_metadata && !is_non_verb"
+						v-if="any_editable_metadata && !is_non_verb"
 						v-model="result.frame"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -437,6 +437,7 @@ export default defineComponent({
 				this.result.frame = undefined;
 				this.result.distribution = undefined;
 				this.result.subject = undefined;
+				this.result.pronominal_class = undefined;
 				return;
 			}
 			const definition =
@@ -470,6 +471,8 @@ export default defineComponent({
 		submit_annotation(): void {
 			this.$emit(
 				'annotate',
+				this.result.gloss,
+				this.result.type,
 				this.result.pronominal_class,
 				this.result.frame,
 				this.result.distribution,
@@ -506,7 +509,15 @@ export default defineComponent({
 	},
 	computed: {
 		fancy_body(): string {
-			return shared.replacements(this.result.body, false, false, this.theme);
+			let body = shared.replacements(
+				this.result.body,
+				false,
+				false,
+				this.theme,
+			);
+			let type_and_gloss = this.result.type ? `${this.result.type}: ` : '';
+			type_and_gloss += this.result.gloss ? `'${this.result.gloss}'; ` : '';
+			return type_and_gloss + body;
 		},
 		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
 			const result = this.result as Entry;
@@ -516,7 +527,8 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		any_metadata(): boolean {
+		// TODO: make `type` and `gloss` editable
+		any_editable_metadata(): boolean {
 			return !!(
 				this.result.pronominal_class ||
 				this.result.frame ||
@@ -531,10 +543,7 @@ export default defineComponent({
 			return this.result.frame?.endsWith('c');
 		},
 		is_non_verb(): boolean {
-			return (
-				this.result.pronominal_class === 'particle' ||
-				this.result.pronominal_class === 'phrase'
-			);
+			return this.result.type !== 'predicate';
 		},
 		tangible(): boolean {
 			return (

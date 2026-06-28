@@ -64,8 +64,16 @@
 			@removenote="date => removenote(result, date)"
 			@edit="(body, scope) => edit(result, body, scope)"
 			@annotate="
-				(pronominal_class, frame, distribution, subject) =>
-					annotate(result, pronominal_class, frame, distribution, subject)
+				(gloss, type, pronominal_class, frame, distribution, subject) =>
+					annotate(
+						result,
+						gloss,
+						type,
+						pronominal_class,
+						frame,
+						distribution,
+						subject,
+					)
 			"
 			@uncollapse="uncollapseOnly(result)"
 			@vote="n => vote(result, n)"
@@ -428,6 +436,8 @@ export default defineComponent({
 
 		annotate(
 			whom: Entry,
+			gloss: string,
+			type: string,
 			pronominal_class: string,
 			frame: string,
 			distribution: string,
@@ -435,6 +445,8 @@ export default defineComponent({
 		): void {
 			// Update the entry early to prevent a flash of the old annotations...
 			this.update_entry(whom, {
+				gloss,
+				type,
 				pronominal_class,
 				frame,
 				distribution,
@@ -444,6 +456,8 @@ export default defineComponent({
 				{
 					action: 'annotate',
 					id: whom.id,
+					gloss,
+					type,
 					pronominal_class,
 					frame,
 					distribution,
