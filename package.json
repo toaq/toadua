@@ -5,7 +5,7 @@
 	"main": "core/server.js",
 	"type": "module",
 	"engines": {
-		"node": ">=16.0.0"
+		"node": ">=21.0.0"
 	},
 	"dependencies": {
 		"argparse": "2.0.1",
