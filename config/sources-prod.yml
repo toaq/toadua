@@ -49,7 +49,9 @@ official:
   format: json
   patterns:
     - head: '%(toaq)'
-      body: '%(type): ‘%(gloss)’; %(english)'
+      gloss: '%(gloss)'
+      body: '%(english)'
+      type: '%(type)'
       frame: '%(frame)'
       pronominal_class: '%(pronominal_class)'
       subject: '%(subject)'

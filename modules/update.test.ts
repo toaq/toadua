@@ -157,7 +157,7 @@ describe('UpdateModule', () => {
 							{
 								head: '%(word)',
 								gloss: '%(gloss)',
-								body: 'verb: %(definition)',
+								body: '%(definition)',
 								type: '%(type)',
 								frame: 'testy %(frame)',
 								pronominal_class: '%(pronominal_class)',
@@ -186,7 +186,7 @@ describe('UpdateModule', () => {
 					expect.objectContaining({
 						head: 'word1',
 						gloss: 'gloss1',
-						body: 'verb: definition for word1',
+						body: 'definition for word1',
 						scope: 'en',
 						type: 'type1',
 						frame: 'testy frame1',
@@ -199,7 +199,7 @@ describe('UpdateModule', () => {
 					expect.objectContaining({
 						head: 'word2',
 						gloss: 'gloss2',
-						body: 'verb: definition for word2',
+						body: 'definition for word2',
 						scope: 'en',
 						type: 'type2',
 						frame: 'testy frame2',
@@ -212,7 +212,7 @@ describe('UpdateModule', () => {
 					expect.objectContaining({
 						head: 'word3',
 						gloss: undefined,
-						body: 'verb: definition for word3',
+						body: 'definition for word3',
 						scope: 'en',
 						type: undefined,
 						frame: undefined,
