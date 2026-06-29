@@ -46,10 +46,7 @@ defineProps<{
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
 						{{
-							result.pronominal_class === 'particle' ||
-							result.pronominal_class === 'phrase'
-								? result.pronominal_class
-								: result.pronominal_class
+							result.pronominal_class
 								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
 								: '—'
 						}}
@@ -66,8 +63,6 @@ defineProps<{
 						<option value="maq">máq</option>
 						<option value="hoq">hóq</option>
 						<option value="ta">tá</option>
-						<option value="particle">particle</option>
-						<option value="phrase">phrase</option>
 					</select>
 				</div>
 				<div style="position: relative">
