@@ -40,6 +40,13 @@ const VERSION = JSON.parse(
 ).version;
 console.log(`starting up v${VERSION}...`);
 
+const modules_names = Object.keys(commons.config.modules);
+console.log(
+	`loaded ${modules_names.length} modules${
+		modules_names.length === 0 ? '' : `: ${JSON.stringify(modules_names)}`
+	}`,
+);
+
 import * as http from 'node:http';
 import { Api } from './api.js';
 import { Search } from './search.js';
