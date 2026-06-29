@@ -41,6 +41,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Pronominal class"
+						v-if="!is_non_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
@@ -175,20 +176,49 @@ defineProps<{
 				</div>
 			</div>
 		</div>
-		<textarea
+		<div
 			v-if="editing"
-			v-focus
-			class="body editing"
-			rows="1"
-			placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
-			@input="set_new_body"
-			:value.sync="new_body"
-			@keypress.enter.exact.prevent="submit_edit"
-			autocomplete="off"
-			autocorrect="on"
-			autocapitalize="on"
-			spellcheck="true"
-		></textarea>
+			style="
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				width: 100%;
+				margin-top: 0.5rem;
+			"
+		>
+			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
+				<input
+					type="text"
+					placeholder="type"
+					v-model="new_type"
+					class="type editing"
+					@input="normalize_type"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
+				<input
+					type="text"
+					placeholder="gloss"
+					v-model="new_gloss"
+					class="gloss editing"
+					@input="normalize_gloss"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
+			</div>
+			<textarea
+				v-focus
+				class="body editing"
+				rows="1"
+				placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
+				@input="set_new_body"
+				:value.sync="new_body"
+				@keypress.enter.exact.prevent="submit_edit"
+				autocomplete="off"
+				autocorrect="on"
+				autocapitalize="on"
+				spellcheck="true"
+				style="width: 100%; margin: 0"
+			></textarea>
+		</div>
 		<p v-else class="body" v-html="fancy_body"></p>
 
 		<div class="meta-row">
@@ -410,6 +440,12 @@ export default defineComponent({
 			this.editing = true;
 			this.new_body = this.result.body;
 			this.new_scope = this.result.scope;
+			this.new_gloss = this.result.gloss;
+			this.new_type = this.result.type;
+			this.new_pronominal_class = this.result.pronominal_class;
+			this.new_frame = this.result.frame;
+			this.new_distribution = this.result.distribution;
+			this.new_subject = this.result.subject;
 		},
 
 		set_new_body(event: Event): void {
@@ -424,6 +460,19 @@ export default defineComponent({
 
 		submit_edit(): void {
 			this.$emit('edit', this.new_body, this.new_scope);
+			if (this.new_type === 'predicate') {
+				this.$emit(
+					'annotate',
+					this.new_gloss,
+					this.new_type,
+					this.new_pronominal_class,
+					this.new_frame,
+					this.new_distribution,
+					this.new_subject,
+				);
+			} else {
+				this.$emit('annotate', this.new_gloss, this.new_type, '', '', '', '');
+			}
 			this.editing = false;
 		},
 
@@ -500,6 +549,8 @@ export default defineComponent({
 			editing: false,
 			new_body: '',
 			new_scope: '',
+			new_type: '',
+			new_gloss: '',
 		};
 	},
 	computed: {
