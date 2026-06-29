@@ -16,6 +16,7 @@ export class HousekeepModule {
 		this.reform_entries(store);
 		this.remove_duplicates(store);
 		this.remove_bad_entries(store);
+		this.relocate_type_and_gloss(store);
 
 		this.search.recache();
 	}
@@ -68,6 +69,42 @@ export class HousekeepModule {
 			if (didReform) reformed++;
 		}
 		if (reformed) console.log(`reformed ${reformed} entries`);
+	}
+
+	private relocate_type_and_gloss(store: commons.Store) {
+		let extracted_type = 0;
+		let extracted_gloss = 0;
+
+		const type_pattern = /^(\w+): /;
+		const gloss_pattern = /^'((\w\.)*\w+)'; /;
+
+		for (const entry of store.db.entries) {
+			let rest = entry.body;
+
+			const type_match = type_pattern.exec(rest);
+			if (type_match) {
+				entry.type = type_match[1];
+				rest = rest.slice(type_match[0].length);
+				extracted_type++;
+			}
+
+			const gloss_match = gloss_pattern.exec(rest);
+			if (gloss_match) {
+				entry.gloss = gloss_match[1];
+				rest = rest.slice(gloss_match[0].length);
+				extracted_gloss++;
+			}
+
+			entry.body = rest;
+		}
+
+		if (extracted_type !== 0) {
+			console.log(`moved ${extracted_type} type annotations out of bodies`);
+		}
+
+		if (extracted_gloss !== 0) {
+			console.log(`moved ${extracted_gloss} gloss annotations out of bodies`);
+		}
 	}
 
 	private remove_duplicates(store: commons.Store) {

@@ -79,6 +79,37 @@ describe('HousekeepModule', () => {
 		});
 	});
 
+	describe('type and gloss relocation', () => {
+		test('relocates type and gloss from body to dedicated fields', () => {
+			store.db.entries = [
+				makeEntry({ head: 'katolıq', body: '▯ is a catgirl', scope: 'en' }),
+				makeEntry({ head: 'ꝡeꝡa', body: 'predicate: ▯ is ꝡeꝡa', scope: 'en' }),
+				makeEntry({
+					head: 'súq',
+					body: "pronoun: '2S'; second-person singular",
+					scope: 'en',
+				}),
+			];
+			housekeep.up(store, makeConfig());
+			expect(store.db.entries).toEqual([
+				makeEntry({ head: 'katolıq', body: '▯ is a catgirl', scope: 'en' }),
+				makeEntry({
+					head: 'ꝡeꝡa',
+					body: '▯ is ꝡeꝡa',
+					scope: 'en',
+					type: 'predicate',
+				}),
+				makeEntry({
+					head: 'súq',
+					body: 'second-person singular',
+					scope: 'en',
+					type: 'pronoun',
+					gloss: '2S',
+				}),
+			]);
+		});
+	});
+
 	describe('duplicate entry removal', () => {
 		test('removes duplicate entries', () => {
 			store.db.entries = [
