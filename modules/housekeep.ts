@@ -75,7 +75,7 @@ export class HousekeepModule {
 		let extracted_type = 0;
 		let extracted_gloss = 0;
 
-		const type_pattern = /^(\w+): /;
+		const type_pattern = /^([ \-\w]+): /;
 		const gloss_pattern = /^'((\w\.)*\w+)'; /;
 
 		for (const entry of store.db.entries) {
