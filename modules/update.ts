@@ -8,7 +8,6 @@ import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 
 import request from 'request-promise-native';
-import { head } from 'request';
 
 export interface SourceConfig {
 	/**

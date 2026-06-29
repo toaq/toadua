@@ -200,9 +200,10 @@ export class Api {
 		const count = this.store.db.entries.length;
 		const annotated = this.store.db.entries.filter(
 			e =>
-				FIXED_ANNOTATION_FIELDS.every(field => e[field] !== undefined) &&
 				e.gloss !== undefined &&
-				e.type !== undefined,
+				(e.type === 'predicate'
+					? FIXED_ANNOTATION_FIELDS.every(field => e[field] !== undefined)
+					: e.type !== undefined),
 		).length;
 		return good({ count, annotated });
 	}
