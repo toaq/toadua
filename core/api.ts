@@ -192,7 +192,7 @@ export class Api {
 		const count = this.store.db.entries.length;
 		const annotated = this.store.db.entries.filter(
 			e =>
-				e.gloss !== undefined &&
+				(e.gloss !== undefined || e.type === 'phrase') &&
 				(e.type === 'predicate'
 					? FIXED_ANNOTATION_FIELDS.every(field => e[field] !== undefined)
 					: e.type !== undefined),
