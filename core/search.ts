@@ -382,7 +382,14 @@ export class Search {
 		// Spaces are stripped for comparison, so e.g. frame:c1i matches stored "c 1i".
 		const metaFieldAliases: [
 			string,
-			'gloss' | 'type' | 'pronominal_class' | 'frame' | 'distribution' | 'subject',
+			(
+				| 'gloss'
+				| 'type'
+				| 'pronominal_class'
+				| 'frame'
+				| 'distribution'
+				| 'subject'
+			),
 		][] = [
 			['gloss', 'gloss'],
 			['type', 'type'],
