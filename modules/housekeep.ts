@@ -79,6 +79,16 @@ export class HousekeepModule {
 		const gloss_pattern = /^\s*['‘](([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)['’];/;
 
 		for (const entry of store.db.entries) {
+			if (entry.pronominal_class === 'phrase') {
+				entry.type = 'phrase';
+				entry.pronominal_class = undefined;
+				extracted_type++;
+			}
+
+			if (entry.pronominal_class === 'particle') {
+				entry.pronominal_class = undefined;
+			}
+
 			let rest = entry.body;
 
 			if (entry.type === undefined) {
@@ -103,7 +113,9 @@ export class HousekeepModule {
 		}
 
 		if (extracted_type !== 0) {
-			console.log(`moved ${extracted_type} type annotations out of bodies`);
+			console.log(
+				`moved ${extracted_type} type annotations out of other fields`,
+			);
 		}
 
 		if (extracted_gloss !== 0) {
