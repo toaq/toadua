@@ -2,15 +2,12 @@ import { test, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UpdateModule } from './update.js';
 import type * as commons from '../core/commons.js';
 
-vi.mock('request-promise-native', () => ({
-	default: { get: vi.fn() },
-}));
+const fetchMock = vi.fn();
 
 vi.mock('../frontend/shared/index.js', () => ({
 	normalize: vi.fn((s: string) => s.toLowerCase()),
 }));
 
-import request from 'request-promise-native';
 import { Search } from '../core/search.js';
 import { Api } from '../core/api.js';
 import { EventEmitter } from 'node:events';
@@ -23,6 +20,7 @@ describe('UpdateModule', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.stubGlobal('fetch', fetchMock);
 
 		mockStore = {
 			db: { entries: [] },
@@ -50,6 +48,7 @@ describe('UpdateModule', () => {
 
 	afterEach(() => {
 		vi.clearAllMocks();
+		vi.unstubAllGlobals();
 	});
 
 	describe('sync_resources with TSV format', () => {
@@ -61,7 +60,12 @@ describe('UpdateModule', () => {
 				'125\tWORD3\tdefinition for word3\textra3',
 			].join('\n');
 
-			(request.get as any).mockResolvedValue(tsvData);
+			fetchMock.mockResolvedValue({
+				ok: true,
+				status: 200,
+				statusText: 'OK',
+				text: vi.fn().mockResolvedValue(tsvData),
+			} satisfies Partial<Response>);
 
 			const sources = {
 				tsv_parse_test: {
@@ -81,7 +85,7 @@ describe('UpdateModule', () => {
 			const updateModule = new UpdateModule(true, api, search, sources, 60000);
 			await updateModule.sync_resources(mockStore);
 
-			expect(request.get).toHaveBeenCalledWith('https://example.com/test.tsv');
+			expect(fetchMock).toHaveBeenCalledWith('https://example.com/test.tsv');
 
 			expect(mockStore.db.entries).toHaveLength(3);
 			expect(mockStore.db.entries[0]).toEqual(
@@ -141,7 +145,12 @@ describe('UpdateModule', () => {
 					{ word: 'Word3', definition: 'definition for word3' },
 				]);
 
-				(request.get as any).mockResolvedValue(jsonData);
+				fetchMock.mockResolvedValue({
+					ok: true,
+					status: 200,
+					statusText: 'OK',
+					text: vi.fn().mockResolvedValue(jsonData),
+				} satisfies Partial<Response>);
 
 				const sources = {
 					json_parse_test: {
@@ -171,9 +180,7 @@ describe('UpdateModule', () => {
 				);
 				await updateModule.sync_resources(mockStore);
 
-				expect(request.get).toHaveBeenCalledWith(
-					'https://example.com/test.json',
-				);
+				expect(fetchMock).toHaveBeenCalledWith('https://example.com/test.json');
 
 				expect(mockStore.db.entries).toHaveLength(3);
 				expect(mockStore.db.entries[0]).toEqual(
@@ -301,10 +308,26 @@ describe('UpdateModule', () => {
 				'phrase2\tnew body 2',
 			].join('\n');
 
-			(request.get as any).mockImplementation((url: string) => {
-				if (url.endsWith('official.json')) return Promise.resolve(officialJson);
-				if (url.endsWith('examples.tsv')) return Promise.resolve(examplesTsv);
-				return Promise.reject(new Error(`unexpected url ${url}`));
+			fetchMock.mockImplementation(async (url: string) => {
+				if (url.endsWith('official.json')) {
+					return {
+						ok: true,
+						status: 200,
+						statusText: 'OK',
+						text: async () => officialJson,
+					} satisfies Partial<Response>;
+				}
+
+				if (url.endsWith('examples.tsv')) {
+					return {
+						ok: true,
+						status: 200,
+						statusText: 'OK',
+						text: async () => examplesTsv,
+					} satisfies Partial<Response>;
+				}
+
+				throw new Error(`unexpected url ${url}`);
 			});
 
 			const sources = {
