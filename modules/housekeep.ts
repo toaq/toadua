@@ -76,7 +76,7 @@ export class HousekeepModule {
 		let extracted_gloss = 0;
 
 		const type_pattern = /^\s*([ \-a-zA-Z0-9]{1,30}):/;
-		const gloss_pattern = /^\s*'(([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)';/;
+		const gloss_pattern = /^\s*['‘](([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)['’];/;
 
 		for (const entry of store.db.entries) {
 			let rest = entry.body;
