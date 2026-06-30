@@ -562,7 +562,7 @@ export default defineComponent({
 				this.theme,
 			);
 			let type_and_gloss = this.result.type ? `${this.result.type}: ` : '';
-			type_and_gloss += this.result.gloss ? `'${this.result.gloss}'; ` : '';
+			type_and_gloss += this.result.gloss ? `‘${this.result.gloss}’; ` : '';
 			return type_and_gloss + body;
 		},
 		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
