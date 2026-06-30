@@ -75,20 +75,10 @@ export class HousekeepModule {
 		let extracted_type = 0;
 		let extracted_gloss = 0;
 
-		const type_pattern = /^\s*([ \-a-zA-Z0-9]{1,30}):/;
-		const gloss_pattern = /^\s*['‘](([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)['’];/;
+		const type_pattern = /^\s*([ \-a-zA-Z0-9]+):/;
+		const gloss_pattern = /^\s*[“'‘](([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)[”'’];/;
 
 		for (const entry of store.db.entries) {
-			if (entry.pronominal_class === 'phrase') {
-				entry.type = 'phrase';
-				entry.pronominal_class = undefined;
-				extracted_type++;
-			}
-
-			if (entry.pronominal_class === 'particle') {
-				entry.pronominal_class = undefined;
-			}
-
 			let rest = entry.body;
 
 			if (entry.type === undefined) {
@@ -100,7 +90,7 @@ export class HousekeepModule {
 				}
 			}
 
-			if (entry.gloss === undefined) {
+			if (entry.gloss === undefined && entry.type !== 'phrase') {
 				const gloss_match = gloss_pattern.exec(rest);
 				if (gloss_match) {
 					entry.gloss = gloss_match[1];
@@ -110,6 +100,16 @@ export class HousekeepModule {
 			}
 
 			entry.body = rest.trim();
+
+			if (entry.pronominal_class === 'phrase') {
+				entry.type = entry.type ?? 'phrase';
+				entry.pronominal_class = undefined;
+				extracted_type++;
+			}
+
+			if (entry.pronominal_class === 'particle') {
+				entry.pronominal_class = undefined;
+			}
 		}
 
 		if (extracted_type !== 0) {
