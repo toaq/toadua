@@ -6,7 +6,7 @@ delta_examples:
   patterns:
     - head: '%(1)'
       body: '%(2)'
-      pronominal_class: 'phrase'
+      type: 'phrase'
 a_examples:
   user: examples
   source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=1211677603'
@@ -15,7 +15,7 @@ a_examples:
   patterns:
     - head: '%(1)'
       body: '%(2)'
-      pronominal_class: 'phrase'
+      type: 'phrase'
 b_examples:
   user: examples
   source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=574044693'
@@ -24,7 +24,7 @@ b_examples:
   patterns:
     - head: '%(1)'
       body: '(%(0)) %(2)'
-      pronominal_class: 'phrase'
+      type: 'phrase'
 countries:
   user: countries
   source: 'https://docs.google.com/spreadsheets/d/1P9p1D38p364JSiNqLMGwY3zDRPQ_f6Yob_OL-uku28Q/export?format=tsv&id=1P9p1D38p364JSiNqLMGwY3zDRPQ_f6Yob_OL-uku28Q&gid=637793855'
@@ -33,12 +33,14 @@ countries:
   patterns:
     - head: '%(1)'
       body: '___ pertains to the culture of %(0).'
+      type: 'predicate'
       pronominal_class: 'ta'
       frame: 'c'
       distribution: 'd'
       subject: 'free'
     - head: '%(2)'
       body: '___ is the country %(0).'
+      type: 'predicate'
       pronominal_class: 'maq'
       frame: 'c'
       distribution: 'n'
