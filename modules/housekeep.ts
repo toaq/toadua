@@ -81,18 +81,22 @@ export class HousekeepModule {
 		for (const entry of store.db.entries) {
 			let rest = entry.body;
 
-			const type_match = type_pattern.exec(rest);
-			if (type_match) {
-				entry.type = type_match[1];
-				rest = rest.slice(type_match[0].length);
-				extracted_type++;
+			if (entry.type === undefined) {
+				const type_match = type_pattern.exec(rest);
+				if (type_match) {
+					entry.type = type_match[1];
+					rest = rest.slice(type_match[0].length);
+					extracted_type++;
+				}
 			}
 
-			const gloss_match = gloss_pattern.exec(rest);
-			if (gloss_match) {
-				entry.gloss = gloss_match[1];
-				rest = rest.slice(gloss_match[0].length);
-				extracted_gloss++;
+			if (entry.gloss === undefined) {
+				const gloss_match = gloss_pattern.exec(rest);
+				if (gloss_match) {
+					entry.gloss = gloss_match[1];
+					rest = rest.slice(gloss_match[0].length);
+					extracted_gloss++;
+				}
 			}
 
 			entry.body = rest;
