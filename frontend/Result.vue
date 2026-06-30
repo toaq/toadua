@@ -192,7 +192,6 @@ defineProps<{
 					placeholder="type"
 					v-model="new_type"
 					class="type editing"
-					@input="normalize_type"
 					@keypress.enter.exact.prevent="submit_edit"
 				/>
 				<input
@@ -200,7 +199,6 @@ defineProps<{
 					placeholder="gloss"
 					v-model="new_gloss"
 					class="gloss editing"
-					@input="normalize_gloss"
 					@keypress.enter.exact.prevent="submit_edit"
 				/>
 			</div>
