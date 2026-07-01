@@ -91,6 +91,16 @@ export class HousekeepModule {
 				}
 			}
 
+			if (entry.pronominal_class === 'phrase') {
+				entry.type = entry.type ?? 'phrase';
+				entry.pronominal_class = undefined;
+				extracted_type++;
+			}
+
+			if (entry.pronominal_class === 'particle') {
+				entry.pronominal_class = undefined;
+			}
+
 			if (entry.gloss === undefined && entry.type !== 'phrase') {
 				const gloss_match = gloss_pattern.exec(rest);
 				if (gloss_match) {
@@ -101,16 +111,6 @@ export class HousekeepModule {
 			}
 
 			entry.body = rest.trim();
-
-			if (entry.pronominal_class === 'phrase') {
-				entry.type = entry.type ?? 'phrase';
-				entry.pronominal_class = undefined;
-				extracted_type++;
-			}
-
-			if (entry.pronominal_class === 'particle') {
-				entry.pronominal_class = undefined;
-			}
 		}
 
 		if (extracted_type !== 0) {

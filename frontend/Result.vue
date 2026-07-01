@@ -21,16 +21,20 @@ defineProps<{
 				>
 			</h2>
 			<div class="info">
-				<input
-					v-if="editing"
-					type="text"
-					size="5"
-					v-model="new_scope"
-					class="scope editing"
-					autocomplete="language"
-					list="common-languages"
-					@keypress.enter.exact.prevent="submit_edit"
-				/>
+				<template v-if="editing">
+					<input
+						v-if="username === result.user"
+						type="text"
+						size="5"
+						v-model="new_scope"
+						class="scope editing"
+						autocomplete="language"
+						list="common-languages"
+						@keypress.enter.exact.prevent="submit_edit"
+					/>
+					<span v-else class="scope">{{ result.scope }}</span>
+				</template>
+
 				<a
 					v-if="!editing && !limit_search"
 					:href="'#scope:' + result.scope"
@@ -202,7 +206,9 @@ defineProps<{
 					@keypress.enter.exact.prevent="submit_edit"
 				/>
 			</div>
+
 			<textarea
+				v-if="username === result.user"
 				v-focus
 				class="body editing"
 				rows="1"
@@ -216,6 +222,7 @@ defineProps<{
 				spellcheck="true"
 				style="width: 100%; margin: 0"
 			></textarea>
+			<p v-else class="body" v-html="fancy_body" style="margin: 0"></p>
 		</div>
 		<p v-else class="body" v-html="fancy_body"></p>
 
@@ -311,7 +318,7 @@ defineProps<{
 							<font-awesome-icon icon="code-branch" />
 						</button>
 					</div>
-					<div v-if="!editing && username == result.user">
+					<div v-if="!editing && username">
 						<button
 							type="button"
 							aria-label="Edit"
@@ -457,7 +464,9 @@ export default defineComponent({
 		},
 
 		submit_edit(): void {
-			this.$emit('edit', this.new_body, this.new_scope);
+			if (this.username === this.result.user) {
+				this.$emit('edit', this.new_body, this.new_scope);
+			}
 			if (this.new_type === 'predicate') {
 				this.$emit(
 					'annotate',
@@ -571,7 +580,6 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		// TODO: make `type` and `gloss` editable
 		any_editable_metadata(): boolean {
 			return !!(
 				this.result.pronominal_class ||
