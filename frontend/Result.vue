@@ -223,7 +223,12 @@ defineProps<{
 				spellcheck="true"
 				style="width: 100%; margin: 0"
 			></textarea>
-			<p v-else class="body" v-html="fancy_body" style="margin: 0"></p>
+			<p
+				v-else
+				class="body"
+				v-html="shared.replacements(new_body, false, false, theme)"
+				style="margin: 0"
+			></p>
 		</div>
 		<p v-else class="body" v-html="fancy_body"></p>
 
@@ -391,6 +396,8 @@ import * as shared from './shared/index';
 
 export default defineComponent({
 	methods: {
+		shared: () => shared,
+
 		score_color(score: number): string {
 			return shared.score_color(score, this.theme).css;
 		},

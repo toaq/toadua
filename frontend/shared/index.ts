@@ -213,6 +213,8 @@ export function parse_query(query_string: string): {
 						parts[0],
 						['arity', 'myvote'].includes(parts[0])
 							? parseInt(parts[1], 10) || 0
+							: ['complete'].includes(parts[0])
+							? parts[1] === 'true'
 							: parts[1],
 					];
 			} else {

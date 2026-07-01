@@ -11,7 +11,9 @@ import {
 	type Entry,
 	Note,
 	type Store,
+	isAnnotated,
 } from './commons.js';
+import { PRONOMINAL_CLASSES, SUBJECTS } from './api.js';
 
 // keep an own cache for entries
 interface CachedEntry {
@@ -67,9 +69,7 @@ export function extract_pronominal_class(notes: Note[]): string | undefined {
 				.normalize('NFD')
 				.replace(/[\u0300-\u036f]/g, '')
 				.replace('i', 'ı');
-			if (
-				['ho', 'maq', 'hoq', 'ta', 'raı', 'particle', 'phrase'].includes(value)
-			) {
+			if (PRONOMINAL_CLASSES.includes(value)) {
 				return value;
 			}
 		}
@@ -108,20 +108,12 @@ export function extract_distribution(notes: Note[]): string | undefined {
 }
 
 export function extract_subject(notes: Note[]): string | undefined {
-	const validSubjects = [
-		'agent',
-		'individual',
-		'event',
-		'predicate',
-		'shape',
-		'free',
-	];
 	for (let i = notes.length - 1; i >= 0; i--) {
 		const note = notes[i];
 		const match = note.content.toLowerCase().match(/subject\s*:\s*(.*)/);
 		if (match) {
 			const value = match[1].trim();
-			if (validSubjects.includes(value)) {
+			if (SUBJECTS.includes(value)) {
 				return value;
 			}
 		}
@@ -355,6 +347,14 @@ export class Search {
 					([vote], uname) =>
 					entry =>
 						uname ? (entry.$.votes[uname] || 0) === vote : false,
+			},
+			complete: {
+				type: OperationType.Other,
+				check: args => args.length === 1 && typeof args[0] === 'boolean',
+				build:
+					([b]) =>
+					entry =>
+						b === isAnnotated(entry.$),
 			},
 			before: {
 				type: OperationType.Other,

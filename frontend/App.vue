@@ -239,7 +239,7 @@
 				v-if="username"
 				style="float: right"
 				href="javascript:void(0)"
-				@click="navigate('pronoun:none')"
+				@click="navigate('complete:false')"
 				>help out</a
 			>
 		</span>

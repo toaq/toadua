@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import * as yaml from 'js-yaml';
 import { EventEmitter } from 'node:events';
 import { cwd } from 'node:process';
+import { FIXED_ANNOTATION_FIELDS } from './api.js';
 
 const old_log = console.log;
 
@@ -45,6 +46,15 @@ export enum MatchMode {
 	Containing = 0,
 	Contained = 1,
 	Exact = 2,
+}
+
+export function isAnnotated(e: CommonEntry): boolean {
+	return (
+		(e.gloss || e.type === 'phrase') &&
+		(e.type === 'predicate' && e.body.includes('▯')
+			? FIXED_ANNOTATION_FIELDS.every(field => e[field])
+			: !!e.type)
+	);
 }
 
 export function deburrMatch(
@@ -118,27 +128,13 @@ export interface Note {
 	content: string;
 }
 
-export interface Entry {
-	/// An entry ID string like `AbCdEfGhI`.
-	id: string;
-	/// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
-	date: string;
+export interface CommonEntry {
 	/// The Toaq word this entry is for.
 	head: string;
 	/// The gloss of the word.
 	gloss: string | undefined;
 	/// The definition of the word.
 	body: string;
-	/// The name of the user that added the entry.
-	user: string;
-	/// The scope (`en`, `toa`...) the entry is in.
-	scope: string;
-	/// Notes left on this entry.
-	notes: Note[];
-	/// Map from usernames to individual votes.
-	votes: Record<string, -1 | 0 | 1>;
-	/// Total score of the entry, aggregated from votes.
-	score: number;
 	/// The type of the entry, e.g. `"predicate"`.
 	type: string | undefined;
 	/// The pronominal class of the entry, e.g. `"maq"`.
@@ -149,6 +145,23 @@ export interface Entry {
 	distribution: string | undefined;
 	/// The subject of the entry: `"agent"`, `"individual"`, `"event"`, `"predicate"`, `"shape"`, or `"free"`.
 	subject: string | undefined;
+}
+
+export interface Entry extends CommonEntry {
+	/// An entry ID string like `AbCdEfGhI`.
+	id: string;
+	/// An ISO 8601 date string like `2022-12-28T21:38:31.682Z`.
+	date: string;
+	/// The name of the user that added the entry.
+	user: string;
+	/// The scope (`en`, `toa`...) the entry is in.
+	scope: string;
+	/// Notes left on this entry.
+	notes: Note[];
+	/// Map from usernames to individual votes.
+	votes: Record<string, -1 | 0 | 1>;
+	/// Total score of the entry, aggregated from votes.
+	score: number;
 }
 
 export interface Token {

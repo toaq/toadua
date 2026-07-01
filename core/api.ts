@@ -1,7 +1,7 @@
 // api.ts
 // implementation for the API
 
-import { config, emitter } from './commons.js';
+import { emitter, isAnnotated } from './commons.js';
 import type { Entry, Store, ToaduaConfig } from './commons.js';
 import { Search } from './search.js';
 import * as shared from '../frontend/shared/index.js';
@@ -15,9 +15,9 @@ import type { PresentedEntry } from './search.js';
 // Workaround for bcryptjs' broken types
 const bcrypt = bcryptjs as typeof bcryptjs_types;
 
-const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı'];
+export const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı'];
 
-const FRAMES = [
+export const FRAMES = [
 	'c',
 	'c c',
 	'c c c',
@@ -46,7 +46,7 @@ const FRAMES = [
 	'c c 2xx',
 ];
 
-const DISTRIBUTIONS = [
+export const DISTRIBUTIONS = [
 	'd',
 	'n',
 	'd d',
@@ -63,9 +63,16 @@ const DISTRIBUTIONS = [
 	'n n n',
 ];
 
-const SUBJECTS = ['agent', 'individual', 'event', 'predicate', 'shape', 'free'];
+export const SUBJECTS = [
+	'agent',
+	'individual',
+	'event',
+	'predicate',
+	'shape',
+	'free',
+];
 
-const FIXED_ANNOTATION_FIELDS = [
+export const FIXED_ANNOTATION_FIELDS = [
 	'pronominal_class',
 	'frame',
 	'distribution',
@@ -189,15 +196,10 @@ export class Api {
 	}
 
 	public async count(i: any, uname: string): Promise<ApiResponse> {
-		const count = this.store.db.entries.length;
-		const annotated = this.store.db.entries.filter(
-			e =>
-				(e.gloss || e.type === 'phrase') &&
-				(e.type === 'predicate' && e.body.includes('▯')
-					? FIXED_ANNOTATION_FIELDS.every(field => e[field])
-					: e.type),
-		).length;
-		return good({ count, annotated });
+		return good({
+			count: this.store.db.entries.length,
+			annotated: this.store.db.entries.filter(isAnnotated).length,
+		});
 	}
 
 	public async vote(i: any, uname: string): Promise<ApiResponse> {
