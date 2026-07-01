@@ -45,7 +45,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Pronominal class"
-						v-if="!is_non_verb"
+						v-if="!is_non_verb && !is_nullary_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
@@ -68,12 +68,13 @@ defineProps<{
 						<option value="maq">máq</option>
 						<option value="hoq">hóq</option>
 						<option value="ta">tá</option>
+						<option value="">—</option>
 					</select>
 				</div>
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_editable_metadata && !is_non_verb"
+						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
@@ -82,7 +83,7 @@ defineProps<{
 					</button>
 					<select
 						title="Frame"
-						v-if="any_editable_metadata && !is_non_verb"
+						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
 						v-model="result.frame"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -112,7 +113,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Distribution"
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.distribution ? 1 : 0.5 }"
@@ -120,7 +121,7 @@ defineProps<{
 						({{ result.distribution ?? '—' }})
 					</button>
 					<select
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
 						v-model="result.distribution"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -144,7 +145,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Subject type"
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.subject ? 1 : 0.5 }"
@@ -484,7 +485,7 @@ export default defineComponent({
 		},
 
 		guess_other_metadata(): void {
-			if (this.is_non_verb) {
+			if (this.is_non_verb || !this.result.pronominal_class) {
 				this.result.frame = undefined;
 				this.result.distribution = undefined;
 				this.result.subject = undefined;
@@ -513,10 +514,11 @@ export default defineComponent({
 				.replace(/[c012]/g, 'd')
 				.replace(/[ijk]/g, '');
 			this.result.subject ??= !this.result.frame.startsWith('c')
-				? 'predicate'
+				? 'proposition'
 				: this.result.pronominal_class === 'ta'
 				? 'free'
 				: 'individual';
+			if (this.result.pronominal_class) this.result.type ??= 'predicate';
 		},
 
 		submit_annotation(): void {
@@ -580,7 +582,7 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		any_editable_metadata(): boolean {
+		any_fixed_metadata(): boolean {
 			return !!(
 				this.result.pronominal_class ||
 				this.result.frame ||
@@ -596,6 +598,11 @@ export default defineComponent({
 		},
 		is_non_verb(): boolean {
 			return this.result.type && this.result.type !== 'predicate';
+		},
+		is_nullary_verb(): boolean {
+			return (
+				this.result.type === 'predicate' && !this.result.body?.includes('▯')
+			);
 		},
 		tangible(): boolean {
 			return (

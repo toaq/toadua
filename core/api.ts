@@ -192,10 +192,10 @@ export class Api {
 		const count = this.store.db.entries.length;
 		const annotated = this.store.db.entries.filter(
 			e =>
-				(e.gloss !== undefined || e.type === 'phrase') &&
+				(e.gloss || e.type === 'phrase') &&
 				(e.type === 'predicate' && e.body.includes('▯')
-					? FIXED_ANNOTATION_FIELDS.every(field => e[field] !== undefined)
-					: e.type !== undefined),
+					? FIXED_ANNOTATION_FIELDS.every(field => e[field])
+					: e.type),
 		).length;
 		return good({ count, annotated });
 	}
@@ -278,9 +278,9 @@ export class Api {
 		const e_id = this.is_goodid(i.id);
 
 		if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
-		const e_gloss = i.gloss !== undefined ? this.is_nobomb(i.gloss) : true;
+		const e_gloss = i.gloss ? this.is_nobomb(i.gloss) : true;
 		if (e_gloss !== true) return flip(`field 'gloss' is a bomb: ${e_gloss}`);
-		const e_type = i.type !== undefined ? this.is_nobomb(i.type) : true;
+		const e_type = i.type ? this.is_nobomb(i.type) : true;
 		if (e_type !== true) return flip(`field 'type' is a bomb: ${e_type}`);
 
 		// check that each of the disjoint-union metadata fields has a valid value
