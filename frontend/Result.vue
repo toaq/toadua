@@ -475,7 +475,7 @@ export default defineComponent({
 			if (this.username === this.result.user) {
 				this.$emit('edit', this.new_body, this.new_scope);
 			}
-			if (this.new_type === 'predicate') {
+			if (this.new_type === 'predicate' || !this.new_type) {
 				this.$emit(
 					'annotate',
 					this.new_gloss,
@@ -499,33 +499,37 @@ export default defineComponent({
 				this.result.pronominal_class = undefined;
 				return;
 			}
+			this.result.type = this.result.type ? this.result.type : 'predicate';
 			const definition =
 				this.result.body
 					.toLowerCase()
 					.split(';')
 					.find(x => x.includes('▯')) ?? '';
-			this.result.frame ??= [
-				...definition
-					.replace(/\d/g, '')
-					.replace(/▯ (\S+ ){0,2}the case/g, '0')
-					.replace(/satisf\w+ (property )?▯/g, '1')
-					.replace(/property ▯/g, '1')
-					.replace(/relation ▯/g, '2')
-					.replace(/[^012▯]/g, '')
-					.replace(/▯/g, 'c'),
-			]
-				.join(' ')
-				.replace(/1/g, '1i')
-				.replace(/2/g, '2ij');
-			this.result.distribution ??= this.result.frame
-				.replace(/[c012]/g, 'd')
-				.replace(/[ijk]/g, '');
-			this.result.subject ??= !this.result.frame.startsWith('c')
+			this.result.frame = this.result.frame
+				? this.result.frame
+				: [
+						...definition
+							.replace(/\d/g, '')
+							.replace(/▯ (\S+ ){0,2}the case/g, '0')
+							.replace(/satisf\w+ (property )?▯/g, '1')
+							.replace(/property ▯/g, '1')
+							.replace(/relation ▯/g, '2')
+							.replace(/[^012▯]/g, '')
+							.replace(/▯/g, 'c'),
+				  ]
+						.join(' ')
+						.replace(/1/g, '1i')
+						.replace(/2/g, '2ij');
+			this.result.distribution = this.result.distribution
+				? this.result.distribution
+				: this.result.frame.replace(/[c012]/g, 'd').replace(/[ijk]/g, '');
+			this.result.subject = this.result.subject
+				? this.result.subject
+				: !this.result.frame.startsWith('c')
 				? 'proposition'
 				: this.result.pronominal_class === 'ta'
 				? 'free'
 				: 'individual';
-			if (this.result.pronominal_class) this.result.type ??= 'predicate';
 		},
 
 		submit_annotation(): void {
