@@ -45,7 +45,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Pronominal class"
-						v-if="!is_non_verb && !is_nullary_verb"
+						v-if="!is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
@@ -74,7 +74,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
@@ -83,7 +83,7 @@ defineProps<{
 					</button>
 					<select
 						title="Frame"
-						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.frame"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -113,7 +113,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Distribution"
-						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.distribution ? 1 : 0.5 }"
@@ -121,7 +121,7 @@ defineProps<{
 						({{ result.distribution ?? '—' }})
 					</button>
 					<select
-						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.distribution"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -145,7 +145,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Subject type"
-						v-if="any_fixed_metadata && !is_non_verb && !is_nullary_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.subject ? 1 : 0.5 }"
@@ -610,10 +610,8 @@ export default defineComponent({
 		is_non_verb(): boolean {
 			return this.result.type && this.result.type !== 'predicate';
 		},
-		is_nullary_verb(): boolean {
-			return (
-				this.result.type === 'predicate' && !this.result.body?.includes('▯')
-			);
+		has_slots(): boolean {
+			return this.result.body?.includes('▯');
 		},
 		tangible(): boolean {
 			return (
