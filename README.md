@@ -34,7 +34,7 @@ docker run --mount type=bind,src=./config,dst=/app/config -p 9999:29138 -e NODE_
 
 ### Locally (good for dev env)
 
-- Install [Node.js](https://nodejs.org/en/) version ≥16 (skip this step if
+- Install [Node.js](https://nodejs.org/en/) version ≥21 (skip this step if
   you're using `nix` with `direnv`).
 - Frontend:
   - Cd into the `frontend` directory and run `npm install` there.
