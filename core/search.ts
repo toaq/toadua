@@ -141,6 +141,7 @@ export function cacheify(e: Entry): CachedEntry {
 	const deburredHead = deburr(e.head);
 	const deburredBody = deburr(e.body);
 	const deburredNotes = e.notes.flatMap(({ content }) => deburr(content));
+	const deburredGloss = e.gloss ? deburr(e.gloss) : [];
 	return {
 		$: e,
 		id: e.id,
@@ -155,7 +156,12 @@ export function cacheify(e: Entry): CachedEntry {
 		frame: e.frame ?? extract_frame(e.notes),
 		distribution: e.distribution ?? extract_distribution(e.notes),
 		subject: e.subject ?? extract_subject(e.notes),
-		content: [].concat(deburredHead, deburredBody, deburredNotes),
+		content: [].concat(
+			deburredHead,
+			deburredGloss,
+			deburredBody,
+			deburredNotes,
+		),
 	};
 }
 
