@@ -526,7 +526,7 @@ export default defineComponent({
 			this.result.subject = this.result.subject
 				? this.result.subject
 				: !this.result.frame.startsWith('c')
-				? 'proposition'
+				? 'predicate'
 				: this.result.pronominal_class === 'ta'
 				? 'free'
 				: 'individual';
