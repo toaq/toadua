@@ -46,8 +46,10 @@ defineProps<{
 					<button
 						title="Pronominal class"
 						v-if="!is_non_verb && has_slots"
-						:disabled="!username"
-						@click.prevent="username && show_picker($event)"
+						:disabled="!username || is_author_protected"
+						@click.prevent="
+							username && !is_author_protected && show_picker($event)
+						"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
 						{{
@@ -58,7 +60,7 @@ defineProps<{
 					</button>
 					<select
 						v-model="result.pronominal_class"
-						:disabled="!username"
+						:disabled="!username || is_author_protected"
 						@change="
 							guess_other_metadata();
 							submit_annotation();
@@ -75,8 +77,10 @@ defineProps<{
 					<button
 						title="Frame"
 						v-if="any_fixed_metadata && !is_non_verb && has_slots"
-						:disabled="!username"
-						@click.prevent="username && show_picker($event)"
+						:disabled="!username || is_author_protected"
+						@click.prevent="
+							username && !is_author_protected && show_picker($event)
+						"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
 					>
 						({{ result.frame ?? '—' }})
@@ -85,7 +89,7 @@ defineProps<{
 						title="Frame"
 						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.frame"
-						:disabled="!username"
+						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
 					>
 						<option value="c">(c)</option>
@@ -114,8 +118,10 @@ defineProps<{
 					<button
 						title="Distribution"
 						v-if="any_fixed_metadata && !is_non_verb && has_slots"
-						:disabled="!username"
-						@click.prevent="username && show_picker($event)"
+						:disabled="!username || is_author_protected"
+						@click.prevent="
+							username && !is_author_protected && show_picker($event)
+						"
 						:style="{ opacity: result.distribution ? 1 : 0.5 }"
 					>
 						({{ result.distribution ?? '—' }})
@@ -123,7 +129,7 @@ defineProps<{
 					<select
 						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.distribution"
-						:disabled="!username"
+						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
 					>
 						<option v-if="slots === 1" value="d">(d)</option>
@@ -146,8 +152,10 @@ defineProps<{
 					<button
 						title="Subject type"
 						v-if="any_fixed_metadata && !is_non_verb && has_slots"
-						:disabled="!username"
-						@click.prevent="username && show_picker($event)"
+						:disabled="!username || is_author_protected"
+						@click.prevent="
+							username && !is_author_protected && show_picker($event)
+						"
 						:style="{ opacity: result.subject ? 1 : 0.5 }"
 					>
 						{{ result.subject ? 's' + result.subject[0].toUpperCase() : '—' }}
@@ -155,7 +163,7 @@ defineProps<{
 					<select
 						v-if="result.frame"
 						v-model="result.subject"
-						:disabled="!username"
+						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
 					>
 						<option value="agent">sA</option>
@@ -324,7 +332,7 @@ defineProps<{
 							<font-awesome-icon icon="code-branch" />
 						</button>
 					</div>
-					<div v-if="!editing && username">
+					<div v-if="!editing && username && !is_author_protected">
 						<button
 							type="button"
 							aria-label="Edit"
@@ -574,6 +582,15 @@ export default defineComponent({
 		};
 	},
 	computed: {
+		is_author_protected(): boolean {
+			const protected_users = [
+				'official',
+				'oldofficial',
+				'examples',
+				'countries',
+			];
+			return protected_users.includes(this.result.user);
+		},
 		fancy_body(): string {
 			let body = shared.replacements(
 				this.result.body,
