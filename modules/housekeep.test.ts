@@ -19,6 +19,8 @@ const makeEntry = (overrides: Partial<commons.Entry> = {}): commons.Entry => ({
 	frame: undefined,
 	distribution: undefined,
 	subject: undefined,
+	gloss: undefined,
+	type: undefined,
 	...overrides,
 });
 
@@ -71,8 +73,84 @@ describe('HousekeepModule', () => {
 			];
 			housekeep.up(store, makeConfig());
 			expect(store.db.entries).toEqual([
-				makeEntry({ head: 'ꝡeꝡa', body: '▯ is veva', scope: 'en' }),
-				makeEntry({ head: 'katolıq', body: 'gırı ▯', scope: 'toa' }),
+				makeEntry({
+					head: 'ꝡeꝡa',
+					body: '▯ is veva',
+					scope: 'en',
+					type: 'predicate',
+				}),
+				makeEntry({
+					head: 'katolıq',
+					body: 'gırı ▯',
+					scope: 'toa',
+					type: 'predicate',
+				}),
+			]);
+		});
+	});
+
+	describe('type and gloss relocation', () => {
+		test('relocates type and gloss from body to dedicated fields', () => {
+			store.db.entries = [
+				makeEntry({ head: 'katolıq', body: '▯ is a catgirl', scope: 'en' }),
+				makeEntry({ head: 'ꝡeꝡa', body: 'predicate: ▯ is ꝡeꝡa', scope: 'en' }),
+				makeEntry({
+					head: 'súq',
+					body: "pronoun: '2S'; second-person singular",
+					scope: 'en',
+				}),
+				makeEntry({ head: 'ku-', body: 'non-contrastive focus', scope: 'en' }),
+				makeEntry({
+					head: '- go',
+					body: 'object of passive function',
+					scope: 'en',
+				}),
+				makeEntry({
+					head: '- go',
+					body: 'object of passive function',
+					scope: 'en',
+					type: 'suffix',
+				}),
+			];
+			housekeep.up(store, makeConfig());
+			expect(store.db.entries).toEqual([
+				makeEntry({
+					head: 'katolıq',
+					body: '▯ is a catgirl',
+					scope: 'en',
+					type: 'predicate',
+				}),
+				makeEntry({
+					head: 'ꝡeꝡa',
+					body: '▯ is ꝡeꝡa',
+					scope: 'en',
+					type: 'predicate',
+				}),
+				makeEntry({
+					head: 'súq',
+					body: 'second-person singular',
+					scope: 'en',
+					type: 'pronoun',
+					gloss: '2S',
+				}),
+				makeEntry({
+					head: 'ku-',
+					body: 'non-contrastive focus',
+					scope: 'en',
+					type: 'prefix',
+				}),
+				makeEntry({
+					head: '- go',
+					body: 'object of passive function',
+					scope: 'en',
+					type: 'pseudo-suffix',
+				}),
+				makeEntry({
+					head: '- go',
+					body: 'object of passive function',
+					scope: 'en',
+					type: 'suffix',
+				}),
 			]);
 		});
 	});
@@ -101,12 +179,21 @@ describe('HousekeepModule', () => {
 					scope: 'en',
 					date: '2024-01-02T00:00:00.000Z',
 				}),
+				makeEntry({
+					head: 'bao',
+					gloss: 'white',
+					body: '___ is white',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
 			];
 			housekeep.up(store, makeConfig());
 			expect(store.db.entries).toEqual([
 				makeEntry({
 					head: 'bao',
 					body: '▯ is off-white',
+					type: 'predicate',
 					user: 'bob',
 					scope: 'en',
 					date: '2024-01-01T00:00:00.000Z',
@@ -114,6 +201,16 @@ describe('HousekeepModule', () => {
 				makeEntry({
 					head: 'bao',
 					body: '▯ is white',
+					type: 'predicate',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
+				makeEntry({
+					head: 'bao',
+					gloss: 'white',
+					body: '▯ is white',
+					type: 'predicate',
 					user: 'alice',
 					scope: 'en',
 					date: '2024-01-02T00:00:00.000Z',

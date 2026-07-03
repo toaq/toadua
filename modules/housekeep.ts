@@ -2,7 +2,7 @@
 // tamper with the database store
 
 import type * as commons from '../core/commons.js';
-import type { Token } from '../core/commons.js';
+import { tryAssessType, type Token } from '../core/commons.js';
 import { Search } from '../core/search.js';
 import * as shared from '../frontend/shared/index.js';
 
@@ -16,6 +16,7 @@ export class HousekeepModule {
 		this.reform_entries(store);
 		this.remove_duplicates(store);
 		this.remove_bad_entries(store);
+		this.relocate_type_and_gloss(store);
 
 		this.search.recache();
 	}
@@ -70,10 +71,71 @@ export class HousekeepModule {
 		if (reformed) console.log(`reformed ${reformed} entries`);
 	}
 
+	private relocate_type_and_gloss(store: commons.Store) {
+		let extracted_type = 0;
+		let extracted_gloss = 0;
+
+		const type_pattern = /^\s*([ \-a-zA-Z0-9]+):/;
+		const gloss_pattern =
+			/^\s*[“'‘"](([\-a-zA-Z0-9]+\.)*[\-a-zA-Z0-9]+)[”'’"];/;
+
+		for (const entry of store.db.entries) {
+			let rest = entry.body;
+
+			if (entry.type === undefined) {
+				const type_match = type_pattern.exec(rest);
+				if (type_match) {
+					entry.type = type_match[1][0].toLowerCase() + type_match[1].slice(1);
+					rest = rest.slice(type_match[0].length);
+					extracted_type++;
+				} else {
+					entry.type = tryAssessType(entry);
+					if (entry.type) extracted_type++;
+				}
+			}
+
+			if (entry.pronominal_class === 'phrase') {
+				entry.pronominal_class = undefined;
+				if (!entry.type) {
+					entry.type = 'phrase';
+					extracted_type++;
+				}
+			}
+
+			if (entry.pronominal_class === 'particle') {
+				entry.pronominal_class = undefined;
+				entry.frame = undefined;
+				entry.distribution = undefined;
+				entry.subject = undefined;
+			}
+
+			if (entry.gloss === undefined && entry.type !== 'phrase') {
+				const gloss_match = gloss_pattern.exec(rest);
+				if (gloss_match) {
+					entry.gloss = gloss_match[1];
+					rest = rest.slice(gloss_match[0].length);
+					extracted_gloss++;
+				}
+			}
+
+			entry.body = rest.trim();
+		}
+
+		if (extracted_type !== 0) {
+			console.log(
+				`moved ${extracted_type} type annotations out of other fields`,
+			);
+		}
+
+		if (extracted_gloss !== 0) {
+			console.log(`moved ${extracted_gloss} gloss annotations out of bodies`);
+		}
+	}
+
 	private remove_duplicates(store: commons.Store) {
 		const newest_version = new Map<string, commons.Entry>();
 		for (const e of store.db.entries) {
-			const key = `${e.user}\0${e.head}\0${e.body}\0${e.scope}`;
+			const key = `${e.user}\0${e.head}\0${e.gloss}\0${e.body}\0${e.type}\0${e.pronominal_class}\0${e.frame}\0${e.distribution}\0${e.subject}\0${e.scope}`;
 			const other = newest_version.get(key);
 			if (other && other.date >= e.date) {
 				e.scope = '';

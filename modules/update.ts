@@ -78,7 +78,9 @@ const FORMATS: Record<string, UpdateFormat> = {
 type WordList = Map<
 	string,
 	{
+		gloss?: string;
 		body: string;
+		type?: string;
 		frame?: string;
 		pronominal_class?: string;
 		subject?: string;
@@ -123,7 +125,15 @@ export class UpdateModule {
 						for (const entry of FORMATS[format](data as string, rest)) {
 							if (!entry.head || !entry.body) continue;
 							word_list.set(shared.normalize(entry.head), {
+								gloss:
+									entry.gloss !== undefined
+										? entry.gloss.normalize('NFC')
+										: undefined,
 								body: replacements(entry.body),
+								type:
+									entry.type !== undefined
+										? entry.type.normalize('NFC')
+										: undefined,
 								frame: entry.frame,
 								pronominal_class: entry.pronominal_class,
 								subject: entry.subject,
@@ -159,13 +169,15 @@ export class UpdateModule {
 			const user = cf[name].user;
 			for (const [
 				head,
-				{ body, frame, pronominal_class, subject, distribution },
+				{ gloss, body, type, frame, pronominal_class, subject, distribution },
 			] of word_list.entries()) {
 				const exists = this.search.some(
 					entry =>
 						entry.$.scope === 'en' &&
 						entry.$.head === head &&
+						entry.$.gloss === gloss &&
 						entry.$.body === body &&
+						entry.$.type === type &&
 						entry.$.frame === frame &&
 						entry.$.pronominal_class === pronominal_class &&
 						entry.$.subject === subject &&
@@ -175,9 +187,11 @@ export class UpdateModule {
 					const res = await this.api.call(
 						{
 							action: 'create',
-							head,
-							body,
 							scope: 'en',
+							head,
+							gloss,
+							body,
+							type,
 							frame,
 							pronominal_class,
 							subject,
@@ -218,15 +232,20 @@ export class UpdateModule {
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
 				const found = fetched.get(e.user)?.get(e.head);
+
 				if (
 					found &&
+					found.gloss === e.gloss &&
 					found.body === e.body &&
+					found.type === e.type &&
 					found.frame === e.frame &&
 					found.pronominal_class === e.pronominal_class &&
 					found.subject === e.subject &&
 					found.distribution === e.distribution
-				)
+				) {
 					continue;
+				}
+
 				const originalUser = e.user;
 				console.log(`~~ '${e.head}' obsoleted`);
 				messages[originalUser] ||= [];

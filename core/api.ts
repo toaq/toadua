@@ -1,7 +1,7 @@
 // api.ts
 // implementation for the API
 
-import { config, emitter } from './commons.js';
+import { emitter, isAnnotated } from './commons.js';
 import type { Entry, Store, ToaduaConfig } from './commons.js';
 import { Search } from './search.js';
 import * as shared from '../frontend/shared/index.js';
@@ -15,17 +15,9 @@ import type { PresentedEntry } from './search.js';
 // Workaround for bcryptjs' broken types
 const bcrypt = bcryptjs as typeof bcryptjs_types;
 
-const PRONOMINAL_CLASSES = [
-	'ho',
-	'maq',
-	'hoq',
-	'ta',
-	'raı',
-	'particle',
-	'phrase',
-];
+export const PRONOMINAL_CLASSES = ['ho', 'maq', 'hoq', 'ta', 'raı'];
 
-const FRAMES = [
+export const FRAMES = [
 	'c',
 	'c c',
 	'c c c',
@@ -54,7 +46,7 @@ const FRAMES = [
 	'c c 2xx',
 ];
 
-const DISTRIBUTIONS = [
+export const DISTRIBUTIONS = [
 	'd',
 	'n',
 	'd d',
@@ -71,7 +63,28 @@ const DISTRIBUTIONS = [
 	'n n n',
 ];
 
-const SUBJECTS = ['agent', 'individual', 'event', 'predicate', 'shape', 'free'];
+export const SUBJECTS = [
+	'agent',
+	'individual',
+	'event',
+	'predicate',
+	'shape',
+	'free',
+];
+
+export const FIXED_ANNOTATION_FIELDS = [
+	'pronominal_class',
+	'frame',
+	'distribution',
+	'subject',
+];
+
+const FIXED_ANNOTATION_FIELD_OPTIONS = {
+	pronominal_class: PRONOMINAL_CLASSES,
+	frame: FRAMES,
+	distribution: DISTRIBUTIONS,
+	subject: SUBJECTS,
+};
 
 export type ApiBody =
 	| { name: string }
@@ -183,11 +196,10 @@ export class Api {
 	}
 
 	public async count(i: any, uname: string): Promise<ApiResponse> {
-		const count = this.store.db.entries.length;
-		const annotated = this.store.db.entries.filter(
-			e => e.pronominal_class !== undefined,
-		).length;
-		return good({ count, annotated });
+		return good({
+			count: this.store.db.entries.length,
+			annotated: this.store.db.entries.filter(isAnnotated).length,
+		});
 	}
 
 	public async vote(i: any, uname: string): Promise<ApiResponse> {
@@ -261,33 +273,38 @@ export class Api {
 		return good({ entry: this.present(word, uname) });
 	}
 
-	// Edit metadata (pronominal class, frame, distribution, subject) on a word.
-	// These can be edited by anyone, not just the owner.
+	// Edit metadata on a word.
+	// These can be edited by anyone, not just the owner (at some point, this may change).
 	public async annotate(i: any, uname: string): Promise<ApiResponse> {
 		if (!uname) return flip('must be logged in');
 		const e_id = this.is_goodid(i.id);
+
 		if (e_id !== true) return flip(`invalid field 'id': ${e_id}`);
-		if (
-			i.pronominal_class &&
-			!PRONOMINAL_CLASSES.includes(i.pronominal_class)
-		) {
-			return flip(`invalid field 'pronominal_class': ${i.pronominal_class}`);
+		const e_gloss = i.gloss ? this.is_nobomb(i.gloss) : true;
+		if (e_gloss !== true) return flip(`field 'gloss' is a bomb: ${e_gloss}`);
+		const e_type = i.type ? this.is_nobomb(i.type) : true;
+		if (e_type !== true) return flip(`field 'type' is a bomb: ${e_type}`);
+
+		// check that each of the disjoint-union metadata fields has a valid value
+		for (var field of FIXED_ANNOTATION_FIELDS) {
+			if (
+				i[field] &&
+				!FIXED_ANNOTATION_FIELD_OPTIONS[field].includes(i[field])
+			) {
+				return flip(`invalid field '${field}': ${i[field]}`);
+			}
 		}
-		if (i.frame && !FRAMES.includes(i.frame)) {
-			return flip(`invalid field 'frame': ${i.frame}`);
-		}
-		if (i.distribution && !DISTRIBUTIONS.includes(i.distribution)) {
-			return flip(`invalid field 'distribution': ${i.distribution}`);
-		}
-		if (i.subject && !SUBJECTS.includes(i.subject)) {
-			return flip(`invalid field 'subject': ${i.subject}`);
-		}
+
 		const word = this.by_id(i.id);
 		if (!word) return flip('no such word');
+
 		word.pronominal_class = i.pronominal_class;
 		word.frame = i.frame;
 		word.distribution = i.distribution;
 		word.subject = i.subject;
+		word.gloss = i.gloss;
+		word.type = i.type;
+
 		emitter.emit('annotate', word);
 		return good({ entry: this.present(word, uname) });
 	}
@@ -328,14 +345,22 @@ export class Api {
 		const e_scope = this.is_scope(i.scope);
 		if (e_scope !== true) return flip(`invalid field 'scope': ${e_scope}`);
 
-		// Abort if an entry with exactly the same head, body, and scope exists
+		// Abort if an entry with exactly the data exists
 		const normalizedHead = shared.normalize(i.head);
+		let normalizedGloss =
+			i.gloss !== undefined ? i.gloss.normalize('NFC') : undefined;
 		const normalizedBody = replacements(i.body);
 		const scope = i.scope;
+
+		const normalizedType =
+			i.type !== undefined ? i.type.normalize('NFC') : undefined;
+
 		const exists = this.store.db.entries.some(
 			e =>
 				e.head === normalizedHead &&
+				e.gloss == normalizedGloss &&
 				e.body === normalizedBody &&
+				e.type === normalizedType &&
 				e.frame === i.frame &&
 				e.pronominal_class === i.pronominal_class &&
 				e.subject === i.subject &&
@@ -350,12 +375,14 @@ export class Api {
 			id,
 			date: new Date().toISOString(),
 			head: normalizedHead,
+			gloss: normalizedGloss,
 			body: normalizedBody,
 			user: uname,
 			scope: i.scope,
 			notes: [],
 			votes: {},
 			score: 0,
+			type: normalizedType,
 			pronominal_class: i.pronominal_class,
 			frame: i.frame,
 			distribution: i.distribution,

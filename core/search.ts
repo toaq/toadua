@@ -11,17 +11,21 @@ import {
 	type Entry,
 	Note,
 	type Store,
+	isAnnotated,
 } from './commons.js';
+import { PRONOMINAL_CLASSES, SUBJECTS } from './api.js';
 
 // keep an own cache for entries
 interface CachedEntry {
 	$: Entry;
 	id: string;
 	head: string[];
+	gloss: string | undefined;
 	body: string[];
 	notes: string[];
 	date: number;
 	score: number;
+	type: string | undefined;
 	pronominal_class: string | undefined;
 	frame: string | undefined;
 	distribution: string | undefined;
@@ -36,6 +40,7 @@ export interface PresentedEntry extends Omit<Entry, 'votes'> {
 	content?: string[];
 }
 
+// should this include metadata fields? (- Démbım)
 const RE_TRAITS = [
 	'id',
 	'user',
@@ -64,9 +69,7 @@ export function extract_pronominal_class(notes: Note[]): string | undefined {
 				.normalize('NFD')
 				.replace(/[\u0300-\u036f]/g, '')
 				.replace('i', 'ı');
-			if (
-				['ho', 'maq', 'hoq', 'ta', 'raı', 'particle', 'phrase'].includes(value)
-			) {
+			if (PRONOMINAL_CLASSES.includes(value)) {
 				return value;
 			}
 		}
@@ -105,24 +108,26 @@ export function extract_distribution(notes: Note[]): string | undefined {
 }
 
 export function extract_subject(notes: Note[]): string | undefined {
-	const validSubjects = [
-		'agent',
-		'individual',
-		'event',
-		'predicate',
-		'shape',
-		'free',
-	];
 	for (let i = notes.length - 1; i >= 0; i--) {
 		const note = notes[i];
 		const match = note.content.toLowerCase().match(/subject\s*:\s*(.*)/);
 		if (match) {
 			const value = match[1].trim();
-			if (validSubjects.includes(value)) {
+			if (SUBJECTS.includes(value)) {
 				return value;
 			}
 		}
 	}
+	return undefined;
+}
+
+// stub
+export function extract_gloss(notes: Note[]): string | undefined {
+	return undefined;
+}
+
+// stub
+export function extract_type(notes: Note[]): string | undefined {
 	return undefined;
 }
 
@@ -136,19 +141,27 @@ export function cacheify(e: Entry): CachedEntry {
 	const deburredHead = deburr(e.head);
 	const deburredBody = deburr(e.body);
 	const deburredNotes = e.notes.flatMap(({ content }) => deburr(content));
+	const deburredGloss = e.gloss ? deburr(e.gloss) : [];
 	return {
 		$: e,
 		id: e.id,
 		head: deburredHead,
+		gloss: e.gloss ?? extract_gloss(e.notes),
 		body: deburredBody,
 		notes: deburredNotes,
 		date: +new Date(e.date),
 		score: e.score,
+		type: e.type ?? extract_type(e.notes),
 		pronominal_class: e.pronominal_class ?? extract_pronominal_class(e.notes),
 		frame: e.frame ?? extract_frame(e.notes),
 		distribution: e.distribution ?? extract_distribution(e.notes),
 		subject: e.subject ?? extract_subject(e.notes),
-		content: [].concat(deburredHead, deburredBody, deburredNotes),
+		content: [].concat(
+			deburredHead,
+			deburredGloss,
+			deburredBody,
+			deburredNotes,
+		),
 	};
 }
 
@@ -163,6 +176,10 @@ export function present(
 	rest.frame ??= e.frame;
 	rest.distribution ??= e.distribution;
 	rest.subject ??= e.subject;
+
+	rest.gloss ??= e.gloss;
+	rest.type ??= e.type;
+
 	const vote = uname ? votes[uname] || 0 : undefined;
 	return { ...rest, relevance, content: e.content, vote };
 }
@@ -337,6 +354,14 @@ export class Search {
 					entry =>
 						uname ? (entry.$.votes[uname] || 0) === vote : false,
 			},
+			complete: {
+				type: OperationType.Other,
+				check: args => args.length === 1 && typeof args[0] === 'boolean',
+				build:
+					([b]) =>
+					entry =>
+						b === isAnnotated(entry.$),
+			},
 			before: {
 				type: OperationType.Other,
 				check: one_string,
@@ -363,8 +388,17 @@ export class Search {
 		// Spaces are stripped for comparison, so e.g. frame:c1i matches stored "c 1i".
 		const metaFieldAliases: [
 			string,
-			'pronominal_class' | 'frame' | 'distribution' | 'subject',
+			(
+				| 'gloss'
+				| 'type'
+				| 'pronominal_class'
+				| 'frame'
+				| 'distribution'
+				| 'subject'
+			),
 		][] = [
+			['gloss', 'gloss'],
+			['type', 'type'],
 			['pronominal_class', 'pronominal_class'],
 			['pronoun', 'pronominal_class'],
 			['animacy', 'pronominal_class'],

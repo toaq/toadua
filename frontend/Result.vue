@@ -21,16 +21,20 @@ defineProps<{
 				>
 			</h2>
 			<div class="info">
-				<input
-					v-if="editing"
-					type="text"
-					size="5"
-					v-model="new_scope"
-					class="scope editing"
-					autocomplete="language"
-					list="common-languages"
-					@keypress.enter.exact.prevent="submit_edit"
-				/>
+				<template v-if="editing">
+					<input
+						v-if="username === result.user"
+						type="text"
+						size="5"
+						v-model="new_scope"
+						class="scope editing"
+						autocomplete="language"
+						list="common-languages"
+						@keypress.enter.exact.prevent="submit_edit"
+					/>
+					<span v-else class="scope">{{ result.scope }}</span>
+				</template>
+
 				<a
 					v-if="!editing && !limit_search"
 					:href="'#scope:' + result.scope"
@@ -41,15 +45,13 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Pronominal class"
+						v-if="!is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
 						{{
-							result.pronominal_class === 'particle' ||
-							result.pronominal_class === 'phrase'
-								? result.pronominal_class
-								: result.pronominal_class
+							result.pronominal_class
 								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
 								: '—'
 						}}
@@ -66,14 +68,13 @@ defineProps<{
 						<option value="maq">máq</option>
 						<option value="hoq">hóq</option>
 						<option value="ta">tá</option>
-						<option value="particle">particle</option>
-						<option value="phrase">phrase</option>
+						<option value="">—</option>
 					</select>
 				</div>
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_metadata && !is_non_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
@@ -82,7 +83,7 @@ defineProps<{
 					</button>
 					<select
 						title="Frame"
-						v-if="any_metadata && !is_non_verb"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.frame"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -112,7 +113,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Distribution"
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.distribution ? 1 : 0.5 }"
@@ -120,7 +121,7 @@ defineProps<{
 						({{ result.distribution ?? '—' }})
 					</button>
 					<select
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						v-model="result.distribution"
 						:disabled="!username"
 						@change="submit_annotation"
@@ -144,7 +145,7 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Subject type"
-						v-if="result.frame"
+						v-if="any_fixed_metadata && !is_non_verb && has_slots"
 						:disabled="!username"
 						@click.prevent="username && show_picker($event)"
 						:style="{ opacity: result.subject ? 1 : 0.5 }"
@@ -180,20 +181,55 @@ defineProps<{
 				</div>
 			</div>
 		</div>
-		<textarea
+		<div
 			v-if="editing"
-			v-focus
-			class="body editing"
-			rows="1"
-			placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
-			@input="set_new_body"
-			:value.sync="new_body"
-			@keypress.enter.exact.prevent="submit_edit"
-			autocomplete="off"
-			autocorrect="on"
-			autocapitalize="on"
-			spellcheck="true"
-		></textarea>
+			style="
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				width: 100%;
+				margin-top: 0.5rem;
+			"
+		>
+			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
+				<input
+					type="text"
+					placeholder="type"
+					v-model="new_type"
+					class="type editing"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
+				<input
+					type="text"
+					placeholder="gloss"
+					v-model="new_gloss"
+					class="gloss editing"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
+			</div>
+
+			<textarea
+				v-if="username === result.user"
+				v-focus
+				class="body editing"
+				rows="1"
+				placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
+				@input="set_new_body"
+				:value.sync="new_body"
+				@keypress.enter.exact.prevent="submit_edit"
+				autocomplete="off"
+				autocorrect="on"
+				autocapitalize="on"
+				spellcheck="true"
+				style="width: 100%; margin: 0"
+			></textarea>
+			<p
+				v-else
+				class="body"
+				v-html="shared.replacements(new_body, false, false, theme)"
+				style="margin: 0"
+			></p>
+		</div>
 		<p v-else class="body" v-html="fancy_body"></p>
 
 		<div class="meta-row">
@@ -288,7 +324,7 @@ defineProps<{
 							<font-awesome-icon icon="code-branch" />
 						</button>
 					</div>
-					<div v-if="!editing && username == result.user">
+					<div v-if="!editing && username">
 						<button
 							type="button"
 							aria-label="Edit"
@@ -360,6 +396,8 @@ import * as shared from './shared/index';
 
 export default defineComponent({
 	methods: {
+		shared: () => shared,
+
 		score_color(score: number): string {
 			return shared.score_color(score, this.theme).css;
 		},
@@ -415,6 +453,12 @@ export default defineComponent({
 			this.editing = true;
 			this.new_body = this.result.body;
 			this.new_scope = this.result.scope;
+			this.new_gloss = this.result.gloss;
+			this.new_type = this.result.type;
+			this.new_pronominal_class = this.result.pronominal_class;
+			this.new_frame = this.result.frame;
+			this.new_distribution = this.result.distribution;
+			this.new_subject = this.result.subject;
 		},
 
 		set_new_body(event: Event): void {
@@ -428,39 +472,60 @@ export default defineComponent({
 		},
 
 		submit_edit(): void {
-			this.$emit('edit', this.new_body, this.new_scope);
+			if (this.username === this.result.user) {
+				this.$emit('edit', this.new_body, this.new_scope);
+			}
+			if (this.new_type === 'predicate' || !this.new_type) {
+				this.$emit(
+					'annotate',
+					this.new_gloss,
+					this.new_type,
+					this.new_pronominal_class,
+					this.new_frame,
+					this.new_distribution,
+					this.new_subject,
+				);
+			} else {
+				this.$emit('annotate', this.new_gloss, this.new_type, '', '', '', '');
+			}
 			this.editing = false;
 		},
 
 		guess_other_metadata(): void {
-			if (this.is_non_verb) {
+			if (this.is_non_verb || !this.result.pronominal_class) {
 				this.result.frame = undefined;
 				this.result.distribution = undefined;
 				this.result.subject = undefined;
+				this.result.pronominal_class = undefined;
 				return;
 			}
+			this.result.type = this.result.type ? this.result.type : 'predicate';
 			const definition =
 				this.result.body
 					.toLowerCase()
 					.split(';')
 					.find(x => x.includes('▯')) ?? '';
-			this.result.frame ??= [
-				...definition
-					.replace(/\d/g, '')
-					.replace(/▯ (\S+ ){0,2}the case/g, '0')
-					.replace(/satisf\w+ (property )?▯/g, '1')
-					.replace(/property ▯/g, '1')
-					.replace(/relation ▯/g, '2')
-					.replace(/[^012▯]/g, '')
-					.replace(/▯/g, 'c'),
-			]
-				.join(' ')
-				.replace(/1/g, '1i')
-				.replace(/2/g, '2ij');
-			this.result.distribution ??= this.result.frame
-				.replace(/[c012]/g, 'd')
-				.replace(/[ijk]/g, '');
-			this.result.subject ??= !this.result.frame.startsWith('c')
+			this.result.frame = this.result.frame
+				? this.result.frame
+				: [
+						...definition
+							.replace(/\d/g, '')
+							.replace(/▯ (\S+ ){0,2}the case/g, '0')
+							.replace(/satisf\w+ (property )?▯/g, '1')
+							.replace(/property ▯/g, '1')
+							.replace(/relation ▯/g, '2')
+							.replace(/[^012▯]/g, '')
+							.replace(/▯/g, 'c'),
+				  ]
+						.join(' ')
+						.replace(/1/g, '1i')
+						.replace(/2/g, '2ij');
+			this.result.distribution = this.result.distribution
+				? this.result.distribution
+				: this.result.frame.replace(/[c012]/g, 'd').replace(/[ijk]/g, '');
+			this.result.subject = this.result.subject
+				? this.result.subject
+				: !this.result.frame.startsWith('c')
 				? 'predicate'
 				: this.result.pronominal_class === 'ta'
 				? 'free'
@@ -470,6 +535,8 @@ export default defineComponent({
 		submit_annotation(): void {
 			this.$emit(
 				'annotate',
+				this.result.gloss,
+				this.result.type,
 				this.result.pronominal_class,
 				this.result.frame,
 				this.result.distribution,
@@ -502,11 +569,21 @@ export default defineComponent({
 			editing: false,
 			new_body: '',
 			new_scope: '',
+			new_type: '',
+			new_gloss: '',
 		};
 	},
 	computed: {
 		fancy_body(): string {
-			return shared.replacements(this.result.body, false, false, this.theme);
+			let body = shared.replacements(
+				this.result.body,
+				false,
+				false,
+				this.theme,
+			);
+			let type_and_gloss = this.result.type ? `${this.result.type}: ` : '';
+			type_and_gloss += this.result.gloss ? `‘${this.result.gloss}’; ` : '';
+			return type_and_gloss + body;
 		},
 		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
 			const result = this.result as Entry;
@@ -516,7 +593,7 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		any_metadata(): boolean {
+		any_fixed_metadata(): boolean {
 			return !!(
 				this.result.pronominal_class ||
 				this.result.frame ||
@@ -531,10 +608,10 @@ export default defineComponent({
 			return this.result.frame?.endsWith('c');
 		},
 		is_non_verb(): boolean {
-			return (
-				this.result.pronominal_class === 'particle' ||
-				this.result.pronominal_class === 'phrase'
-			);
+			return this.result.type && this.result.type !== 'predicate';
+		},
+		has_slots(): boolean {
+			return this.result.body?.includes('▯');
 		},
 		tangible(): boolean {
 			return (
