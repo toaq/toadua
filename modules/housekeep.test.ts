@@ -179,6 +179,14 @@ describe('HousekeepModule', () => {
 					scope: 'en',
 					date: '2024-01-02T00:00:00.000Z',
 				}),
+				makeEntry({
+					head: 'bao',
+					gloss: 'white',
+					body: '___ is white',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
 			];
 			housekeep.up(store, makeConfig());
 			expect(store.db.entries).toEqual([
@@ -192,6 +200,15 @@ describe('HousekeepModule', () => {
 				}),
 				makeEntry({
 					head: 'bao',
+					body: '▯ is white',
+					type: 'predicate',
+					user: 'alice',
+					scope: 'en',
+					date: '2024-01-02T00:00:00.000Z',
+				}),
+				makeEntry({
+					head: 'bao',
+					gloss: 'white',
 					body: '▯ is white',
 					type: 'predicate',
 					user: 'alice',
