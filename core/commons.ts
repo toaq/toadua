@@ -57,6 +57,17 @@ export function isAnnotated(e: CommonEntry): boolean {
 	);
 }
 
+// this may be useful in the front-end for `guess_other_metadata` or such
+export function tryAssessType(e: CommonEntry): string | undefined {
+	let guess: string[] = [];
+
+	if (e.head[0] === '-') guess.push('pseudo-suffix');
+	if (e.head[e.head.length - 1] === '-') guess.push('prefix');
+	if (e.body.includes('▯')) guess.push('predicate');
+
+	return guess.length === 1 ? guess[0] : undefined;
+}
+
 export function deburrMatch(
 	what: string[],
 	where: string[],

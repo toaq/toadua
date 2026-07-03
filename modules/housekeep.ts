@@ -2,7 +2,7 @@
 // tamper with the database store
 
 import type * as commons from '../core/commons.js';
-import type { Token } from '../core/commons.js';
+import { tryAssessType, type Token } from '../core/commons.js';
 import { Search } from '../core/search.js';
 import * as shared from '../frontend/shared/index.js';
 
@@ -85,20 +85,28 @@ export class HousekeepModule {
 			if (entry.type === undefined) {
 				const type_match = type_pattern.exec(rest);
 				if (type_match) {
-					entry.type = type_match[1];
+					entry.type = type_match[1][0].toLowerCase() + type_match[1].slice(1);
 					rest = rest.slice(type_match[0].length);
 					extracted_type++;
+				} else {
+					entry.type = tryAssessType(entry);
+					if (entry.type) extracted_type++;
 				}
 			}
 
 			if (entry.pronominal_class === 'phrase') {
-				entry.type = entry.type ?? 'phrase';
 				entry.pronominal_class = undefined;
-				extracted_type++;
+				if (!entry.type) {
+					entry.type = 'phrase';
+					extracted_type++;
+				}
 			}
 
 			if (entry.pronominal_class === 'particle') {
 				entry.pronominal_class = undefined;
+				entry.frame = undefined;
+				entry.distribution = undefined;
+				entry.subject = undefined;
 			}
 
 			if (entry.gloss === undefined && entry.type !== 'phrase') {
@@ -127,7 +135,7 @@ export class HousekeepModule {
 	private remove_duplicates(store: commons.Store) {
 		const newest_version = new Map<string, commons.Entry>();
 		for (const e of store.db.entries) {
-			const key = `${e.user}\0${e.head}\0${e.body}\0${e.scope}`;
+			const key = `${e.user}\0${e.head}\0${e.gloss}\0${e.body}\0${e.type}\0${e.pronominal_class}\0${e.frame}\0${e.distribution}\0${e.subject}\0${e.scope}`;
 			const other = newest_version.get(key);
 			if (other && other.date >= e.date) {
 				e.scope = '';
