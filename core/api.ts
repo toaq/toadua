@@ -67,7 +67,7 @@ export const SUBJECTS = [
 	'agent',
 	'individual',
 	'event',
-	'predicate',
+	'proposition',
 	'shape',
 	'free',
 ];

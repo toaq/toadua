@@ -175,7 +175,7 @@ defineProps<{
 						<option :disabled="tangible" value="event">sE</option>
 						<option value="" disabled>Subject is an event</option>
 						<hr />
-						<option :disabled="tangible" value="predicate">sP</option>
+						<option :disabled="tangible" value="proposition">sP</option>
 						<option value="" disabled>Subject is a proposition</option>
 						<hr />
 						<option :disabled="tangible" value="shape">sS</option>
@@ -534,7 +534,7 @@ export default defineComponent({
 			this.result.subject = this.result.subject
 				? this.result.subject
 				: !this.result.frame.startsWith('c')
-				? 'predicate'
+				? 'proposition'
 				: this.result.pronominal_class === 'ta'
 				? 'free'
 				: 'individual';
