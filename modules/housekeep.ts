@@ -51,6 +51,11 @@ export class HousekeepModule {
 				}
 			}
 
+			if (entry.subject === 'predicate') {
+				entry.subject = 'proposition';
+				didReform = true;
+			}
+
 			const placeholderRegex = /___|◌(?!\p{Diacritic})/gu;
 			const normalizedBody = entry.body.replace(placeholderRegex, '▯');
 			if (normalizedBody !== entry.body) {

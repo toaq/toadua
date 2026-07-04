@@ -154,7 +154,7 @@ export interface CommonEntry {
 	frame: string | undefined;
 	/// The distribution of the entry, e.g. `"d"`, `"n"`, `"d d"`.
 	distribution: string | undefined;
-	/// The subject of the entry: `"agent"`, `"individual"`, `"event"`, `"predicate"`, `"shape"`, or `"free"`.
+	/// The subject of the entry: `"agent"`, `"individual"`, `"event"`, `"proposition"`, `"shape"`, or `"free"`.
 	subject: string | undefined;
 }
 
