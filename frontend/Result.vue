@@ -598,7 +598,10 @@ export default defineComponent({
 				false,
 				this.theme,
 			);
-			let type_and_gloss = this.result.type ? `${this.result.type}: ` : '';
+			let type_and_gloss =
+				this.result.type && this.result.type !== 'phrase'
+					? `${this.result.type}: `
+					: '';
 			type_and_gloss += this.result.gloss ? `‘${this.result.gloss}’; ` : '';
 			return type_and_gloss + body;
 		},
