@@ -87,7 +87,7 @@ export class HousekeepModule {
 		for (const entry of store.db.entries) {
 			let rest = entry.body;
 
-			if (entry.type === undefined) {
+			if (!entry.type) {
 				const type_match = type_pattern.exec(rest);
 				if (type_match) {
 					entry.type = type_match[1][0].toLowerCase() + type_match[1].slice(1);
@@ -114,7 +114,7 @@ export class HousekeepModule {
 				entry.subject = undefined;
 			}
 
-			if (entry.gloss === undefined && entry.type !== 'phrase') {
+			if (!entry.gloss && entry.type !== 'phrase') {
 				const gloss_match = gloss_pattern.exec(rest);
 				if (gloss_match) {
 					entry.gloss = gloss_match[1];
