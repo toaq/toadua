@@ -288,7 +288,7 @@ export class Api {
 		// check that each of the disjoint-union metadata fields has a valid value
 		for (var field of FIXED_ANNOTATION_FIELDS) {
 			if (
-				i[field] &&
+				i[field] != null &&
 				!FIXED_ANNOTATION_FIELD_OPTIONS[field].includes(i[field])
 			) {
 				return flip(`invalid field '${field}': ${i[field]}`);
