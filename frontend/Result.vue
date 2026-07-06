@@ -517,7 +517,15 @@ export default defineComponent({
 					this.new_subject,
 				);
 			} else {
-				this.$emit('annotate', this.new_gloss, this.new_type, '', '', '', '');
+				this.$emit(
+					'annotate',
+					this.new_gloss,
+					this.new_type,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				);
 			}
 			this.editing = false;
 		},
