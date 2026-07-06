@@ -223,13 +223,19 @@ defineProps<{
 				rows="1"
 				placeholder="Enter a definition using slots (example: _&hairsp;_&hairsp;_ likes _&hairsp;_&hairsp;_)"
 				@input="set_new_body"
-				:value.sync="new_body"
+				:value="new_body"
 				@keypress.enter.exact.prevent="submit_edit"
 				autocomplete="off"
 				autocorrect="on"
 				autocapitalize="on"
 				spellcheck="true"
-				style="width: 100%; margin: 0"
+				style="
+					width: 100%;
+					margin: 0;
+					resize: none;
+					white-space: pre-wrap;
+					word-break: break-word;
+				"
 			></textarea>
 			<p
 				v-else
@@ -467,6 +473,18 @@ export default defineComponent({
 			this.new_frame = this.result.frame;
 			this.new_distribution = this.result.distribution;
 			this.new_subject = this.result.subject;
+
+			// Without this, the editing area may not expand correctly
+			this.$nextTick(() => {
+				const target = this.$el.querySelector(
+					'.body.editing',
+				) as HTMLTextAreaElement;
+				if (target) {
+					target.style.height = '1px';
+					target.style.height = target.scrollHeight + 'px';
+					target.style.overflowY = 'hidden';
+				}
+			});
 		},
 
 		set_new_body(event: Event): void {
@@ -477,6 +495,11 @@ export default defineComponent({
 				true,
 				this.theme,
 			);
+
+			// Auto-extend height vertically on wrap
+			target.style.height = '1px';
+			target.style.height = target.scrollHeight + 'px';
+			target.style.overflowY = 'hidden';
 		},
 
 		submit_edit(): void {
