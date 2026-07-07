@@ -13,7 +13,11 @@ import {
 	type Store,
 	isAnnotated,
 } from './commons.js';
-import { PRONOMINAL_CLASSES, SUBJECTS } from './api.js';
+import {
+	FIXED_ANNOTATION_FIELDS,
+	PRONOMINAL_CLASSES,
+	SUBJECTS,
+} from './api.js';
 
 // keep an own cache for entries
 interface CachedEntry {
@@ -353,6 +357,16 @@ export class Search {
 					([vote], uname) =>
 					entry =>
 						uname ? (entry.$.votes[uname] || 0) === vote : false,
+			},
+			has: {
+				type: OperationType.Other,
+				check: args => args.length === 1 && typeof args[0] === 'string',
+				build:
+					([field]) =>
+					entry => {
+						const f = metaFieldAliases.find(r => r[0] === field)?.[1];
+						return f ? !!entry.$[f] : false;
+					},
 			},
 			complete: {
 				type: OperationType.Other,
