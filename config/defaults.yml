@@ -12,7 +12,7 @@ production: true
 entry_point: 'http://localhost:29138/'
 port: 29138
 request_body_size_limit: 16384 # 1 << 14
-token_expiry: 604_800_000 # ms = 7 days
+token_expiry: 604800000 # ms = 7 days
 exit_on_module_load_error: true
 # passed to bcrypt.hash. changing this value will not break existing
 # passwords
@@ -26,12 +26,12 @@ modules: {}
 ### reading from and saving to a disk file
 # modules/disk.js:
 #   enabled: true
-#   save_interval: 300_000
+#   save_interval: 300000
 ##### please note that a new backup *filename* is given only every
 ##### hour; therefore, choosing a shorter interval is nothing but
-##### prophylactic. 3600_000 (every hour) is good; 86400_000 (every
+##### prophylactic. 3600000 (every hour) is good; 86400000 (every
 ##### full day) is, for all intents and purposes, good too
-#   backup_interval: 1800_000
+#   backup_interval: 1800000
 ### removing sufficiently downvoted entries
 # modules/cleanup.js:
 #   enabled: true
@@ -47,4 +47,4 @@ modules: {}
 ### refreshing a few variables after loading the database
 # modules/update.js:
 #   enabled: true
-#   update_interval: 300_000
+#   update_interval: 300000

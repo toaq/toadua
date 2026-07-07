@@ -5,7 +5,7 @@
 	"main": "./frontend.ts",
 	"type": "module",
 	"engines": {
-		"node": ">=16.0.0"
+		"node": ">=21.0.0"
 	},
 	"browserslist": [
 		"last 2 versions, not dead, > 0.2%"
