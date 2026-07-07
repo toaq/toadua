@@ -50,7 +50,7 @@ export enum MatchMode {
 
 export function isAnnotated(e: CommonEntry): boolean {
 	return (
-		(e.gloss || e.type === 'phrase') &&
+		(e.type === 'phrase' || e.scope === 'toa' || e.gloss) &&
 		(e.type === 'predicate' && e.body.includes('▯')
 			? FIXED_ANNOTATION_FIELDS.every(field => e[field])
 			: !!e.type)
@@ -140,6 +140,8 @@ export interface Note {
 }
 
 export interface CommonEntry {
+	/// The scope (`en`, `toa`...) the entry is in.
+	scope: string;
 	/// The Toaq word this entry is for.
 	head: string;
 	/// The gloss of the word.
@@ -165,8 +167,6 @@ export interface Entry extends CommonEntry {
 	date: string;
 	/// The name of the user that added the entry.
 	user: string;
-	/// The scope (`en`, `toa`...) the entry is in.
-	scope: string;
 	/// Notes left on this entry.
 	notes: Note[];
 	/// Map from usernames to individual votes.
