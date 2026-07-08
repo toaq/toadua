@@ -13,11 +13,7 @@ import {
 	type Store,
 	isAnnotated,
 } from './commons.js';
-import {
-	FIXED_ANNOTATION_FIELDS,
-	PRONOMINAL_CLASSES,
-	SUBJECTS,
-} from './api.js';
+import { PRONOMINAL_CLASSES, SUBJECTS } from './api.js';
 
 // keep an own cache for entries
 interface CachedEntry {
@@ -420,7 +416,10 @@ export class Search {
 			['class', 'pronominal_class'],
 			['frame', 'frame'],
 			['distribution', 'distribution'],
+			['dist', 'distribution'],
 			['subject', 'subject'],
+			['subj', 'subject'],
+			['sub', 'subject'],
 		];
 		const deburr_meta = (s: string) =>
 			s
