@@ -506,6 +506,8 @@ export default defineComponent({
 			if (this.username === this.result.user) {
 				this.$emit('edit', this.new_body, this.new_scope);
 			}
+			this.new_gloss = this.new_gloss?.trim();
+			this.new_type = this.new_type?.trim();
 			if (this.new_type === 'predicate' || !this.new_type) {
 				this.$emit(
 					'annotate',
