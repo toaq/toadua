@@ -50,7 +50,7 @@ export enum MatchMode {
 
 export function isAnnotated(e: CommonEntry): boolean {
 	return (
-		(e.type === 'phrase' || e.scope === 'toa' || e.gloss) &&
+		(e.type === 'phrase' || e.scope === 'toa' || !!e.gloss) &&
 		(e.type === 'predicate' && e.body.includes('▯')
 			? FIXED_ANNOTATION_FIELDS.every(field => e[field])
 			: !!e.type)
