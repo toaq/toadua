@@ -354,6 +354,16 @@ export class Search {
 					entry =>
 						uname ? (entry.$.votes[uname] || 0) === vote : false,
 			},
+			has: {
+				type: OperationType.Other,
+				check: args => args.length === 1 && typeof args[0] === 'string',
+				build:
+					([field]) =>
+					entry => {
+						const f = metaFieldAliases.find(r => r[0] === field)?.[1];
+						return f ? !!entry.$[f] : false;
+					},
+			},
 			complete: {
 				type: OperationType.Other,
 				check: args => args.length === 1 && typeof args[0] === 'boolean',
@@ -406,7 +416,10 @@ export class Search {
 			['class', 'pronominal_class'],
 			['frame', 'frame'],
 			['distribution', 'distribution'],
+			['dist', 'distribution'],
 			['subject', 'subject'],
+			['subj', 'subject'],
+			['sub', 'subject'],
 		];
 		const deburr_meta = (s: string) =>
 			s
