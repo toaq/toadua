@@ -298,12 +298,12 @@ export class Api {
 		const word = this.by_id(i.id);
 		if (!word) return flip('no such word');
 
-		word.pronominal_class = i.pronominal_class ?? word.pronominal_class;
-		word.frame = i.frame ?? word.frame;
-		word.distribution = i.distribution ?? word.distribution;
-		word.subject = i.subject ?? word.subject;
-		word.gloss = i.gloss ?? word.gloss;
-		word.type = i.type ?? word.type;
+		if ('pronominal_class' in i) word.pronominal_class = i.pronominal_class;
+		if ('frame' in i) word.frame = i.frame;
+		if ('distribution' in i) word.distribution = i.distribution;
+		if ('subject' in i) word.subject = i.subject;
+		if ('gloss' in i) word.gloss = i.gloss;
+		if ('type' in i) word.type = i.type;
 
 		emitter.emit('annotate', word);
 		return good({ entry: this.present(word, uname) });
