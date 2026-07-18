@@ -289,6 +289,7 @@ export class Api {
 		for (var field of FIXED_ANNOTATION_FIELDS) {
 			if (
 				i[field] != null &&
+				i[field] != '' &&
 				!FIXED_ANNOTATION_FIELD_OPTIONS[field].includes(i[field])
 			) {
 				return flip(`invalid field '${field}': ${i[field]}`);

@@ -67,12 +67,12 @@
 				(gloss, type, pronominal_class, frame, distribution, subject) =>
 					annotate(
 						result,
-						gloss,
-						type,
-						pronominal_class,
-						frame,
-						distribution,
-						subject,
+						gloss ?? '',
+						type ?? '',
+						pronominal_class ?? '',
+						frame ?? '',
+						distribution ?? '',
+						subject ?? '',
 					)
 			"
 			@uncollapse="uncollapseOnly(result)"
