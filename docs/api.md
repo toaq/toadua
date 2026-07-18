@@ -260,7 +260,9 @@ Returns the entry in its new state after editing.
 >
 > - `entry` entry
 
-Edits the entry with the given ID to have the given pronominal class, frame, distribution and subject, if they are given. Absent fields will remove the values.
+Edits the entry with the given ID to have the given pronominal class, frame, distribution and subject, if they are given.
+
+Absent fields will leave values unchanged. Setting a field to the empty string or `null` clears it.
 
 Returns the entry in its new state after editing.
 
