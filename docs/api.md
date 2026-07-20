@@ -251,6 +251,8 @@ Returns the entry in its new state after editing.
 > **Inputs:**
 >
 > - `id` string
+> - `gloss` string
+> - `type` string
 > - `pronominal_class` string?
 > - `frame` string?
 > - `distribution` string?
@@ -260,7 +262,8 @@ Returns the entry in its new state after editing.
 >
 > - `entry` entry
 
-Edits the entry with the given ID to have the given pronominal class, frame, distribution and subject, if they are given. Absent fields will remove the values.
+Edits the entry with the given ID to have the given gloss, type, pronominal_class, frame, distribution and/or subject.
+Absent fields will leave values unchanged. Setting a field to a falsy value clears it (i.e. makes it undefined).
 
 Returns the entry in its new state after editing.
 
