@@ -288,7 +288,7 @@ export class Api {
 		// check that each of the disjoint-union metadata fields has a valid value
 		for (var field of FIXED_ANNOTATION_FIELDS) {
 			if (
-				i[field] != null &&
+				i[field] &&
 				!FIXED_ANNOTATION_FIELD_OPTIONS[field].includes(i[field])
 			) {
 				return flip(`invalid field '${field}': ${i[field]}`);
@@ -298,12 +298,11 @@ export class Api {
 		const word = this.by_id(i.id);
 		if (!word) return flip('no such word');
 
-		word.pronominal_class = i.pronominal_class;
-		word.frame = i.frame;
-		word.distribution = i.distribution;
-		word.subject = i.subject;
-		word.gloss = i.gloss;
-		word.type = i.type;
+		const updated_fields = FIXED_ANNOTATION_FIELDS.concat([
+			'gloss',
+			'type',
+		]).filter(f => f in i);
+		for (const field of updated_fields) word[field] = i[field] || undefined;
 
 		emitter.emit('annotate', word);
 		return good({ entry: this.present(word, uname) });

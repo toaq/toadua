@@ -66,7 +66,7 @@ const FORMATS: Record<string, UpdateFormat> = {
 						}
 						return value;
 					});
-					if (!any_undefined) {
+					if (!any_undefined && value !== '') {
 						filled[k] = value;
 					}
 				}

@@ -515,8 +515,8 @@ export default defineComponent({
 			if (this.username === this.result.user) {
 				this.$emit('edit', this.new_body, this.new_scope);
 			}
-			this.new_gloss = this.new_gloss?.trim();
-			this.new_type = this.new_type?.trim();
+			this.new_gloss = this.new_gloss?.trim() ?? '';
+			this.new_type = this.new_type?.trim() ?? '';
 			if (this.new_type === 'predicate' || !this.new_type) {
 				this.$emit(
 					'annotate',
@@ -532,10 +532,10 @@ export default defineComponent({
 					'annotate',
 					this.new_gloss,
 					this.new_type,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
+					null,
+					null,
+					null,
+					null,
 				);
 			}
 			this.editing = false;
@@ -543,10 +543,10 @@ export default defineComponent({
 
 		guess_other_metadata(): void {
 			if (this.is_non_verb || !this.result.pronominal_class) {
-				this.result.frame = undefined;
-				this.result.distribution = undefined;
-				this.result.subject = undefined;
-				this.result.pronominal_class = undefined;
+				this.result.frame = null;
+				this.result.distribution = null;
+				this.result.subject = null;
+				this.result.pronominal_class = null;
 				return;
 			}
 			this.result.type = this.result.type ? this.result.type : 'predicate';
