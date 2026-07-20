@@ -670,7 +670,11 @@ export default defineComponent({
 			return this.result.frame?.endsWith('c');
 		},
 		is_non_verb(): boolean {
-			return this.result.type && this.result.type !== 'predicate';
+			return (
+				this.result.type &&
+				this.result.type !== 'predicate' &&
+				this.result.type !== 'predicatizer'
+			);
 		},
 		has_slots(): boolean {
 			return this.result.body?.includes('▯');
