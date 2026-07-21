@@ -1,3 +1,11 @@
+loglang_tatoeba:
+  user: examples
+  source: 'https://ntsekees.github.io/loglang-tatoeba/data.yaml'
+  format: yaml
+  patterns:
+    - head: '%(Toaq Delta)'
+      body: '%(English)'
+      type: 'phrase'
 delta_examples:
   user: examples
   source: 'https://docs.google.com/spreadsheets/d/1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac/export?format=tsv&id=1bCQoaX02ZyaElHiiMcKHFemO4eV1MEYmYloYZgOAhac&gid=955667013'

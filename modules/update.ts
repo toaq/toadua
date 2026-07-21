@@ -6,6 +6,7 @@ import { Search } from '../core/search.js';
 import { Api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
+import yaml from 'js-yaml';
 
 export interface SourceConfig {
 	/**
@@ -19,7 +20,7 @@ export interface SourceConfig {
 	/**
 	 * The format of the source file.
 	 */
-	format: 'tsv' | 'json';
+	format: 'tsv' | 'json' | 'yaml';
 	/**
 	 * The number of rows to skip before processing the file.
 	 */
@@ -35,6 +36,32 @@ type UpdateFormat = (
 	data: string,
 	options: Omit<SourceConfig, 'source' | 'user' | 'format'>,
 ) => Record<string, string>[];
+
+function formatObjData(
+	parsed: any,
+	options: Omit<SourceConfig, 'source' | 'user' | 'format'>,
+): any {
+	return parsed.flatMap(e =>
+		options.patterns.map(p => {
+			const filled = {};
+			for (const [k, v] of Object.entries(p)) {
+				let any_undefined = false;
+				const value = (v as string).replace(/%\((.*?)\)/g, (_, id) => {
+					const value = e[id];
+					if (value === undefined) {
+						any_undefined = true;
+						return '';
+					}
+					return value;
+				});
+				if (!any_undefined && value !== '') {
+					filled[k] = value;
+				}
+			}
+			return filled;
+		}),
+	);
+}
 
 const FORMATS: Record<string, UpdateFormat> = {
 	tsv: (data, options) =>
@@ -52,27 +79,8 @@ const FORMATS: Record<string, UpdateFormat> = {
 					),
 				),
 			),
-	json: (data, options) =>
-		JSON.parse(data).flatMap(e =>
-			options.patterns.map(p => {
-				const filled = {};
-				for (const [k, v] of Object.entries(p)) {
-					let any_undefined = false;
-					const value = (v as string).replace(/%\((.*?)\)/g, (_, id) => {
-						const value = e[id];
-						if (value === undefined) {
-							any_undefined = true;
-							return '';
-						}
-						return value;
-					});
-					if (!any_undefined && value !== '') {
-						filled[k] = value;
-					}
-				}
-				return filled;
-			}),
-		),
+	json: (data, options) => formatObjData(JSON.parse(data), options),
+	yaml: (data, options) => formatObjData(yaml.load(data), options),
 };
 
 type WordList = Map<
