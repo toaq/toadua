@@ -605,7 +605,7 @@ export default defineComponent({
 				  })();
 			this.result.distribution = this.result.distribution
 				? this.result.distribution
-				: this.result.frame.replace(/[c012]/g, 'd').replace(/[ijk]/g, '');
+				: this.result.frame.replace(/[c012]/g, 'd').replace(/[ijkx]/g, '');
 			this.result.subject = this.result.subject
 				? this.result.subject
 				: !this.result.frame.startsWith('c')
