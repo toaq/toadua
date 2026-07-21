@@ -430,7 +430,10 @@ export default defineComponent({
 			this.update_entry(whom, { body, scope });
 			this.apisend({ action: 'edit', id: whom.id, body, scope }, data => {
 				// ...but let the API response have the final word:
-				this.update_entry(whom, data.entry);
+				this.update_entry(whom, {
+					body: data.entry.body,
+					scope: data.entry.scope,
+				});
 			});
 		},
 

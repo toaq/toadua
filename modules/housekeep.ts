@@ -1,6 +1,7 @@
 // modules/housekeep.js
 // tamper with the database store
 
+import { FIXED_ANNOTATION_FIELDS } from '../core/api.js';
 import type * as commons from '../core/commons.js';
 import { tryAssessType, type Token } from '../core/commons.js';
 import { Search } from '../core/search.js';
@@ -54,6 +55,13 @@ export class HousekeepModule {
 			if (entry.subject === 'predicate') {
 				entry.subject = 'proposition';
 				didReform = true;
+			}
+
+			// All valid annotation values are truthy
+			if (!entry.gloss) entry.gloss = undefined;
+			if (!entry.type) entry.type = undefined;
+			for (const field of FIXED_ANNOTATION_FIELDS) {
+				if (!entry[field]) entry[field] = undefined;
 			}
 
 			const placeholderRegex = /___|◌(?!\p{Diacritic})/gu;
