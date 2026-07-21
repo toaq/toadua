@@ -42,8 +42,9 @@ function formatObjData(
 	options: Omit<SourceConfig, 'source' | 'user' | 'format'>,
 ): any {
 	return parsed.flatMap(e =>
-		options.patterns.map(p => {
-			const filled = {};
+		options.patterns.flatMap(p => {
+			const fieldVariants: Record<string, string[]> = {};
+
 			for (const [k, v] of Object.entries(p)) {
 				let any_undefined = false;
 				const value = (v as string).replace(/%\((.*?)\)/g, (_, id) => {
@@ -54,11 +55,33 @@ function formatObjData(
 					}
 					return value;
 				});
+
 				if (!any_undefined && value !== '') {
-					filled[k] = value;
+					// split on Unix (\n) or Windows (\r\n) newlines
+					fieldVariants[k] = value.split(/\r?\n/);
 				}
 			}
-			return filled;
+
+			// make the Cartesian product for all newline-separated values (with each pattern)
+			const keys = Object.keys(fieldVariants);
+			if (keys.length === 0) return [];
+
+			let combinations: Record<string, string>[] = [{}];
+
+			for (const key of keys) {
+				const nextCombinations: Record<string, string>[] = [];
+				for (const combination of combinations) {
+					for (const variant of fieldVariants[key]) {
+						nextCombinations.push({
+							...combination,
+							[key]: variant,
+						});
+					}
+				}
+				combinations = nextCombinations;
+			}
+
+			return combinations;
 		}),
 	);
 }
