@@ -557,19 +557,52 @@ export default defineComponent({
 					.find(x => x.includes('▯')) ?? '';
 			this.result.frame = this.result.frame
 				? this.result.frame
-				: [
-						...definition
-							.replace(/\d/g, '')
-							.replace(/▯ (\S+ ){0,2}the case/g, '0')
-							.replace(/satisf\w+ (property )?▯/g, '1')
-							.replace(/property ▯/g, '1')
-							.replace(/relation ▯/g, '2')
-							.replace(/[^012▯]/g, '')
-							.replace(/▯/g, 'c'),
-				  ]
-						.join(' ')
-						.replace(/1/g, '1i')
-						.replace(/2/g, '2ij');
+				: (() => {
+						// how many slots are there?
+						const n = (definition.match(/▯/g) || []).length;
+						if (n === 0) return '';
+						// only the last slot can be non-(c). get it + surrounding text
+						const frame = Array(n).fill('c');
+						const last_pos = definition.lastIndexOf('▯');
+						const before = definition.slice(0, last_pos);
+						const after = definition.slice(last_pos + 1);
+						const after_trimmed = after.trimStart();
+						const lower = definition.toLowerCase();
+						let last = 'c';
+						// check for propositions
+						if (
+							/^(\S+\s+){0,2}the case\b/.test(after_trimmed) ||
+							/^(is true|is false)\b/.test(after_trimmed) ||
+							/\b(that|whether|if)\s*$/.test(before)
+						) {
+							last = '0';
+						}
+						// check for properties.
+						// this currently (2026-07-20) misfires on 9 words that actually have (c 2) or (c c 2)
+						// frames but mark them as 'property' instead of 'relation', e.g. ⟨leaq⟩, ⟨taq⟩
+						else if (/\b(property|satisf\w+|to do|doing)\s*$/.test(before)) {
+							if (n > 2) {
+								// we know j is available here.
+								// if these words are in the definition they suggest a frame like ⟨aıja⟩'s (c c 1j)
+								const manip = [/gets/, /making (it|them)/, /into/, /to do/];
+								last = manip.some(v => v.test(lower)) ? '1j' : '1x';
+							} else if (n === 2) {
+								// j *is* the property slot so it can't participate in said property
+								last = '1i';
+							} else {
+								// there aren't any of these in toadua, but maybe one day there will be
+								last = '1x';
+							}
+						}
+						// check for relations
+						else if (/\brelation\w*\s*$/.test(before)) {
+							// again only use what letters we can
+							last = n > 2 ? '2ij' : n === 2 ? '2ix' : '2xx';
+						}
+						// if none of those match, the last slot stays (c)
+						frame[n - 1] = last;
+						return frame.join(' ');
+				  })();
 			this.result.distribution = this.result.distribution
 				? this.result.distribution
 				: this.result.frame.replace(/[c012]/g, 'd').replace(/[ijk]/g, '');
