@@ -429,6 +429,7 @@ export class Search {
 				.replace(/i/g, 'ı')
 				.replace(/\s+/g, '');
 		for (const [alias, field] of metaFieldAliases) {
+			// add the "strict" version
 			this.operations[alias] = {
 				type: OperationType.Other,
 				check: one_string,
@@ -438,6 +439,19 @@ export class Search {
 					return entry => {
 						const val = entry[field];
 						return val !== undefined && deburr_meta(val) === normalized;
+					};
+				},
+			};
+			// add the "fuzzy" version as well
+			this.operations[`~${alias}`] = {
+				type: OperationType.Other,
+				check: one_string,
+				build: ([s]) => {
+					if (s === 'none') return entry => entry[field] === undefined;
+					const normalized = deburr_meta(s);
+					return entry => {
+						const val = entry[field];
+						return val !== undefined && deburr_meta(val).includes(normalized);
 					};
 				},
 			};
