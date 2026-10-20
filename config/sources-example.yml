@@ -8,7 +8,8 @@
 example_source:
   # under what username to publish the words
   user: foobar
-  # a URL to a downloadable TSV or JSON file
+  # a URL to a downloadable TSV or JSON file, or a path to a local file
+  # (relative to the Toadua root)
   source: 'https://example.com/my_dict.tsv'
   format: tsv   # or 'json'
   # for TSV files: how many rows to skip before processing
@@ -25,3 +26,21 @@ example_source:
       body: '%(1) %(2)!'
     - head: '%(3)'
       body: '%(4) is not %(5)'
+
+# a local dump of a Toadua database (e.g. the `results` array of a search
+# API response), for testing with many entries in several scopes. entries
+# go into the scope given by the `scope` pattern, or 'en' if there is none
+local_dump:
+  user: dump
+  source: 'data/dump.json'
+  format: json
+  patterns:
+    - scope: '%(scope)'
+      head: '%(head)'
+      body: '%(body)'
+      gloss: '%(gloss)'
+      type: '%(type)'
+      frame: '%(frame)'
+      pronominal_class: '%(pronominal_class)'
+      subject: '%(subject)'
+      distribution: '%(distribution)'

@@ -7,10 +7,14 @@ import { Api, replacements } from '../core/api.js';
 import * as announce from './announce.js';
 import * as shared from '../frontend/shared/index.js';
 import yaml from 'js-yaml';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export interface SourceConfig {
 	/**
-	 * The URL of the source file.
+	 * The URL of the source file, or a path to a local file (relative to the
+	 * Toadua root).
 	 */
 	source: string;
 	/**
@@ -106,9 +110,33 @@ const FORMATS: Record<string, UpdateFormat> = {
 	yaml: (data, options) => formatObjData(yaml.load(data), options),
 };
 
+// Fetch a source over HTTP(S), or read it from disk if it's a path or a
+// file:// URL.
+async function read_source(source: string): Promise<string> {
+	if (!/^https?:\/\//.test(source)) {
+		const path = source.startsWith('file://')
+			? fileURLToPath(source)
+			: resolve(commons.getToaduaPath(), source);
+		return await readFile(path, 'utf8');
+	}
+	const response = await fetch(source);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch ${source}: ${response.status} ${response.statusText}`,
+		);
+	}
+	return await response.text();
+}
+
+// Word lists are keyed by scope and head, so that one source can fill
+// several scopes.
+const word_key = (scope: string, head: string) => `${scope}:${head}`;
+
 type WordList = Map<
 	string,
 	{
+		scope: string;
+		head: string;
 		gloss?: string;
 		body: string;
 		type?: string;
@@ -141,21 +169,18 @@ export class UpdateModule {
 		await Promise.all(
 			Object.entries(cf).map(
 				async ([name, { source, user, format, ...rest }]) => {
-					let data: unknown;
 					try {
-						const response = await fetch(source);
-						if (!response.ok) {
-							throw new Error(
-								`Failed to fetch ${source}: ${response.status} ${response.statusText}`,
-							);
-						}
-						data = await response.text();
+						const data = await read_source(source);
 
 						console.log(`updating resource '${name}'`);
 						const word_list: WordList = new Map();
-						for (const entry of FORMATS[format](data as string, rest)) {
+						for (const entry of FORMATS[format](data, rest)) {
 							if (!entry.head || !entry.body) continue;
-							word_list.set(shared.normalize(entry.head), {
+							const scope = entry.scope || 'en';
+							const head = shared.normalize(entry.head);
+							word_list.set(word_key(scope, head), {
+								scope,
+								head,
 								gloss:
 									entry.gloss !== undefined
 										? entry.gloss.normalize('NFC')
@@ -198,13 +223,20 @@ export class UpdateModule {
 		console.log('adding...');
 		for (const [name, word_list] of this.word_lists.entries()) {
 			const user = cf[name].user;
-			for (const [
+			for (const {
+				scope,
 				head,
-				{ gloss, body, type, frame, pronominal_class, subject, distribution },
-			] of word_list.entries()) {
+				gloss,
+				body,
+				type,
+				frame,
+				pronominal_class,
+				subject,
+				distribution,
+			} of word_list.values()) {
 				const exists = this.search.some(
 					entry =>
-						entry.$.scope === 'en' &&
+						entry.$.scope === scope &&
 						entry.$.head === head &&
 						entry.$.gloss === gloss &&
 						entry.$.body === body &&
@@ -218,7 +250,7 @@ export class UpdateModule {
 					const res = await this.api.call(
 						{
 							action: 'create',
-							scope: 'en',
+							scope,
 							head,
 							gloss,
 							body,
@@ -251,8 +283,8 @@ export class UpdateModule {
 				for (const name of Object.keys(cf)) {
 					if (cf[name].user === uname) {
 						const entries = this.word_lists.get(name)?.entries() ?? [];
-						for (const [head, value] of entries) {
-							merged.set(head, value);
+						for (const [key, value] of entries) {
+							merged.set(key, value);
 						}
 					}
 				}
@@ -262,7 +294,7 @@ export class UpdateModule {
 			const to_delete: Set<string> = new Set();
 			for (let e of store.db.entries) {
 				if (!unames.has(e.user)) continue;
-				const found = fetched.get(e.user)?.get(e.head);
+				const found = fetched.get(e.user)?.get(word_key(e.scope, e.head));
 
 				if (
 					found &&

@@ -1,6 +1,9 @@
 import { test, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UpdateModule } from './update.js';
 import type * as commons from '../core/commons.js';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const fetchMock = vi.fn();
 
@@ -229,6 +232,48 @@ describe('UpdateModule', () => {
 					}),
 				);
 			});
+		});
+	});
+
+	describe('sync_resources with a local file', () => {
+		test('should read the file and add words to their scopes', async () => {
+			const dir = mkdtempSync(join(tmpdir(), 'toadua-update-'));
+			const file = join(dir, 'dump.json');
+			writeFileSync(
+				file,
+				JSON.stringify([
+					{ scope: 'en', head: 'Word1', body: 'definition for word1' },
+					{ scope: 'toa', head: 'Word1', body: 'definition in toaq' },
+					{ head: 'Word2', body: 'definition for word2' },
+				]),
+			);
+
+			const sources = {
+				local_test: {
+					source: file,
+					user: 'local_user',
+					format: 'json' as const,
+					skip: 0,
+					patterns: [{ scope: '%(scope)', head: '%(head)', body: '%(body)' }],
+				},
+			};
+
+			const updateModule = new UpdateModule(true, api, search, sources, 60000);
+			await updateModule.sync_resources(mockStore);
+			rmSync(dir, { recursive: true });
+
+			expect(fetchMock).not.toHaveBeenCalled();
+			expect(
+				mockStore.db.entries.map(({ scope, head, body }) => ({
+					scope,
+					head,
+					body,
+				})),
+			).toEqual([
+				{ scope: 'en', head: 'word1', body: 'definition for word1' },
+				{ scope: 'toa', head: 'word1', body: 'definition in toaq' },
+				{ scope: 'en', head: 'word2', body: 'definition for word2' },
+			]);
 		});
 	});
 
