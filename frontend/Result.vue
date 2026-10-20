@@ -86,7 +86,13 @@ defineProps<{
 						:style="{ opacity: result.frame ? 1 : 0.5 }"
 					>
 						<span class="label">frame</span>
-						{{ frame_abbreviation }}
+						<template v-if="result.frame"
+							>(<template v-for="(part, i) in frame_parts" :key="i"
+								>{{ i ? ' ' : '' }}{{ part.slot
+								}}<sub v-if="part.nondistributive">n</sub></template
+							>)</template
+						>
+						<template v-else>—</template>
 					</button>
 				</div>
 				<div style="position: relative" v-if="frame_expanded">
@@ -691,14 +697,13 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		// e.g. frame (c c) with distribution (n d) is shown as (c' c)
-		frame_abbreviation(): string {
-			if (!this.result.frame) return '—';
+		// e.g. frame (c c) with distribution (n d) is shown as (cₙ c)
+		frame_parts(): { slot: string; nondistributive: boolean }[] {
 			const distribution = this.result.distribution?.split(' ') ?? [];
-			const parts = this.result.frame
-				.split(' ')
-				.map((part, i) => (distribution[i] === 'n' ? part + "'" : part));
-			return '(' + parts.join(' ') + ')';
+			return (this.result.frame?.split(' ') ?? []).map((slot, i) => ({
+				slot,
+				nondistributive: distribution[i] === 'n',
+			}));
 		},
 		any_fixed_metadata(): boolean {
 			return !!(

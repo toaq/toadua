@@ -601,3 +601,8 @@ a:hover {
 		border-radius: 0;
 	}
 }
+
+/* keep the "n" in frame abbreviations like (cₙ c) from stretching the line */
+.card button sub {
+	line-height: 0;
+}
