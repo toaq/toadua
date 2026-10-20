@@ -7,5 +7,7 @@
 		"allowJs": true,
 		"moduleResolution": "bundler"
 	},
-	"include": ["core/**/*", "modules/**/*", "frontend/shared/**/*"]
+	"include": ["core/**/*", "modules/**/*", "frontend/shared/**/*"],
+	// covered by frontend/tsconfig.json
+	"exclude": ["frontend/shared/**/*.test.ts"]
 }
