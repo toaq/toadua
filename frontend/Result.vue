@@ -44,7 +44,12 @@ defineProps<{
 					>{{ result.head }}</a
 				>
 			</h2>
-			<span v-if="result.gloss" class="gloss">{{ result.gloss }}</span>
+			<span v-if="result.gloss" class="gloss"
+				><template v-for="(part, i) in gloss_parts" :key="i"
+					><span v-if="i % 2" class="caps">{{ part }}</span
+					><template v-else>{{ part }}</template></template
+				></span
+			>
 			<div class="metadata" v-if="!is_non_verb && has_slots">
 				<div style="position: relative">
 					<button
@@ -53,12 +58,12 @@ defineProps<{
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
-						<span class="label">pronoun</span>
 						{{
 							result.pronominal_class
 								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
+								: username && !is_author_protected
+								? 'add pronoun'
 								: '—'
 						}}
 					</button>
@@ -77,25 +82,7 @@ defineProps<{
 						<option value="">—</option>
 					</select>
 				</div>
-				<div v-if="!frame_expanded">
-					<button
-						title="Frame and distribution"
-						v-if="any_fixed_metadata"
-						:disabled="!username || is_author_protected"
-						@click.prevent="frame_expanded = true"
-						:style="{ opacity: result.frame ? 1 : 0.5 }"
-					>
-						<span class="label">frame</span>
-						<template v-if="result.frame"
-							>(<template v-for="(part, i) in frame_parts" :key="i"
-								>{{ i ? ' ' : '' }}{{ part.slot
-								}}<sub v-if="part.nondistributive">n</sub></template
-							>)</template
-						>
-						<template v-else>—</template>
-					</button>
-				</div>
-				<div style="position: relative" v-if="frame_expanded">
+				<div style="position: relative">
 					<button
 						title="Frame"
 						v-if="any_fixed_metadata"
@@ -103,10 +90,9 @@ defineProps<{
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.frame ? 1 : 0.5 }"
 					>
 						<span class="label">frame</span>
-						{{ result.frame ?? '—' }}
+						{{ result.frame ? `(${result.frame})` : '—' }}
 					</button>
 					<select
 						title="Frame"
@@ -146,7 +132,7 @@ defineProps<{
 						<option value="c c 2xx">(c c 2xx)</option>
 					</select>
 				</div>
-				<div style="position: relative" v-if="frame_expanded">
+				<div style="position: relative">
 					<button
 						title="Distribution"
 						v-if="any_fixed_metadata"
@@ -154,19 +140,15 @@ defineProps<{
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.distribution ? 1 : 0.5 }"
 					>
-						<span class="label">distribution</span>
-						{{ result.distribution ?? '—' }}
+						<span class="label">distr</span>
+						{{ result.distribution ? `(${result.distribution})` : '—' }}
 					</button>
 					<select
 						v-if="any_fixed_metadata"
 						v-model="result.distribution"
 						:disabled="!username || is_author_protected"
-						@change="
-							submit_annotation();
-							frame_expanded = false;
-						"
+						@change="submit_annotation"
 					>
 						<option v-if="slots === 1" value="d">(d)</option>
 						<option v-if="slots === 1 && last_c" value="n">(n)</option>
@@ -192,7 +174,6 @@ defineProps<{
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.subject ? 1 : 0.5 }"
 					>
 						<span class="label">subject</span>
 						{{ result.subject || '—' }}
@@ -667,7 +648,6 @@ export default defineComponent({
 	data() {
 		return {
 			hesitating: false,
-			frame_expanded: false,
 			input: '',
 			editing: false,
 			new_body: '',
@@ -697,14 +677,6 @@ export default defineComponent({
 				fancy_content: shared.replacements(content, false, false, this.theme),
 			}));
 		},
-		// e.g. frame (c c) with distribution (n d) is shown as (cₙ c)
-		frame_parts(): { slot: string; nondistributive: boolean }[] {
-			const distribution = this.result.distribution?.split(' ') ?? [];
-			return (this.result.frame?.split(' ') ?? []).map((slot, i) => ({
-				slot,
-				nondistributive: distribution[i] === 'n',
-			}));
-		},
 		any_fixed_metadata(): boolean {
 			return !!(
 				this.result.pronominal_class ||
@@ -721,6 +693,10 @@ export default defineComponent({
 		},
 		is_non_verb(): boolean {
 			return this.result.type && this.result.type !== 'predicate';
+		},
+		// all-caps words (at odd indices) are shown in small caps, e.g. 'NEG'
+		gloss_parts(): string[] {
+			return this.result.gloss.split(/\b([A-Z]+)\b/);
 		},
 		has_slots(): boolean {
 			return this.result.body?.includes('▯');
