@@ -288,9 +288,11 @@ defineProps<{
 						/>
 						<font-awesome-icon icon="chevron-up" />
 					</label>
-					<span :style="score_color(result.score)">{{
-						score_number(result.score)
-					}}</span>
+					<span
+						:style="score_color(result.score)"
+						:title="`relevance: ${result.relevance}`"
+						>{{ score_number(result.score) }}</span
+					>
 					<label>
 						<input
 							type="checkbox"

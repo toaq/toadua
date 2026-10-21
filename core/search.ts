@@ -227,29 +227,51 @@ function make_re(trait: Trait, s: string): (entry: CachedEntry) => boolean {
 
 type Order = (e: CachedEntry, deburrs: string[], bares: string[]) => any;
 
-const default_ordering: Order = (e, deburrs, bares) => {
+// Does `what` occur as a contiguous run of words in `where`?
+export function containsPhrase(what: string[], where: string[]): boolean {
+	outer: for (let i = 0; i + what.length <= where.length; i++) {
+		for (let j = 0; j < what.length; j++)
+			if (where[i + j] !== what[j]) continue outer;
+		return true;
+	}
+	return false;
+}
+
+export const default_ordering: Order = (e, deburrs, bares) => {
 	const official = e.$.user === 'official' ? 1 : 0;
 	const pos = Math.max(0, e.score);
 	const neg = Math.max(0, -e.score);
 	const voteMultiplier = Math.sqrt((1 + pos + official) / (1 + neg));
 
+	// Each kind of match is weighted by the fraction of query words it covers,
+	// so that matching every word of a query beats matching just one of them.
+	const n = deburrs.length || 1;
+	const frac = (where: string[], mode: MatchMode) =>
+		deburrMatch(deburrs, where, mode) / n;
+
 	let points = 0.1;
 
 	// full keyword match
-	if (deburrMatch(deburrs, e.notes, MatchMode.Containing) > 0) points += 1;
+	points += 1 * frac(e.notes, MatchMode.Containing);
 	// header/body substring/superstring match
-	if (deburrMatch(deburrs, e.body, MatchMode.Contained) > 0) points += 3;
-	if (deburrMatch(deburrs, e.head, MatchMode.Contained) > 0) points += 6;
-	if (deburrMatch(deburrs, e.body, MatchMode.Containing) > 0) points += 10;
-	if (deburrMatch(deburrs, e.head, MatchMode.Containing) > 0) points += 15;
+	points += 3 * frac(e.body, MatchMode.Contained);
+	points += 6 * frac(e.head, MatchMode.Contained);
+	points += 10 * frac(e.body, MatchMode.Containing);
+	points += 15 * frac(e.head, MatchMode.Containing);
 	// exact match.
-	if (deburrMatch(deburrs, e.body, MatchMode.Exact) > 0) points += 30;
+	points += 30 * frac(e.body, MatchMode.Exact);
 	// the number is very exact too, as you can see
 	const exact = deburrMatch(deburrs, e.head, MatchMode.Exact);
-	if (exact > 0 && exact === e.head.length) points += 69.4201337;
+	if (exact > 0 && exact === e.head.length) points += (69.4201337 * exact) / n;
+
+	// The query occurs verbatim as a phrase:
+	if (deburrs.length > 1) {
+		if (containsPhrase(deburrs, e.head)) points += 40;
+		if (containsPhrase(deburrs, e.body)) points += 25;
+	}
 
 	// Bonus points for "typographically exact" (no deburring required) matches:
-	if (bares.includes(e.$.head)) points += 30;
+	if (bares.join(' ') === e.$.head) points += 30;
 
 	return -voteMultiplier * points;
 };

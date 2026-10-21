@@ -22,6 +22,7 @@ export interface Entry {
 
 	uncollapsed?: boolean;
 	vote?: number;
+	relevance?: number;
 }
 
 export interface Color {
