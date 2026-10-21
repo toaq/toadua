@@ -19,6 +19,13 @@ html {
 	--search-placeholder-color: hsl(210deg, 50%, 75%);
 	--controls-text-color: hsl(210deg, 25%, 50%);
 	--controls-input-color: hsl(210deg, 75%, 25%);
+	--pill-color: hsl(0deg, 0%, 95%);
+	--pill-border-color: hsl(0deg, 0%, 87%);
+	--type-color: hsl(330deg, 54%, 41%);
+	--secondary-border-color: var(--menu-border-color);
+	--secondary-type-color: hsl(210deg, 54%, 35%);
+	--secondary-card-color: var(--card-color);
+	--secondary-pill-color: var(--pill-color);
 
 	width: 100%;
 	height: 100%;
@@ -40,6 +47,13 @@ html.dark {
 	--search-placeholder-color: hsl(210deg, 50%, 75%);
 	--controls-text-color: hsl(210deg, 20%, 80%);
 	--controls-input-color: hsl(0deg, 0%, 90%);
+	--pill-color: hsl(330deg, 0%, 23%);
+	--pill-border-color: hsl(330deg, 0%, 34%);
+	--type-color: hsl(330deg, 100%, 80%);
+	--secondary-border-color: hsl(210deg, 20%, 34%);
+	--secondary-type-color: hsl(210deg, 100%, 80%);
+	--secondary-card-color: hsl(210deg, 10%, 17%);
+	--secondary-pill-color: hsl(210deg, 10%, 23%);
 }
 
 #container {
@@ -159,6 +173,7 @@ footer .controls {
 }
 
 .card {
+	position: relative;
 	margin: 16px;
 	padding: 16px;
 	background-color: var(--card-color);
@@ -168,31 +183,95 @@ footer .controls {
 	overflow-x: auto;
 }
 
+/* non-predicates */
+.card.secondary {
+	--card-color: var(--secondary-card-color);
+	--pill-color: var(--secondary-pill-color);
+	--card-border-color: var(--secondary-border-color);
+	--type-color: var(--secondary-type-color);
+}
+
 #container > .card:last-child {
 	margin-bottom: 0;
 }
 
+/* not a flex container: that would shrink it to fit beside the floated .tags */
 .card .title {
 	font-family: var(--heading-font);
-	align-items: baseline;
-	width: 100%;
 	position: relative;
 	margin-top: -4px;
+}
+
+.card .title h2 {
+	display: inline;
+	margin-right: 8px;
+}
+
+.card span.gloss {
+	font-size: 18px;
+	font-style: italic;
+	font-weight: 300;
+}
+
+.card span.gloss .caps {
+	font-variant-caps: all-small-caps;
+}
+
+/* badge melded into the card's top-right border */
+.card .tags {
+	float: right;
+	margin: -16px -16px 8px 8px;
+	padding: 1px 8px 3px 10px;
 	display: flex;
-	justify-content: space-between;
+	gap: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--type-color);
+	background-color: var(--card-border-color);
+	border-bottom-left-radius: 4px;
 }
 
-.card .info {
+.card .tags:empty {
+	display: none;
+}
+
+.card .tags .scope:not(.editing) {
+	color: inherit;
+	opacity: 0.6;
+}
+
+.card .metadata {
+	flex-basis: 100%;
 	display: flex;
-	position: relative;
-	overflow: hidden;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+	font-size: 13px;
 }
 
-.card .info button {
-	margin-left: 0.5em;
+.card .metadata > div:empty {
+	display: none;
 }
 
-.card .info select {
+.card .metadata button {
+	padding: 3px 9px;
+	border-radius: 999px;
+	background-color: var(--pill-color);
+}
+
+.card .metadata button:enabled {
+	opacity: 1;
+}
+
+.card .metadata button:enabled:hover {
+	background-color: var(--pill-border-color);
+}
+
+.card .metadata .label {
+	opacity: 0.55;
+}
+
+.card .metadata select {
 	opacity: 0;
 	width: 1px;
 	left: 0;
@@ -200,13 +279,9 @@ footer .controls {
 	pointer-events: none;
 }
 
-.card .scope:not(.editing) {
-	color: inherit;
-	opacity: 0.5;
-}
-
 .card .body {
-	margin: 0;
+	margin: 10px 0 0;
+	font-size: 17px;
 }
 
 .card button:enabled {

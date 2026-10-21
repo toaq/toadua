@@ -10,7 +10,31 @@ defineProps<{
 </script>
 
 <template>
-	<div class="card" :lang="result.scope">
+	<div class="card" :class="{ secondary: is_non_verb }" :lang="result.scope">
+		<div class="tags">
+			<template v-if="editing">
+				<input
+					v-if="username === result.user"
+					type="text"
+					size="5"
+					v-model="new_scope"
+					class="scope editing"
+					autocomplete="language"
+					list="common-languages"
+					@keypress.enter.exact.prevent="submit_edit"
+				/>
+				<span v-else class="scope">{{ result.scope }}</span>
+			</template>
+
+			<a
+				v-if="!editing && !limit_search"
+				:href="'#scope:' + result.scope"
+				class="scope"
+				@click="navigate('scope:' + result.scope)"
+				>{{ result.scope }}</a
+			>
+			<span v-if="result.type" class="type">{{ result.type }}</span>
+		</div>
 		<div class="title">
 			<h2>
 				<a
@@ -20,41 +44,26 @@ defineProps<{
 					>{{ result.head }}</a
 				>
 			</h2>
-			<div class="info">
-				<template v-if="editing">
-					<input
-						v-if="username === result.user"
-						type="text"
-						size="5"
-						v-model="new_scope"
-						class="scope editing"
-						autocomplete="language"
-						list="common-languages"
-						@keypress.enter.exact.prevent="submit_edit"
-					/>
-					<span v-else class="scope">{{ result.scope }}</span>
-				</template>
-
-				<a
-					v-if="!editing && !limit_search"
-					:href="'#scope:' + result.scope"
-					class="scope"
-					@click="navigate('scope:' + result.scope)"
-					>{{ result.scope }}</a
-				>
+			<span v-if="result.gloss" class="gloss"
+				><template v-for="(part, i) in gloss_parts" :key="i"
+					><span v-if="i % 2" class="caps">{{ part }}</span
+					><template v-else>{{ part }}</template></template
+				></span
+			>
+			<div class="metadata" v-if="!is_non_verb && has_slots">
 				<div style="position: relative">
 					<button
 						title="Pronominal class"
-						v-if="!is_non_verb && has_slots"
 						:disabled="!username || is_author_protected"
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.pronominal_class ? 1 : 0.5 }"
 					>
 						{{
 							result.pronominal_class
 								? result.pronominal_class.replace('a', 'á').replace('o', 'ó')
+								: username && !is_author_protected
+								? 'add pronoun'
 								: '—'
 						}}
 					</button>
@@ -76,18 +85,18 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Frame"
-						v-if="any_fixed_metadata && !is_non_verb && has_slots"
+						v-if="any_fixed_metadata"
 						:disabled="!username || is_author_protected"
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.frame ? 1 : 0.5 }"
 					>
-						({{ result.frame ?? '—' }})
+						<span class="label">frame</span>
+						{{ result.frame ? `(${result.frame})` : '—' }}
 					</button>
 					<select
 						title="Frame"
-						v-if="any_fixed_metadata && !is_non_verb && has_slots"
+						v-if="any_fixed_metadata"
 						v-model="result.frame"
 						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
@@ -126,17 +135,17 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Distribution"
-						v-if="any_fixed_metadata && !is_non_verb && has_slots"
+						v-if="any_fixed_metadata"
 						:disabled="!username || is_author_protected"
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.distribution ? 1 : 0.5 }"
 					>
-						({{ result.distribution ?? '—' }})
+						<span class="label">distr</span>
+						{{ result.distribution ? `(${result.distribution})` : '—' }}
 					</button>
 					<select
-						v-if="any_fixed_metadata && !is_non_verb && has_slots"
+						v-if="any_fixed_metadata"
 						v-model="result.distribution"
 						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
@@ -160,14 +169,14 @@ defineProps<{
 				<div style="position: relative">
 					<button
 						title="Subject type"
-						v-if="any_fixed_metadata && !is_non_verb && has_slots"
+						v-if="any_fixed_metadata"
 						:disabled="!username || is_author_protected"
 						@click.prevent="
 							username && !is_author_protected && show_picker($event)
 						"
-						:style="{ opacity: result.subject ? 1 : 0.5 }"
 					>
-						{{ result.subject ? 's' + result.subject[0].toUpperCase() : '—' }}
+						<span class="label">subject</span>
+						{{ result.subject || '—' }}
 					</button>
 					<select
 						v-if="result.frame"
@@ -175,25 +184,16 @@ defineProps<{
 						:disabled="!username || is_author_protected"
 						@change="submit_annotation"
 					>
-						<option value="agent">sA</option>
-						<option value="" disabled>Subject is a deliberate agent</option>
-						<hr />
-						<option value="individual">sI</option>
-						<option value="" disabled>Subject is a non-event</option>
-						<hr />
-						<option :disabled="tangible" value="event">sE</option>
-						<option value="" disabled>Subject is an event</option>
-						<hr />
-						<option :disabled="tangible" value="proposition">sP</option>
-						<option value="" disabled>Subject is a proposition</option>
-						<hr />
-						<option :disabled="tangible" value="shape">sS</option>
-						<option value="" disabled>
-							Subject is spatial (thing or event)
+						<option value="agent">agent (deliberate)</option>
+						<option value="individual">individual (non-event)</option>
+						<option :disabled="tangible" value="event">event</option>
+						<option :disabled="tangible" value="proposition">
+							proposition
 						</option>
-						<hr />
-						<option :disabled="tangible" value="free">sF</option>
-						<option value="" disabled>Subject is anything</option>
+						<option :disabled="tangible" value="shape">
+							shape (thing or event)
+						</option>
+						<option :disabled="tangible" value="free">free (anything)</option>
 					</select>
 				</div>
 			</div>
@@ -667,18 +667,7 @@ export default defineComponent({
 			return protected_users.includes(this.result.user);
 		},
 		fancy_body(): string {
-			let body = shared.replacements(
-				this.result.body,
-				false,
-				false,
-				this.theme,
-			);
-			let type_and_gloss =
-				this.result.type && this.result.type !== 'phrase'
-					? `${this.result.type}: `
-					: '';
-			type_and_gloss += this.result.gloss ? `‘${this.result.gloss}’; ` : '';
-			return type_and_gloss + body;
+			return shared.replacements(this.result.body, false, false, this.theme);
 		},
 		fancy_notes(): { user: string; fancy_content: string; date: string }[] {
 			const result = this.result as Entry;
@@ -704,6 +693,10 @@ export default defineComponent({
 		},
 		is_non_verb(): boolean {
 			return this.result.type && this.result.type !== 'predicate';
+		},
+		// all-caps words (at odd indices) are shown in small caps, e.g. 'NEG'
+		gloss_parts(): string[] {
+			return this.result.gloss.split(/\b([A-Z]+)\b/);
 		},
 		has_slots(): boolean {
 			return this.result.body?.includes('▯');
