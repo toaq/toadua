@@ -10,7 +10,9 @@ export interface Entry {
 	id: string;
 	date: string;
 	head: string;
+	gloss: string | undefined;
 	body: string;
+	type: string | undefined;
 	user: string;
 	scope: string;
 	notes: Note[];
