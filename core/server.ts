@@ -4,6 +4,7 @@
 console.log('-----------');
 
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as argparse from 'argparse';
 import * as commons from './commons.js';
 import * as yaml from 'js-yaml';
@@ -64,32 +65,16 @@ const store: Store = {
 const search = new Search(store, commons.emitter);
 const api = new Api(store, config, search);
 
-const fourohfour = static_handler('frontend/404.html', 'text/html', 404);
-const routes = {
-	'/api': api_handler,
-	'/': static_handler('frontend/index.html', 'text/html'),
-	'/style.css': static_handler('frontend/style.css', 'text/css'),
-	'/FiraSans-Regular-vy.woff2': static_handler(
-		'frontend/FiraSans-Regular-vy.woff2',
-		'font/woff2',
-	),
-	'/FiraSans-Bold-vy.woff2': static_handler(
-		'frontend/FiraSans-Bold-vy.woff2',
-		'font/woff2',
-	),
-	'/frontend.js': static_handler(
-		'frontend/dist/bundle.js',
-		'application/javascript',
-	),
-	'/favicon.png': static_handler('frontend/favicon.png', 'image/png'),
-	'/site.webmanifest': static_handler(
-		'frontend/site.webmanifest',
-		'application/json',
-	),
-	'/.well-known/assetlinks.json': static_handler(
-		'frontend/assetlinks.json',
-		'application/json',
-	),
+// the frontend build output (`npm run build` in frontend/)
+const static_dir = `${installation_dir}/frontend/dist`;
+const mime_types = {
+	'.html': 'text/html',
+	'.css': 'text/css',
+	'.js': 'application/javascript',
+	'.json': 'application/json',
+	'.webmanifest': 'application/json',
+	'.png': 'image/png',
+	'.woff2': 'font/woff2',
 };
 
 function api_handler(r, s) {
@@ -141,31 +126,34 @@ function api_handler(r, s) {
 	}
 }
 
-function static_handler(fn: string, mime: string, code = 200) {
-	const fname = `${installation_dir}/${fn}`;
-	let f = fs.readFileSync(fname);
-	const t = fs.statSync(fname).mtimeMs;
-	return function static_handler(r, s) {
-		const t_ = fs.statSync(fname).mtimeMs;
-		if (t_ > t) {
-			console.log(
-				`file '${fname}' has been reloaded (${f.length}b; mtime ${t_} > ${t})`,
-			);
-			f = fs.readFileSync(fname);
-		}
-		s.writeHead(code, {
-			'content-type': `${mime}; charset=utf-8`,
-		}).write(f);
-		s.end();
-	};
+function static_file(pathname: string): string | undefined {
+	if (pathname.endsWith('/')) pathname += 'index.html';
+	const fname = path.join(static_dir, path.normalize(pathname));
+	if (!fname.startsWith(static_dir + path.sep)) return undefined;
+	if (!Object.hasOwn(mime_types, path.extname(fname))) return undefined;
+	return fs.statSync(fname, { throwIfNoEntry: false })?.isFile()
+		? fname
+		: undefined;
+}
+
+function serve_file(s, fname: string, code = 200) {
+	const mime = mime_types[path.extname(fname)];
+	s.writeHead(code, {
+		'content-type': `${mime}; charset=utf-8`,
+	}).write(fs.readFileSync(fname));
+	s.end();
+}
+
+function static_handler(r, s, url: URL) {
+	const fname = static_file(decodeURIComponent(url.pathname));
+	if (fname) serve_file(s, fname);
+	else serve_file(s, `${static_dir}/404.html`, 404);
 }
 
 function handler(r, s_) {
 	const time = +new Date();
 	const url = new URL(r.url, config.entry_point);
-	const handler = Object.hasOwn(routes, url.pathname)
-		? routes[url.pathname]
-		: fourohfour;
+	const handler = url.pathname === '/api' ? api_handler : static_handler;
 	const s = {
 		writeHead(code, headers?) {
 			if (code !== 200)

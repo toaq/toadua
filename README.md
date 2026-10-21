@@ -36,14 +36,16 @@ docker run --mount type=bind,src=./config,dst=/app/config -p 9999:29138 -e NODE_
 
 - Install [Node.js](https://nodejs.org/en/) version ≥21 (skip this step if
   you're using `nix` with `direnv`).
-- Frontend:
-  - Cd into the `frontend` directory and run `npm install` there.
-  - `npm run build` will create a webpack build.
-- Backend:
-  - Run `npm install` in the cloned repository to get the dependencies.
-  - Run `npm run build` to compile the TypeScript sources.
-  - `npm run start` should now work out of the box. Navigate to
-    http://localhost:29138/ in your browser.
+- Run `npm install` both in the cloned repository and in `frontend/`.
+- For development, run `npm run dev` and navigate to http://localhost:5173/.
+  This runs the backend on port 29138 (restarting it when its sources change)
+  alongside a Vite dev server with hot reloading for the frontend, which
+  forwards API requests to the backend.
+- For production:
+  - Run `npm run build` in `frontend/` to build the frontend into
+    `frontend/dist/`.
+  - Run `npm run build` in the repository root to compile the backend.
+  - `npm run start` serves both on http://localhost:29138/.
 
 ### With Nix (good for verifying build correctness)
 

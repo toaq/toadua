@@ -25,6 +25,7 @@
 		"@types/uuid": "^9.0.0",
 		"husky": "^8.0.0",
 		"prettier": "^3.0.3",
+		"tsx": "^4.23.15",
 		"typescript": "^5.2.0",
 		"vite": "^8.1.0",
 		"vitest": "^4.1.9"
@@ -33,6 +34,8 @@
 		"prepare": "husky install",
 		"build": "tsc --build",
 		"start": "trap 'test $! && kill $!' SIGINT SIGTERM SIGHUP; node ./dist/core/server.js",
+		"dev": "npm run dev:server & npm --prefix frontend run dev; kill $!",
+		"dev:server": "tsx watch core/server.ts",
 		"check": "npm run prettier:check",
 		"test": "vitest",
 		"prettier:check": "prettier -c .",
