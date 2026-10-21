@@ -24,6 +24,8 @@ html {
 	--type-color: hsl(330deg, 54%, 41%);
 	--secondary-border-color: var(--menu-border-color);
 	--secondary-type-color: hsl(210deg, 54%, 35%);
+	--secondary-card-color: var(--card-color);
+	--secondary-pill-color: var(--pill-color);
 
 	width: 100%;
 	height: 100%;
@@ -50,6 +52,8 @@ html.dark {
 	--type-color: hsl(330deg, 100%, 80%);
 	--secondary-border-color: hsl(210deg, 20%, 34%);
 	--secondary-type-color: hsl(210deg, 100%, 80%);
+	--secondary-card-color: hsl(210deg, 10%, 17%);
+	--secondary-pill-color: hsl(210deg, 10%, 23%);
 }
 
 #container {
@@ -181,6 +185,8 @@ footer .controls {
 
 /* non-predicates */
 .card.secondary {
+	--card-color: var(--secondary-card-color);
+	--pill-color: var(--secondary-pill-color);
 	--card-border-color: var(--secondary-border-color);
 	--type-color: var(--secondary-type-color);
 }
