@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     flake-utils.url = "github:numtide/flake-utils";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
     nix-npm-buildpackage.inputs.nixpkgs.follows = "nixpkgs";
@@ -47,8 +47,8 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs_latest
-            nodePackages.typescript-language-server
-            nodePackages.vscode-langservers-extracted # For HTML, CSS, JSON
+            typescript-language-server
+            vscode-langservers-extracted # For HTML, CSS, JSON
           ];
         };
       }) // {
