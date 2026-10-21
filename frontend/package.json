@@ -18,21 +18,19 @@
 		"lodash": "^4.17.21"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.20.7",
-		"@babel/preset-env": "^7.20.2",
 		"@types/lodash": "^4.14.201",
 		"@types/node": "^20.14.10",
+		"@vitejs/plugin-vue": "^6.0.10",
 		"@vue/compiler-sfc": "^3.2.41",
-		"esbuild": "^0.28.1",
-		"esbuild-plugin-vue3": "^0.5.1",
-		"typescript": "^5.2.0",
+		"typescript": "^5.9.3",
 		"vite": "^8.1.0",
 		"vitest": "^4.1.9",
 		"vue": "^3.2.41",
 		"vue-tsc": "^2.0.0"
 	},
 	"scripts": {
-		"build": "node build.js",
+		"dev": "vite",
+		"build": "vite build",
 		"check": "npx vue-tsc --noEmit --resolveJsonModule --allowSyntheticDefaultImports",
 		"test": "npx vitest"
 	},
