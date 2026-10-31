@@ -77,6 +77,10 @@ const routes = {
 		'frontend/FiraSans-Bold-vy.woff2',
 		'font/woff2',
 	),
+	'/FiraSans-LightItalic-vy.woff2': static_handler(
+		'frontend/FiraSans-LightItalic-vy.woff2',
+		'font/woff2',
+	),
 	'/frontend.js': static_handler(
 		'frontend/dist/bundle.js',
 		'application/javascript',
