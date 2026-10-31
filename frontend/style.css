@@ -207,8 +207,13 @@ footer .controls {
 	margin-right: 8px;
 }
 
+.card .title h2,
+.card .title .name {
+	font-size: 20px;
+}
+
 .card span.gloss {
-	font-size: 18px;
+	font-size: 20px;
 	font-style: italic;
 	font-weight: 300;
 }
